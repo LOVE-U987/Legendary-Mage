@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:midnight_embrace"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.midnight_embrace.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.midnight_embrace.description"
+    },
+
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "ess_requiem:main/dark_whisper",
+  "criteria": {
+    "embrace": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:midnight_embrace"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "embrace"
+    ]
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:dark_whisper"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.dark_whisper.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.dark_whisper.description"
+    },
+
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "ess_requiem:main/root",
+  "criteria": {
+    "dark": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:dark_whisper"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "dark"
+    ]
+  ]
+}

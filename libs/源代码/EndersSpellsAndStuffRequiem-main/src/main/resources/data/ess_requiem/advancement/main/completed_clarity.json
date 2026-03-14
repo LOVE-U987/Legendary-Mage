@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:completed_clarity"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.completed_clarity.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.completed_clarity.description"
+    },
+
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "parent": "ess_requiem:main/clarity",
+  "criteria": {
+    "clarity": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:completed_clarity"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "clarity"
+    ]
+  ]
+}

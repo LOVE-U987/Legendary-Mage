@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "discerning_the_eldritch:ymir"
+  },
+  "base": {
+    "item": "ess_requiem:scythe_of_rotten_dreams"
+  },
+  "result": {
+    "count": 1,
+    "id": "ess_requiem:dream_ripper"
+  },
+  "template": {
+    "item": "discerning_the_eldritch:eldritch_soul_shard"
+  }
+}

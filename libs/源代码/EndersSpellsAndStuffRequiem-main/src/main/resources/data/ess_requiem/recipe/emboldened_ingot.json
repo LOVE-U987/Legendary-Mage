@@ -1,0 +1,27 @@
+{
+
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+
+    "A": {
+      "item": "minecraft:iron_ingot"
+    },
+
+    "B": {
+      "item": "minecraft:magma_cream"
+    }
+
+  },
+  "pattern": [
+
+    " B ",
+    " A ",
+    "   "
+
+  ],
+  "result": {
+    "count": 1,
+    "id":"ess_requiem:emboldened_ingot"
+  }
+}

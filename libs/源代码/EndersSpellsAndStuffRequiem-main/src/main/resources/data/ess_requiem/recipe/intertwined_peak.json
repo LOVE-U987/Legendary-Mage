@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "ess_requiem:completed_clarity"
+  },
+  "base": {
+    "item": "ess_requiem:expertise"
+  },
+  "result": {
+    "count": 1,
+    "id": "ess_requiem:intertwined_peak"
+  },
+  "template": {
+    "item": "ess_requiem:spellblade_rune"
+  }
+}

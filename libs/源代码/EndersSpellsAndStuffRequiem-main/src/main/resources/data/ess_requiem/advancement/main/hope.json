@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:hope"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.hope.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.hope.description"
+    },
+
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "parent": "ess_requiem:main/clarity",
+  "criteria": {
+    "hope": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:hope"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "hope"
+    ]
+  ]
+}

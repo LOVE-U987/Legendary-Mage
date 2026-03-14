@@ -1,0 +1,8 @@
+{
+  "sound_event": "legendarymage:when_you_look_at_me",
+  "length_in_seconds": 244,
+  "comparator_output": 15,
+  "description": {
+    "translate": "jukebox_song.legendarymage.when_you_look_at_me"
+  }
+}

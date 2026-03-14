@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:scythe_of_frozen_dreams"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.scythe_of_frozen_dreams.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.scythe_of_frozen_dreams.description"
+    },
+
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "parent": "ess_requiem:main/clarity",
+  "criteria": {
+    "scythe": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:scythe_of_frozen_dreams"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "scythe"
+    ]
+  ]
+}

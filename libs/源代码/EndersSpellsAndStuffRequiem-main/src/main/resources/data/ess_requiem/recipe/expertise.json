@@ -1,0 +1,38 @@
+{
+
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+
+    "A": {
+      "item": "ess_requiem:potential"
+    },
+
+    "B": {
+      "item": "ess_requiem:emboldened_ingot"
+    },
+    "C": {
+      "item": "ess_requiem:spellblade_upgrade_orb"
+    },
+    "D": {
+      "item": "minecraft:stick"
+    },
+    "E": {
+      "item": "irons_spellbooks:divine_soulshard"
+    },
+    "F": {
+      "item": "irons_spellbooks:mithril_ingot"
+    }
+  },
+  "pattern": [
+
+    "CBE",
+    "FAB",
+    "DFC"
+
+  ],
+  "result": {
+    "count": 1,
+    "id": "ess_requiem:expertise"
+  }
+}

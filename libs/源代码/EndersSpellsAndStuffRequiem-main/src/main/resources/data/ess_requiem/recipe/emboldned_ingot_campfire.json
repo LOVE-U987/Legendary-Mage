@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "item",
+  "cookingtime": 600,
+  "experience": 0,
+  "ingredient": {
+    "item": "minecraft:iron_ingot"
+  },
+  "result": {
+    "id": "ess_requiem:emboldened_ingot"
+  }
+}

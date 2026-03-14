@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:whispering_harvester"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.whispering_harvester.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.whispering_harvester.description"
+    },
+
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "ess_requiem:main/rotten_sickle",
+  "criteria": {
+    "whisper": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:whispering_harvester"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "whisper"
+    ]
+  ]
+}

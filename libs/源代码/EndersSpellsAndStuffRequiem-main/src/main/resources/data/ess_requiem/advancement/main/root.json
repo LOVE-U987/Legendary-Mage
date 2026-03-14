@@ -1,0 +1,35 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:rotten_flesh"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.root.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.root.description"
+    },
+    "background": "irons_spellbooks:textures/block/grimy_tiles_01.png",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "rotten_flesh": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:rotten_flesh"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "rotten_flesh"
+    ]
+  ]
+}

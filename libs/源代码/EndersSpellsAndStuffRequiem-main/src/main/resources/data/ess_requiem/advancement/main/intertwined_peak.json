@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:intertwined_peak"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.intertwined_peak.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.intertwined_peak.description"
+    },
+
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "parent": "ess_requiem:main/completed_clarity",
+  "criteria": {
+    "peak": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:intertwined_peak"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "peak"
+    ]
+  ]
+}

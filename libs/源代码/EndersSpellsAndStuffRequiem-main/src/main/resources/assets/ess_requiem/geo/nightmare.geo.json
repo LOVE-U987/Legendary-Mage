@@ -1,0 +1,79 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 64,
+				"texture_height": 64,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 3.5,
+				"visible_bounds_offset": [0, 1.25, 0]
+			},
+			"bones": [
+				{
+					"name": "full_body",
+					"pivot": [0, 4, 0]
+				},
+				{
+					"name": "right_leg",
+					"parent": "full_body",
+					"pivot": [0, 14, 0],
+					"cubes": [
+						{"origin": [-4, 0, -1], "size": [4, 14, 4], "uv": [38, 0]}
+					]
+				},
+				{
+					"name": "left_leg",
+					"parent": "full_body",
+					"pivot": [1, 14, 0],
+					"cubes": [
+						{"origin": [0, 0, -1], "size": [4, 14, 4], "inflate": -0.01, "uv": [14, 38]}
+					]
+				},
+				{
+					"name": "upper_torso",
+					"parent": "full_body",
+					"pivot": [0, 20, 0]
+				},
+				{
+					"name": "body",
+					"parent": "upper_torso",
+					"pivot": [0, 21, 0],
+					"cubes": [
+						{"origin": [-4, 14, -1], "size": [8, 13, 4], "uv": [0, 16]}
+					]
+				},
+				{
+					"name": "shoulders_head",
+					"parent": "upper_torso",
+					"pivot": [0, 27, 0]
+				},
+				{
+					"name": "right_arm",
+					"parent": "shoulders_head",
+					"pivot": [-4, 26, 1],
+					"cubes": [
+						{"origin": [-7, 9, -1], "size": [3, 18, 4], "uv": [24, 16]}
+					]
+				},
+				{
+					"name": "left_arm",
+					"parent": "shoulders_head",
+					"pivot": [4, 26, 0],
+					"cubes": [
+						{"origin": [4, 9, -1], "size": [3, 18, 4], "uv": [0, 33]}
+					]
+				},
+				{
+					"name": "head",
+					"parent": "shoulders_head",
+					"pivot": [0, 28, 0],
+					"cubes": [
+						{"origin": [-4, 27, -4], "size": [8, 8, 8], "uv": [0, 0]}
+					]
+				}
+			]
+		}
+	]
+}

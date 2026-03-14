@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:expertise"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.expertise.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.expertise.description"
+    },
+
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "ess_requiem:main/practice",
+  "criteria": {
+    "sword": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:expertise"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "sword"
+    ]
+  ]
+}

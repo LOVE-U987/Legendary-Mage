@@ -1,0 +1,37 @@
+{
+  "element_cast": {
+    "subtitle": "subtitles.legendarymage.element_cast",
+    "sounds": [
+      "minecraft:block/amethyst_block/chime1",
+      "minecraft:block/amethyst_block/chime2",
+      "minecraft:block/amethyst_block/chime3",
+      "minecraft:block/amethyst_block/chime4",
+      "minecraft:block/amethyst_block/chime5",
+      "minecraft:block/amethyst_block/chime6",
+      "minecraft:block/amethyst_block/chime7",
+      "minecraft:block/amethyst_block/chime8",
+      "minecraft:block/amethyst_block/chime9",
+      "minecraft:block/amethyst_block/chime10",
+      "minecraft:block/amethyst_block/chime11",
+      "minecraft:block/amethyst_block/chime12"
+    ]
+  },
+  "blizzard_cast": {
+    "subtitle": "subtitles.legendarymage.blizzard_cast",
+    "sounds": [
+      "legendarymage:blizzard"
+    ]
+  },
+  "blizzard_ambient": {
+    "subtitle": "subtitles.legendarymage.blizzard_ambient",
+    "sounds": [
+      "legendarymage:blizzard"
+    ]
+  },
+  "when_you_look_at_me": {
+    "subtitle": "subtitles.legendarymage.when_you_look_at_me",
+    "sounds": [
+      "legendarymage:whenyoulookatme-vexento"
+    ]
+  }
+}

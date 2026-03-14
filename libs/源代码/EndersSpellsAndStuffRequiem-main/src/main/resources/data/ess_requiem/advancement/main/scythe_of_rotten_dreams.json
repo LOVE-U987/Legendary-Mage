@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:scythe_of_rotten_dreams"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.scythe_of_rotten_dreams.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.scythe_of_rotten_dreams.description"
+    },
+
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "ess_requiem:main/whispering_harvester",
+  "criteria": {
+    "scythe": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:scythe_of_rotten_dreams"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "scythe"
+    ]
+  ]
+}

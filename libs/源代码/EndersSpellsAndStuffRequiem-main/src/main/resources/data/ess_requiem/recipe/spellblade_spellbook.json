@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "item": "ess_requiem:fragment_of_clarity"
+  },
+  "base": {
+    "item": "irons_spellbooks:chained_book"
+  },
+  "result": {
+    "count": 1,
+    "id": "ess_requiem:spellblade_spellbook"
+  },
+  "template": {
+    "item": "ess_requiem:spellblade_rune"
+  }
+}

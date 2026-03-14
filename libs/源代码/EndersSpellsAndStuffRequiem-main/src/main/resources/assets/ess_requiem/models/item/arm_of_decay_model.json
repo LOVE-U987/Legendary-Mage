@@ -1,0 +1,19 @@
+{
+  "loader": "neoforge:item_layers",
+  "parent": "irons_spellbooks:item/template_verylarge_sword",
+  "render_type": "cutout",
+  "textures": {
+    "layer0": "ess_requiem:item/arm_of_decay",
+    "layer1": "ess_requiem:item/arm_of_decay_glow"
+  },
+  "neoforge_data": {
+    "layers": {
+      "1": {
+        "color": "FFFFFFFF",
+        "block_light": 15,
+        "sky_light": 15,
+        "ambient_occlusion": false
+      }
+    }
+  }
+}

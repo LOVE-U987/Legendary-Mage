@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:inevitability"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.inevitability.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.inevitability.description"
+    },
+
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "parent": "ess_requiem:main/completed_clarity",
+  "criteria": {
+    "sword": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:inevitability"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "sword"
+    ]
+  ]
+}

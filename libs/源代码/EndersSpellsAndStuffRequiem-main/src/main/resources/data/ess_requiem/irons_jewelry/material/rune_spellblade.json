@@ -1,0 +1,18 @@
+{
+  "descriptionId": "material.ess_requiem.spellblade_rune",
+  "ingredient": {
+    "item": "ess_requiem:spellblade_rune"
+  },
+  "materialType": [
+    "spellbooks_rune"
+  ],
+  "paletteLocation": "ess_requiem:palettes/rune_spellblade",
+  "quality": 1.5,
+  "bonusParameters": {
+    "irons_jewelry:attribute": {
+      "attribute": "ess_requiem:spellblade_spell_power",
+      "amount": 0.025,
+      "operation": "add_multiplied_total"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:rotten_sickle"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.rotten_sickle.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.rotten_sickle.description"
+    },
+
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "ess_requiem:main/root",
+  "criteria": {
+    "rotten_flesh": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:rotten_sickle"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "rotten_flesh"
+    ]
+  ]
+}

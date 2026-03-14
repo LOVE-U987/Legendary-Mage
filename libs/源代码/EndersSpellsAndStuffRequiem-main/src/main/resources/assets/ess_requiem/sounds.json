@@ -1,0 +1,155 @@
+{
+  "claw_attack": {
+    "subtitle": "sounds.ess_requiem:claw_cast",
+    "sounds": [
+      "grimoire_of_gore:claw_attack_spell"
+    ]
+  },
+  "pact_cast": {
+    "subtitle": "sounds.ess_requiem:pact_cast",
+    "sounds": [
+      "ess_requiem:pact_cast"
+    ]
+  },
+
+  "mind_generic_cast": {
+    "subtitle": "sounds.ess_requiem:mind_generic_cast",
+    "sounds": [
+      "ess_requiem:mind_generic_cast"
+    ]
+  },
+  "preserved_clock": {
+    "subtitle": "sounds.ess_requiem:clock_ticking",
+    "sounds": [
+      "ess_requiem:clock_ticking_cast"
+    ]
+  },
+  "bone_shatter": {
+    "subtitle": "sounds.ess_requiem:bones_shatter",
+    "sounds": [
+      "ess_requiem:bone_shatter"
+    ]
+  },
+
+  "pale_flame_start":
+  {
+    "subtitle": "sounds.ess_requiem.pale_flame_start",
+    "sounds":
+    [
+      "ess_requiem:pale_flame_start"
+    ]
+  },
+
+  "pale_flame_end":
+  {
+    "subtitle": "sounds.ess_requiem.pale_flame_end",
+    "sounds":
+    [
+      "ess_requiem:pale_flame_end"
+    ]
+  },
+
+  "cursed_revive": {
+    "subtitle": "sounds.ess_requiem.player_cursed_revive",
+    "sounds": [
+      "ess_requiem:cursed_revive"
+    ]
+  },
+
+  "ebony_cataphract_impact": {
+    "subtitle": "sounds.ess_requiem.cataphract_slam",
+    "sounds": [
+      "ess_requiem:ebony_cataphract_impact"
+    ]
+  },
+  "midnight_embrace_shatter_glass": {
+    "subtitle": "sounds.ess_requiem.midnight_sword_shatter",
+    "sounds": [
+      "ess_requiem:midnight_embrace_shatter_glass"
+    ]
+  },
+  "black_flame_windup": {
+    "subtitle": "sounds.ess_requiem.black_flame_windup",
+    "sounds": [
+      "ess_requiem:black_flame_windup"
+    ]
+  },
+  "black_flame_finish": {
+    "subtitle": "sounds.ess_requiem.black_flame_finish",
+    "sounds": [
+      "ess_requiem:black_flame_finish"
+    ]
+  },
+  "parry": {
+    "subtitle": "sounds.ess_requiem.parry",
+    "sounds": [
+      "ess_requiem:parry"
+    ]
+  },
+  "overwhelming_impact": {
+    "subtitle": "sounds.ess_requiem.overwhelming_parry",
+    "sounds": [
+      "ess_requiem:overwhelming_force_impact"
+    ]
+  },
+  "surviving": {
+    "subtitle": "sounds.ess_requiem.surviving",
+    "sounds": [
+      "ess_requiem:holding_strong"
+    ]
+  },
+  "spellblade_cut": {
+    "subtitle": "sounds.ess_requiem.cut",
+    "sounds": [
+      "ess_requiem:spellblade_cut_ranged"
+    ]
+  },
+  "banner_spell_parry": {
+    "subtitle": "sounds.ess_requiem.banner_spell_parry",
+    "sounds": [
+      "ess_requiem:banner_spell_parry"
+    ]
+  },
+  "banner_summon": {
+    "subtitle": "sounds.ess_requiem.banner_spell_parry",
+    "sounds": [
+      "ess_requiem:banner_summon"
+    ]
+  },
+  "greater_revive": {
+    "subtitle": "sounds.ess_requiem.greater_revive",
+    "sounds": [
+      "ess_requiem:greater_revive"
+    ]
+  },
+  "nightmare_hurt": {
+    "subtitle": "sounds.ess_requiem.nightmare_hurt",
+    "sounds": [
+      "ess_requiem:nightmare_hurt"
+    ]
+  },
+  "nightmare_death": {
+    "subtitle": "sounds.ess_requiem.nightmare_death",
+    "sounds": [
+      "ess_requiem:nightmare_death"
+    ]
+  },
+  "nightmare_attack": {
+    "subtitle": "sounds.ess_requiem.nightmare_attack",
+    "sounds": [
+      "ess_requiem:nightmare_attack"
+    ]
+  },
+  "eldritch_wail_start": {
+    "subtitle": "sounds.ess_requiem.eldritch_wail_start",
+    "sounds": [
+      "ess_requiem:eldritch_wail_start"
+    ]
+  },
+  "eldritch_wail_end": {
+    "subtitle": "sounds.ess_requiem.eldritch_wail_end",
+    "sounds": [
+      "ess_requiem:eldritch_wail_end"
+    ]
+  }
+}

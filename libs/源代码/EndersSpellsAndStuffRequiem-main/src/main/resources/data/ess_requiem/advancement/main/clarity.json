@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:fragment_of_clarity"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.fragment_of_clarity.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.fragment_of_clarity.description"
+    },
+
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "parent": "ess_requiem:main/root",
+  "criteria": {
+    "rotten_flesh": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:fragment_of_clarity"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "rotten_flesh"
+    ]
+  ]
+}

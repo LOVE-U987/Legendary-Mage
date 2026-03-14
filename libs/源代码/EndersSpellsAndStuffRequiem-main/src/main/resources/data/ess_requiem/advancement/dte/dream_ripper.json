@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "ess_requiem:dream_ripper"
+    },
+    "title": {
+      "translate": "advancements.ess_requiem.dream_ripper.title"
+    },
+    "description": {
+      "translate": "advancements.ess_requiem.dream_ripper.description"
+    },
+
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "parent": "discerning_the_eldritch:discerning_the_eldritch/main/ymir",
+  "criteria": {
+    "scythe": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "ess_requiem:dream_ripper"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "scythe"
+    ]
+  ]
+}

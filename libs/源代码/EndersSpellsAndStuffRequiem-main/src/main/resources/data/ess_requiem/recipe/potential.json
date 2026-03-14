@@ -1,0 +1,30 @@
+{
+
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+
+    "A": {
+      "item": "ess_requiem:emboldened_ingot"
+    },
+
+    "B": {
+      "item": "minecraft:stick"
+    },
+
+    "C": {
+      "item": "minecraft:iron_sword"
+    }
+  },
+  "pattern": [
+
+    " AA",
+    " CA",
+    "B  "
+
+  ],
+  "result": {
+    "count": 1,
+    "id": "ess_requiem:potential"
+  }
+}
