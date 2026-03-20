@@ -109,7 +109,7 @@
   "entity.legendarymage.ice_sculpture": "活体冰雕",
 
   "spell.legendarymage.blizzard": "暴风雪",
-  "spell.legendarymage.blizzard.guide": "用法术创造一片暴风雪区域，该区域内的敌人每隔0.5秒会受到一次冰冻伤害，并附加缓慢效果。法术等级和法术强度都会影响范围和伤害",
+  "spell.legendarymage.blizzard.guide": "选定一个目标，在其位置创造一片暴风雪区域，该区域内的敌人每隔0.5秒会受到一次冰冻伤害，并附加缓慢效果。法术等级和法术强度都会影响范围和伤害",
   "spell.legendarymage.blizzard.range": "范围: %s格 (基础: %s格)",
   "spell.legendarymage.blizzard.duration": "持续时间: %d秒 (基础: %d秒)",
   "spell.legendarymage.blizzard.damage": "每次伤害: %s (基础: %s)",
@@ -301,5 +301,42 @@
   "spell.legendarymage.magic_shotgun.spell_power_reduction": "法术强度: %s%%",
   "spell.legendarymage.magic_shotgun.cast_time_reduction": "吟唱缩减: +%s%%",
   "spell.legendarymage.magic_shotgun.melee_damage_bonus": "近战伤害: +%s",
-  "spell.legendarymage.magic_shotgun.max_mana_reduction": "最大法力: -30%%"
+  "spell.legendarymage.magic_shotgun.max_mana_reduction": "最大法力: -30%%",
+
+  "school.legendarymage.example_storm_school": "§b风暴学派§r",
+  "school.legendarymage.example_nature_school": "§a自然学派§r",
+  "school.legendarymage.example_earth_school": "§6岩土学派§r",
+
+  "attribute.legendarymage.example_storm_school_spell_power": "风暴法术强度",
+  "attribute.legendarymage.example_storm_school_magic_resist": "风暴魔法抗性",
+  "attribute.legendarymage.example_nature_school_spell_power": "自然法术强度",
+  "attribute.legendarymage.example_nature_school_magic_resist": "自然魔法抗性",
+  "attribute.legendarymage.example_earth_school_spell_power": "岩土法术强度",
+  "attribute.legendarymage.example_earth_school_magic_resist": "岩土魔法抗性",
+
+  "spell.legendarymage.ice_explosion_cone": "冰爆锥",
+  "spell.legendarymage.ice_explosion_cone.guide": "一种被迫注入了过多法力的冰锥，变得极为不稳定，在击中敌人时会触发冰爆。冰爆会对范围内的敌人造成伤害并附加缓慢效果。",
+  "spell.legendarymage.ice_explosion_cone.damage": "直接伤害: %s (基础: %s)",
+  "spell.legendarymage.ice_explosion_cone.explosion_radius": "冰爆范围: %s格 (固定)",
+  "spell.legendarymage.ice_explosion_cone.spell_power": "法术强度: %s",
+
+  "entity.legendarymage.ice_explosion_cone": "冰爆锥",
+
+  "spell.legendarymage.focused_ice_cone": "聚能冰锥",
+  "spell.legendarymage.focused_ice_cone.guide": "舍去了冰爆锥的范围，法力更加集中且稳定。击中敌人必定冰冻，可穿透3个敌人，在穿透3个单位或撞向墙体后产生大冰爆。高速运动，伤害更高。",
+  "spell.legendarymage.focused_ice_cone.damage": "直接伤害: %s (基础: %s)",
+  "spell.legendarymage.focused_ice_cone.pierce_count": "穿透次数: %d (固定)",
+  "spell.legendarymage.focused_ice_cone.explosion_radius": "冰爆范围: %s格 (固定)",
+  "spell.legendarymage.focused_ice_cone.spell_power": "法术强度: %s",
+
+  "entity.legendarymage.focused_ice_cone": "聚能冰锥",
+
+  "spell.legendarymage.giant_snowball": "巨雪球",
+  "spell.legendarymage.giant_snowball.guide": "先在头顶生成一个小型的雪块，这个雪块会因吟唱时间的增加而变大。当吟唱结束或中断时会被释放，击中造成巨大的冰爆，且留下一片10秒的暴风雪力场。吟唱时间越长，伤害越高。",
+  "spell.legendarymage.giant_snowball.damage": "冰爆伤害: %s (基础: %s)",
+  "spell.legendarymage.giant_snowball.radius": "范围: %d格 (基础: %d格)",
+  "spell.legendarymage.giant_snowball.duration": "暴风雪持续: %d秒",
+  "spell.legendarymage.giant_snowball.spell_power": "法术强度: %s",
+
+  "entity.legendarymage.giant_snowball": "巨雪球"
 }

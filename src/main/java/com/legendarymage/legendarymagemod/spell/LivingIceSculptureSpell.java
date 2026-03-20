@@ -34,7 +34,7 @@ import java.util.Optional;
  * 冰雕生物属于召唤物类型，可为玩家战斗
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 0.0.2
  */
 public class LivingIceSculptureSpell extends AbstractSpell {
 

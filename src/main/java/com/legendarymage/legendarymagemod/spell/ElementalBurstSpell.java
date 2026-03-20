@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * - 根据伤害类型自动挂上对应的元素标记
  * 
  * @author Love_U
- * @version 3.0.0
+ * @version 1.0.0
  */
 public class ElementalBurstSpell extends AbstractSpell {
 

@@ -32,7 +32,7 @@ import java.util.UUID;
  * 3. 计算基于近战伤害和法力值的特殊伤害公式
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.0
  */
 public class MagicShotgunManager {
 
@@ -148,9 +148,6 @@ public class MagicShotgunManager {
         UUID playerId = player.getUUID();
         InjectedSpellData data = new InjectedSpellData(spellId, spellLevel, manaCost, castSource);
         injectedSpells.put(playerId, data);
-
-        LegendaryMage.LOGGER.debug("[魔法散弹] 玩家 {} 注入了法术: {}, 等级: {}, 蓝耗: {}",
-                player.getName().getString(), spellId, spellLevel, manaCost);
     }
 
     /**
@@ -206,9 +203,6 @@ public class MagicShotgunManager {
         // 消耗注入的法术
         injectedSpells.remove(playerId);
         lastMeleeDamages.remove(playerId);
-
-        LegendaryMage.LOGGER.debug("[魔法散弹] 玩家 {} 释放了注入的法术: {}, 近战伤害: {}",
-                player.getName().getString(), data.getSpellId(), meleeDamage);
 
         return true;
     }
@@ -379,9 +373,6 @@ public class MagicShotgunManager {
             // MagicShotgunBuffEffect重写了getAttributeModifierValue方法来返回固定值
             // 但实际效果仍然需要手动调整，因为Minecraft会自动将修饰符值乘以(等级+1)
             adjustMaxManaModifier(player, buffLevel);
-
-            LegendaryMage.LOGGER.debug("[魔法散弹] 玩家 {} 获得了魔法散弹Buff，等级: {}, 持续时间: {} tick",
-                    player.getName().getString(), buffLevel, BUFF_DURATION_TICKS);
         } else {
             // 第二段施法：移除Buff
             removeBuffAndAttributes(player);
@@ -437,9 +428,6 @@ public class MagicShotgunManager {
 
         // 同时清除注入的法术
         injectedSpells.remove(player.getUUID());
-
-        LegendaryMage.LOGGER.debug("[魔法散弹] 玩家 {} 的魔法散弹Buff已被移除，属性已恢复",
-                player.getName().getString());
     }
     
     /**

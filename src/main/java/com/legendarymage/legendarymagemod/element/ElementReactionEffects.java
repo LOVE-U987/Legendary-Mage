@@ -376,8 +376,12 @@ public class ElementReactionEffects {
         int buffLevel = (int) (powerBonus * 3.0); // 每0.33加成=1级
         buffLevel = Math.max(1, Math.min(buffLevel, 5)); // 限制在1-5级
 
+        // 移除旧的混沌Buff效果（如果存在）
+        removeOldChaosBuffEffect(attacker);
+
         // 施加混沌Buff
-        // 注意：ChaosBuffEffect现在在构造函数中已经添加了属性修饰符
+        // 注意：ChaosBuffEffect在构造函数中添加了属性修饰符
+        // 属性值 = 基础值10% + 每级5%，与buffLevel对应
         MobEffect chaosBuffEffect = ModEffects.CHAOS_BUFF.get();
         Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(chaosBuffEffect);
         attacker.addEffect(new MobEffectInstance(
@@ -392,6 +396,19 @@ public class ElementReactionEffects {
 
         // 播放特效
         playEldritchBloodParticles(serverLevel, attacker);
+    }
+
+    /**
+     * 移除旧的混沌Buff效果
+     */
+    private static void removeOldChaosBuffEffect(LivingEntity entity) {
+        MobEffect chaosBuffEffect = ModEffects.CHAOS_BUFF.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(chaosBuffEffect);
+        
+        if (entity.hasEffect(effectHolder)) {
+            entity.removeEffect(effectHolder);
+            debugLog("移除旧的混沌Buff效果");
+        }
     }
 
     /**
@@ -419,8 +436,8 @@ public class ElementReactionEffects {
         removeOldEnderEchoEffect(attacker);
 
         // 施加终末回响Buff
-        // 注意：EnderEchoBuffEffect在构造函数中添加了基础属性修饰符用于显示
-        // 但实际效果由下面的addEnderEchoAttributeModifiers动态设置
+        // 注意：EnderEchoBuffEffect在构造函数中添加了基础属性修饰符用于EMIffect显示
+        // 我们需要移除这些基础修饰符，然后添加动态计算的实际修饰符
         MobEffect enderEchoBuffEffect = ModEffects.ENDER_ECHO_BUFF.get();
         Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(enderEchoBuffEffect);
         int duration = 300; // 15秒
@@ -435,6 +452,9 @@ public class ElementReactionEffects {
         
         attacker.addEffect(effectInstance);
         
+        // 移除构造函数中添加的基础修饰符（因为它们只是用于显示的固定值）
+        removeEnderEchoBaseModifiers(attacker);
+        
         // 手动添加动态属性修饰符（因为这个Buff的数值是基于施法者属性的）
         // 这些修饰符提供实际的游戏效果
         addEnderEchoAttributeModifiers(attacker, spellPowerBonus, spellResistBonus);
@@ -444,6 +464,29 @@ public class ElementReactionEffects {
 
         // 播放特效
         playEnderAnyParticles(serverLevel, attacker);
+    }
+
+    /**
+     * 移除终末回响的基础属性修饰符（构造函数中添加的显示用修饰符）
+     */
+    private static void removeEnderEchoBaseModifiers(LivingEntity entity) {
+        // 移除法术强度基础修饰符
+        if (entity.getAttributes().hasAttribute(AttributeRegistry.SPELL_POWER)) {
+            var instance = entity.getAttribute(AttributeRegistry.SPELL_POWER);
+            if (instance != null) {
+                ResourceLocation baseId = ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "ender_echo_spell_power");
+                instance.removeModifier(baseId);
+            }
+        }
+        
+        // 移除法术抗性基础修饰符
+        if (entity.getAttributes().hasAttribute(AttributeRegistry.SPELL_RESIST)) {
+            var instance = entity.getAttribute(AttributeRegistry.SPELL_RESIST);
+            if (instance != null) {
+                ResourceLocation baseId = ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "ender_echo_spell_resist");
+                instance.removeModifier(baseId);
+            }
+        }
     }
 
     /**

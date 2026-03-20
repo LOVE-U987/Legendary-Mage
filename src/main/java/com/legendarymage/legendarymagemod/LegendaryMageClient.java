@@ -2,15 +2,21 @@ package com.legendarymage.legendarymagemod;
 
 import com.legendarymage.legendarymagemod.client.renderer.IceSculptureRenderer;
 import com.legendarymage.legendarymagemod.entity.ModEntities;
+import com.legendarymage.legendarymagemod.entity.spell.FocusedIceConeRenderer;
+import com.legendarymage.legendarymagemod.entity.spell.GiantSnowballRenderer;
+import com.legendarymage.legendarymagemod.entity.spell.IceExplosionConeRenderer;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
@@ -49,6 +55,48 @@ public class LegendaryMageClient {
         // 注册冰雕生物渲染器
         EntityRenderers.register(ModEntities.ICE_SCULPTURE.get(), IceSculptureRenderer::new);
         
+        // 注册冰爆锥渲染器
+        EntityRenderers.register(ModEntities.ICE_EXPLOSION_CONE.get(), IceExplosionConeRenderer::new);
+        
+        // 注册聚能冰锥渲染器
+        EntityRenderers.register(ModEntities.FOCUSED_ICE_CONE.get(), FocusedIceConeRenderer::new);
+        
+        // 注册巨雪球渲染器
+        EntityRenderers.register(ModEntities.GIANT_SNOWBALL.get(), GiantSnowballRenderer::new);
+        
         LegendaryMage.LOGGER.info("冰雕生物渲染器已注册");
+        LegendaryMage.LOGGER.info("冰爆锥渲染器已注册");
+        LegendaryMage.LOGGER.info("聚能冰锥渲染器已注册");
+        LegendaryMage.LOGGER.info("巨雪球渲染器已注册");
+    }
+
+    /**
+     * 注册模型层定义
+     * 
+     * @param event 注册层定义事件
+     */
+    @SubscribeEvent
+    static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        // 注册冰爆锥模型层
+        event.registerLayerDefinition(
+            IceExplosionConeRenderer.MODEL_LAYER_LOCATION,
+            IceExplosionConeRenderer::createBodyLayer
+        );
+        
+        // 注册聚能冰锥模型层
+        event.registerLayerDefinition(
+            FocusedIceConeRenderer.MODEL_LAYER_LOCATION,
+            FocusedIceConeRenderer::createBodyLayer
+        );
+        
+        // 注册巨雪球模型层
+        event.registerLayerDefinition(
+            GiantSnowballRenderer.MODEL_LAYER_LOCATION,
+            GiantSnowballRenderer::createBodyLayer
+        );
+        
+        LegendaryMage.LOGGER.info("冰爆锥模型层已注册");
+        LegendaryMage.LOGGER.info("聚能冰锥模型层已注册");
+        LegendaryMage.LOGGER.info("巨雪球模型层已注册");
     }
 }

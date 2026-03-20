@@ -1,9 +1,11 @@
 package com.legendarymage.legendarymagemod.element;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.data.SchoolElementMappingRegistry;
 import com.legendarymage.legendarymagemod.school.ElementSchoolRegistry;
 import io.redspace.ironsspellbooks.api.events.SpellDamageEvent;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,6 +14,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -83,8 +86,15 @@ public class ElementReactionEvents {
                 // 元素流派的法术：随机赋予冰、火、雷元素标记
                 handleElementSchoolDamage(serverLevel, target, attacker, damage);
             } else {
-                // 其他流派的法术：按正常逻辑处理
-                ElementReactionManager.onSpellDamage(serverLevel, target, attacker, schoolType, damage);
+                // 检查是否有自定义的元素标记映射
+                ResourceLocation schoolId = schoolType.getId();
+                if (SchoolElementMappingRegistry.hasMapping(schoolId)) {
+                    // 使用自定义映射的元素标记
+                    handleCustomSchoolDamage(serverLevel, target, attacker, schoolId, damage);
+                } else {
+                    // 其他流派的法术：按正常逻辑处理
+                    ElementReactionManager.onSpellDamage(serverLevel, target, attacker, schoolType, damage);
+                }
             }
         }
     }
@@ -125,6 +135,40 @@ public class ElementReactionEvents {
 
         // 使用 ElementReactionManager 处理元素伤害
         ElementReactionManager.onElementDamage(serverLevel, target, attacker, randomElement, damage);
+    }
+
+    /**
+     * 处理自定义流派的法术伤害
+     * 根据数据包配置的映射施加对应的元素标记
+     *
+     * @param serverLevel 服务器世界
+     * @param target      目标实体
+     * @param attacker    攻击者
+     * @param schoolId    流派ID
+     * @param damage      伤害值
+     */
+    private static void handleCustomSchoolDamage(ServerLevel serverLevel, LivingEntity target,
+                                                  LivingEntity attacker, ResourceLocation schoolId, float damage) {
+        // 获取该流派配置的元素标记类型
+        List<ElementType> elementMarks = SchoolElementMappingRegistry.getElementMarksForSchool(schoolId);
+
+        // 检查返回的元素标记列表是否为null或为空
+        if (elementMarks == null || elementMarks.isEmpty()) {
+            return;
+        }
+
+        // 随机选择一个元素标记（如果配置了多个）
+        ElementType elementType = elementMarks.get(RANDOM.nextInt(elementMarks.size()));
+
+        debugLog(String.format("自定义流派法术伤害: %s -> %s, 流派: %s, 元素: %s, 伤害: %.1f",
+                attacker != null ? attacker.getName().getString() : "未知",
+                target.getName().getString(),
+                schoolId,
+                elementType.getId(),
+                damage));
+
+        // 使用 ElementReactionManager 处理元素伤害
+        ElementReactionManager.onElementDamage(serverLevel, target, attacker, elementType, damage);
     }
 
     /**
@@ -249,7 +293,8 @@ public class ElementReactionEvents {
         }
         
         // 邪术系/诅咒系
-        if (damageType.contains("eldritch") || damageType.contains("curse") || damageType.contains("magic") 
+        // 注意：不包含 "magic"，因为普通魔法伤害不应被识别为邪术
+        if (damageType.contains("eldritch") || damageType.contains("curse")
                 || damageType.contains("arcane") || damageType.contains("spell") || damageType.contains("mystic")) {
             return ElementType.ELDRITCH;
         }

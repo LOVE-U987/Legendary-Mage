@@ -7,6 +7,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.spell.GiantSnowballSpell;
 
 /**
  * 法术注册类
@@ -81,6 +82,38 @@ public class ModSpells {
     public static final DeferredHolder<AbstractSpell, MagicShotgunSpell> MAGIC_SHOTGUN = SPELLS.register(
             MagicShotgunSpell.SPELL_ID,
             MagicShotgunSpell::new
+    );
+
+    /**
+     * 冰爆锥法术
+     * 铁魔法-冰系
+     * 一种被迫注入了过多法力的冰锥，变得极为不稳定，在击中敌人时会触发冰爆
+     */
+    public static final DeferredHolder<AbstractSpell, IceExplosionConeSpell> ICE_EXPLOSION_CONE = SPELLS.register(
+            IceExplosionConeSpell.SPELL_ID,
+            IceExplosionConeSpell::new
+    );
+
+    /**
+     * 聚能冰锥法术
+     * 铁魔法-冰系
+     * 舍去了冰爆锥的范围，法力更加集中且稳定。击中敌人必定冰冻，可穿透敌人，
+     * 在穿透3个单位或撞向墙体后产生大冰爆，高速运动
+     */
+    public static final DeferredHolder<AbstractSpell, FocusedIceConeSpell> FOCUSED_ICE_CONE = SPELLS.register(
+            FocusedIceConeSpell.SPELL_ID,
+            FocusedIceConeSpell::new
+    );
+
+    /**
+     * 巨雪球法术
+     * 铁魔法-冰系
+     * 先在头顶生成一个小型的雪块，这个雪块会因吟唱时间的增加而变大，
+     * 当吟唱结束或中断会被释放，击中造成巨大的冰爆，且留下一片10秒的暴风雪力场
+     */
+    public static final DeferredHolder<AbstractSpell, GiantSnowballSpell> GIANT_SNOWBALL = SPELLS.register(
+            GiantSnowballSpell.SPELL_ID,
+            GiantSnowballSpell::new
     );
 
     /**

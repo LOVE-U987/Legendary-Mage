@@ -65,7 +65,7 @@ import java.util.UUID;
  * - 该Buff会修改法术的伤害计算机制：伤害 = 玩家的近战伤害 * 注入法术的法力值 / 200
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.0
  */
 public class MagicShotgunSpell extends AbstractSpell {
 
@@ -223,10 +223,9 @@ public class MagicShotgunSpell extends AbstractSpell {
                 }
             }
         } catch (Exception e) {
-            LegendaryMage.LOGGER.debug("[魔法散弹] 无法获取咒刃流派，使用默认流派");
+            // 如果找不到咒刃流派，使用末影流派作为替代（同为暗色系）
         }
         
-        // 如果找不到咒刃流派，使用末影流派作为替代（同为暗色系）
         return SchoolRegistry.ENDER.get();
     }
 

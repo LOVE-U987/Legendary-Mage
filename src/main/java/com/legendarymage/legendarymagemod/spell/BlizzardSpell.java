@@ -9,6 +9,8 @@ import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.spells.SchoolType;
 import io.redspace.ironsspellbooks.api.spells.SpellRarity;
 import io.redspace.ironsspellbooks.api.util.AnimationHolder;
+import io.redspace.ironsspellbooks.api.util.Utils;
+import io.redspace.ironsspellbooks.capabilities.magic.TargetEntityCastData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -30,7 +32,7 @@ import java.util.Optional;
 
 /**
  * 暴风雪法术
- * 用法术创造一片暴风雪区域，该区域内的敌人每隔0.5秒会受到一次冰冻伤害
+ * 选定一个目标，在其位置创造一片暴风雪区域，该区域内的敌人每隔0.5秒会受到一次冰冻伤害
  * 法术等级增加范围和伤害，法术强度也影响范围和伤害
  * 
  * @author Love_U
@@ -324,8 +326,24 @@ public class BlizzardSpell extends AbstractSpell {
     }
 
     /**
+     * 检查施法前条件
+     * 需要选定一个目标才能施放
+     *
+     * @param level      世界
+     * @param spellLevel 法术等级
+     * @param entity     施法实体
+     * @param magicData  魔法数据
+     * @return 是否满足施法条件
+     */
+    @Override
+    public boolean checkPreCastConditions(Level level, int spellLevel, LivingEntity entity, MagicData magicData) {
+        // 使用铁魔法的工具方法检查目标，范围32格，瞄准辅助0.35f
+        return Utils.preCastTargetHelper(level, entity, magicData, this, 32, 0.35f);
+    }
+
+    /**
      * 施法逻辑
-     * 创建一片暴风雪区域，区域内的敌人每隔0.5秒受到冰冻伤害
+     * 在目标位置创建一片暴风雪区域，区域内的敌人每隔0.5秒受到冰冻伤害
      *
      * @param level       世界
      * @param spellLevel  法术等级
@@ -336,7 +354,17 @@ public class BlizzardSpell extends AbstractSpell {
     @Override
     public void onCast(Level level, int spellLevel, LivingEntity entity, CastSource castSource, MagicData magicData) {
         if (level instanceof ServerLevel serverLevel) {
-            Vec3 pos = entity.position();
+            Vec3 pos = null;
+
+            // 从施法数据中获取目标位置
+            if (magicData.getAdditionalCastData() instanceof TargetEntityCastData targetData) {
+                pos = targetData.getTargetPosition(serverLevel);
+            }
+
+            // 如果没有目标位置（例如通过命令施法），使用施法者位置
+            if (pos == null) {
+                pos = entity.position();
+            }
 
             // 获取法术强度属性值（修正后的获取方式）
             float spellPower = SpellPowerHelper.getBaseSpellPowerAttribute(entity);

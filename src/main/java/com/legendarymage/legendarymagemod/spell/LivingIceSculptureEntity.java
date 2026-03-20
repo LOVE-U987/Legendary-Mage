@@ -34,7 +34,7 @@ import java.util.UUID;
  * 会像宠物一样跟随主人并攻击主人攻击的目标
  * 
  * @author Love_U
- * @version 3.0.0
+ * @version 0.0.2
  */
 public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEntity {
 

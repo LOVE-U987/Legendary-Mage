@@ -111,7 +111,6 @@ public class MagicShotgunEvents {
         if (magicData.getMana() < manaCost) {
             // 法力不足，取消施法
             event.setCanceled(true);
-            LegendaryMage.LOGGER.debug("[魔法散弹] 玩家 {} 法力不足，无法注入法术", player.getName().getString());
             return;
         }
 
@@ -127,9 +126,6 @@ public class MagicShotgunEvents {
 
         // 播放增强的注入特效
         playEnhancedInjectEffect((ServerLevel) player.level(), player);
-
-        LegendaryMage.LOGGER.debug("[魔法散弹] 玩家 {} 注入了法术: {}, 等级: {}, 蓝耗: {}, 剩余法力: {}",
-                player.getName().getString(), spellId, spellLevel, manaCost, magicData.getMana());
     }
 
     /**
@@ -350,9 +346,6 @@ public class MagicShotgunEvents {
         if (released) {
             // 播放释放特效
             playEnhancedReleaseEffect((ServerLevel) player.level(), player, target);
-
-            LegendaryMage.LOGGER.debug("[魔法散弹] 玩家 {} 的近战攻击触发了注入的法术，近战伤害: {}",
-                    player.getName().getString(), actualDamage);
         }
 
         // 清除待处理标记

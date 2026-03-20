@@ -1,6 +1,9 @@
 package com.legendarymage.legendarymagemod.entity;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.entity.spell.FocusedIceConeProjectile;
+import com.legendarymage.legendarymagemod.entity.spell.GiantSnowballEntity;
+import com.legendarymage.legendarymagemod.entity.spell.IceExplosionConeProjectile;
 import com.legendarymage.legendarymagemod.spell.LivingIceSculptureEntity;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -37,6 +40,42 @@ public class ModEntities {
                     .clientTrackingRange(10)
                     .updateInterval(3)
                     .build("ice_sculpture")
+    );
+
+    /**
+     * 冰爆锥投射物实体
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<IceExplosionConeProjectile>> ICE_EXPLOSION_CONE = ENTITIES.register(
+            "ice_explosion_cone",
+            () -> EntityType.Builder.<IceExplosionConeProjectile>of(IceExplosionConeProjectile::new, MobCategory.MISC)
+                    .sized(0.5f, 0.5f)  // 投射物尺寸
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("ice_explosion_cone")
+    );
+
+    /**
+     * 聚能冰锥投射物实体
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<FocusedIceConeProjectile>> FOCUSED_ICE_CONE = ENTITIES.register(
+            "focused_ice_cone",
+            () -> EntityType.Builder.<FocusedIceConeProjectile>of(FocusedIceConeProjectile::new, MobCategory.MISC)
+                    .sized(0.4f, 0.4f)  // 投射物尺寸（更集中）
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("focused_ice_cone")
+    );
+
+    /**
+     * 巨雪球实体
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<GiantSnowballEntity>> GIANT_SNOWBALL = ENTITIES.register(
+            "giant_snowball",
+            () -> EntityType.Builder.<GiantSnowballEntity>of(GiantSnowballEntity::new, MobCategory.MISC)
+                    .sized(1.0f, 1.0f)  // 基础尺寸，会根据缩放值调整
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("giant_snowball")
     );
 
     /**

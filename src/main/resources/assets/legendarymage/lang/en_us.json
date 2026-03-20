@@ -108,6 +108,127 @@
 
   "entity.legendarymage.ice_sculpture": "Ice Sculpture",
 
+  "spell.legendarymage.blizzard": "Blizzard",
+  "spell.legendarymage.blizzard.guide": "Select a target and create a blizzard area at their location. Enemies within this area take frost damage every 0.5 seconds and are slowed. Spell level and spell power affect range and damage.",
+  "spell.legendarymage.blizzard.range": "Range: %s blocks (Base: %s)",
+  "spell.legendarymage.blizzard.duration": "Duration: %d seconds (Base: %d seconds)",
+  "spell.legendarymage.blizzard.damage": "Damage per tick: %s (Base: %s)",
+  "spell.legendarymage.blizzard.interval": "Damage Interval: %.1f seconds",
+  "spell.legendarymage.blizzard.spell_power": "Spell Power: %s",
+
+  "legendarymage.configuration.livingIceSculpture": "Living Ice Sculpture Config",
+  "legendarymage.configuration.livingIceSculpture.tooltip": "Configuration for Living Ice Sculpture spell",
+  "legendarymage.configuration.livingIceSculpture.button": "Living Ice Sculpture Config",
+
+  "legendarymage.configuration.livingIceSculpture.spawnInterval": "Sculpture Spawn Interval (ticks)",
+  "legendarymage.configuration.livingIceSculpture.spawnInterval.tooltip": "Interval between spawning new sculptures, in ticks (20 ticks = 1 second)",
+  "legendarymage.configuration.spawnInterval": "Spawn Interval",
+  "legendarymage.configuration.spawnInterval.tooltip": "Interval between each spawn",
+
+  "legendarymage.configuration.livingIceSculpture.maxSculptures": "Max Sculptures",
+  "legendarymage.configuration.livingIceSculpture.maxSculptures.tooltip": "Maximum number of sculptures that can exist simultaneously per spell cast",
+  "legendarymage.configuration.maxSculptures": "Max Count",
+  "legendarymage.configuration.maxSculptures.tooltip": "Maximum number that can exist simultaneously",
+
+  "legendarymage.configuration.livingIceSculpture.lifetimeTicks": "Sculpture Lifetime (ticks)",
+  "legendarymage.configuration.livingIceSculpture.lifetimeTicks.tooltip": "Time before sculpture transforms into living ice sculpture (20 ticks = 1 second)",
+  "legendarymage.configuration.lifetimeTicks": "Lifetime",
+  "legendarymage.configuration.lifetimeTicks.tooltip": "Existence time (ticks)",
+
+  "legendarymage.configuration.livingIceSculpture.healthBase": "Sculpture Base Health",
+  "legendarymage.configuration.livingIceSculpture.healthBase.tooltip": "Base health of ice sculptures",
+  "legendarymage.configuration.healthBase": "Base Health",
+  "legendarymage.configuration.healthBase.tooltip": "Base health value",
+
+  "legendarymage.configuration.livingIceSculpture.healthPerSpellPower": "Health per Spell Power",
+  "legendarymage.configuration.livingIceSculpture.healthPerSpellPower.tooltip": "Additional health per point of spell power",
+  "legendarymage.configuration.healthPerSpellPower": "Health per Spell Power",
+  "legendarymage.configuration.healthPerSpellPower.tooltip": "Health added per spell power point",
+
+  "legendarymage.configuration.livingIceSculpture.damageBase": "Living Sculpture Base Attack",
+  "legendarymage.configuration.livingIceSculpture.damageBase.tooltip": "Base attack damage of living ice sculptures",
+  "legendarymage.configuration.damageBase": "Base Attack",
+  "legendarymage.configuration.damageBase.tooltip": "Base attack damage",
+
+  "legendarymage.configuration.livingIceSculpture.damagePerSpellPower": "Attack per Spell Power",
+  "legendarymage.configuration.livingIceSculpture.damagePerSpellPower.tooltip": "Additional attack damage per point of spell power",
+  "legendarymage.configuration.damagePerSpellPower": "Attack per Spell Power",
+  "legendarymage.configuration.damagePerSpellPower.tooltip": "Attack added per spell power point",
+
+  "legendarymage.configuration.livingIceSculpture.shatterDamageBase": "Shatter Base Damage",
+  "legendarymage.configuration.livingIceSculpture.shatterDamageBase.tooltip": "Base damage when sculpture shatters upon defeat",
+  "legendarymage.configuration.shatterDamageBase": "Shatter Base Damage",
+  "legendarymage.configuration.shatterDamageBase.tooltip": "Base damage from shatter",
+
+  "legendarymage.configuration.livingIceSculpture.shatterDamagePerSpellPower": "Shatter Damage per Spell Power",
+  "legendarymage.configuration.livingIceSculpture.shatterDamagePerSpellPower.tooltip": "Additional shatter damage per point of spell power",
+  "legendarymage.configuration.shatterDamagePerSpellPower": "Shatter per Spell Power",
+  "legendarymage.configuration.shatterDamagePerSpellPower.tooltip": "Shatter damage added per spell power point",
+
+  "legendarymage.configuration.livingIceSculpture.entityLifetimeTicks": "Living Sculpture Lifetime (ticks)",
+  "legendarymage.configuration.livingIceSculpture.entityLifetimeTicks.tooltip": "Time before living ice sculpture naturally breaks (20 ticks = 1 second)",
+  "legendarymage.configuration.entityLifetimeTicks": "Entity Lifetime",
+  "legendarymage.configuration.entityLifetimeTicks.tooltip": "Living ice sculpture existence time (ticks)",
+
+  "legendarymage.configuration.blizzard": "Blizzard Config",
+  "legendarymage.configuration.blizzard.tooltip": "Configuration for Blizzard spell",
+  "legendarymage.configuration.blizzard.button": "Blizzard Config",
+
+  "legendarymage.configuration.blizzard.spellPowerMultiplier": "Spell Power Multiplier",
+  "legendarymage.configuration.blizzard.spellPowerMultiplier.tooltip": "Blizzard spell power multiplier. Higher values make spell power more effective.",
+
+  "legendarymage.configuration.blizzard.baseRange": "Base Range",
+  "legendarymage.configuration.blizzard.baseRange.tooltip": "Base range of blizzard area (blocks)",
+
+  "legendarymage.configuration.blizzard.rangePerLevel": "Range per Level",
+  "legendarymage.configuration.blizzard.rangePerLevel.tooltip": "Additional range per spell level (blocks)",
+
+  "legendarymage.configuration.blizzard.baseDamage": "Base Damage",
+  "legendarymage.configuration.blizzard.baseDamage.tooltip": "Base damage per tick of blizzard",
+
+  "legendarymage.configuration.blizzard.damagePerLevel": "Damage per Level",
+  "legendarymage.configuration.blizzard.damagePerLevel.tooltip": "Additional damage per spell level",
+
+  "legendarymage.configuration.blizzard.baseDurationSeconds": "Base Duration (seconds)",
+  "legendarymage.configuration.blizzard.baseDurationSeconds.tooltip": "Base duration of blizzard (seconds)",
+
+  "legendarymage.configuration.blizzard.durationPerLevel": "Duration per Level (seconds)",
+  "legendarymage.configuration.blizzard.durationPerLevel.tooltip": "Additional duration per spell level (seconds)",
+
+  "legendarymage.configuration.blizzard.damageIntervalTicks": "Damage Interval (ticks)",
+  "legendarymage.configuration.blizzard.damageIntervalTicks.tooltip": "Interval between damage ticks (ticks), 20 ticks = 1 second",
+
+  "legendarymage.configuration.blizzard.affectAllies": "Affect Allies",
+  "legendarymage.configuration.blizzard.affectAllies.tooltip": "Whether blizzard spell can affect allied players",
+
+  "legendarymage.configuration.blizzard.affectSummons": "Affect Summons",
+  "legendarymage.configuration.blizzard.affectSummons.tooltip": "Whether blizzard spell can affect summons",
+
+  "legendarymage.configuration.blizzard.slownessDurationTicks": "Slowness Duration (ticks)",
+  "legendarymage.configuration.blizzard.slownessDurationTicks.tooltip": "Duration of slowness effect (ticks)",
+
+  "legendarymage.configuration.blizzard.slownessAmplifier": "Slowness Level",
+  "legendarymage.configuration.blizzard.slownessAmplifier.tooltip": "Level of slowness effect, 0=Level 1, 1=Level 2, etc.",
+
+  "legendarymage.configuration.baseRange": "Base Range",
+  "legendarymage.configuration.baseRange.tooltip": "Base range of blizzard area (blocks)",
+  "legendarymage.configuration.rangePerLevel": "Range per Level",
+  "legendarymage.configuration.rangePerLevel.tooltip": "Additional range per spell level (blocks)",
+  "legendarymage.configuration.baseDamage": "Base Damage",
+  "legendarymage.configuration.baseDamage.tooltip": "Base damage per tick of blizzard",
+  "legendarymage.configuration.damagePerLevel": "Damage per Level",
+  "legendarymage.configuration.damagePerLevel.tooltip": "Additional damage per spell level",
+  "legendarymage.configuration.baseDurationSeconds": "Base Duration (seconds)",
+  "legendarymage.configuration.baseDurationSeconds.tooltip": "Base duration of blizzard (seconds)",
+  "legendarymage.configuration.durationPerLevel": "Duration per Level (seconds)",
+  "legendarymage.configuration.durationPerLevel.tooltip": "Additional duration per spell level (seconds)",
+  "legendarymage.configuration.damageIntervalTicks": "Damage Interval (ticks)",
+  "legendarymage.configuration.damageIntervalTicks.tooltip": "Interval between damage ticks (ticks), 20 ticks = 1 second",
+  "legendarymage.configuration.slownessDurationTicks": "Slowness Duration (ticks)",
+  "legendarymage.configuration.slownessDurationTicks.tooltip": "Duration of slowness effect (ticks)",
+  "legendarymage.configuration.slownessAmplifier": "Slowness Level",
+  "legendarymage.configuration.slownessAmplifier.tooltip": "Level of slowness effect, 0=Level 1, 1=Level 2, etc.",
+
   "school.legendarymage.element": "Element",
 
   "attribute.legendarymage.element_spell_power": "Element Spell Power",
@@ -145,5 +266,77 @@
   "item.legendarymage.music_disc_when_you_look_at_me.desc": "I once had myself too",
   "item.legendarymage.music_disc_when_you_look_at_me.info": "§7Hold §eShift §7for details",
   "item.legendarymage.music_disc_when_you_look_at_me.details": "§dWhen You Look At Me§r\n§7Artist: §eVexento",
-  "jukebox_song.legendarymage.when_you_look_at_me": "Vexento - When You Look At Me"
+  "jukebox_song.legendarymage.when_you_look_at_me": "Vexento - When You Look At Me",
+  "subtitles.legendarymage.blizzard_cast": "Blizzard cast",
+  "subtitles.legendarymage.blizzard_ambient": "Blizzard howls",
+
+  "effect.legendarymage.blood_mark": "§4Blood Anomaly§r",
+  "effect.legendarymage.blood_mark.description": "Blood element mark, can trigger element reactions",
+  "effect.legendarymage.holy_mark": "§6Holy Anomaly§r",
+  "effect.legendarymage.holy_mark.description": "Holy element mark, can trigger element reactions",
+  "effect.legendarymage.eldritch_mark": "§5Eldritch Anomaly§r",
+  "effect.legendarymage.eldritch_mark.description": "Eldritch element mark, can trigger element reactions",
+  "effect.legendarymage.poison_mark": "§aPoison Anomaly§r",
+  "effect.legendarymage.poison_mark.description": "Poison element mark, can trigger element reactions",
+  "effect.legendarymage.fire_mark": "§cFire Anomaly§r",
+  "effect.legendarymage.fire_mark.description": "Fire element mark, can trigger element reactions",
+  "effect.legendarymage.ice_mark": "§bIce Anomaly§r",
+  "effect.legendarymage.ice_mark.description": "Ice element mark, can trigger element reactions",
+  "effect.legendarymage.lightning_mark": "§dLightning Anomaly§r",
+  "effect.legendarymage.lightning_mark.description": "Lightning element mark, can trigger element reactions",
+  "effect.legendarymage.ender_mark": "§8Ender Anomaly§r",
+  "effect.legendarymage.ender_mark.description": "Ender element mark, can trigger element reactions",
+
+  "effect.legendarymage.chaos_buff": "§5Chaos§r",
+  "effect.legendarymage.chaos_buff.description": "Buff from Eldritch-Scarlet element reaction, increases spell power",
+  "effect.legendarymage.ender_echo_buff": "§8Ender Echo§r",
+  "effect.legendarymage.ender_echo_buff.description": "Buff from Ender element reaction, increases spell power and resistance",
+
+  "effect.legendarymage.magic_shotgun_buff": "§5Magic Shotgun§r",
+  "effect.legendarymage.magic_shotgun_buff.description": "Blade school special buff, infuses mana into weapon to release through melee attacks",
+
+  "spell.legendarymage.magic_shotgun": "Magic Shotgun",
+  "spell.legendarymage.magic_shotgun.guide": "Infuse mana into your weapon and release it through melee attacks. §cCost§r: Loses element reactions and partial spell power. §nTwo-stage casting§r: First cast gains buff, second cast removes buff. During buff duration, spells won't release after casting but trigger on melee attacks.",
+  "spell.legendarymage.magic_shotgun.buff_level": "Buff Level: %d",
+  "spell.legendarymage.magic_shotgun.spell_power_reduction": "Spell Power: %s%%",
+  "spell.legendarymage.magic_shotgun.cast_time_reduction": "Cast Time: +%s%%",
+  "spell.legendarymage.magic_shotgun.melee_damage_bonus": "Melee Damage: +%s",
+  "spell.legendarymage.magic_shotgun.max_mana_reduction": "Max Mana: -30%%",
+
+  "school.legendarymage.example_storm_school": "§bStorm School§r",
+  "school.legendarymage.example_nature_school": "§aNature School§r",
+  "school.legendarymage.example_earth_school": "§6Earth School§r",
+
+  "attribute.legendarymage.example_storm_school_spell_power": "Storm Spell Power",
+  "attribute.legendarymage.example_storm_school_magic_resist": "Storm Magic Resistance",
+  "attribute.legendarymage.example_nature_school_spell_power": "Nature Spell Power",
+  "attribute.legendarymage.example_nature_school_magic_resist": "Nature Magic Resistance",
+  "attribute.legendarymage.example_earth_school_spell_power": "Earth Spell Power",
+  "attribute.legendarymage.example_earth_school_magic_resist": "Earth Magic Resistance",
+
+  "spell.legendarymage.ice_explosion_cone": "Ice Explosion Cone",
+  "spell.legendarymage.ice_explosion_cone.guide": "An ice cone infused with excessive mana, becoming extremely unstable. Triggers an ice explosion upon hitting enemies, dealing damage and applying slowness to enemies within range.",
+  "spell.legendarymage.ice_explosion_cone.damage": "Direct Damage: %s (Base: %s)",
+  "spell.legendarymage.ice_explosion_cone.explosion_radius": "Explosion Radius: %s blocks (Fixed)",
+  "spell.legendarymage.ice_explosion_cone.spell_power": "Spell Power: %s",
+
+  "entity.legendarymage.ice_explosion_cone": "Ice Explosion Cone",
+
+  "spell.legendarymage.focused_ice_cone": "Focused Ice Cone",
+  "spell.legendarymage.focused_ice_cone.guide": "Sacrifices the area of effect for more concentrated and stable mana. Guaranteed to freeze enemies on hit, can pierce through 3 enemies. After piercing 3 targets or hitting a wall, triggers a massive ice explosion. High speed, higher damage.",
+  "spell.legendarymage.focused_ice_cone.damage": "Direct Damage: %s (Base: %s)",
+  "spell.legendarymage.focused_ice_cone.pierce_count": "Pierce Count: %d (Fixed)",
+  "spell.legendarymage.focused_ice_cone.explosion_radius": "Explosion Radius: %s blocks (Fixed)",
+  "spell.legendarymage.focused_ice_cone.spell_power": "Spell Power: %s",
+
+  "entity.legendarymage.focused_ice_cone": "Focused Ice Cone",
+
+  "spell.legendarymage.giant_snowball": "Giant Snowball",
+  "spell.legendarymage.giant_snowball.guide": "First creates a small snow block above your head that grows larger with chanting time. When chanting ends or is interrupted, it is released, causing a massive ice explosion upon impact and leaving a 10-second blizzard field. Longer chanting time means higher damage.",
+  "spell.legendarymage.giant_snowball.damage": "Explosion Damage: %s (Base: %s)",
+  "spell.legendarymage.giant_snowball.radius": "Radius: %d blocks (Base: %d)",
+  "spell.legendarymage.giant_snowball.duration": "Blizzard Duration: %d seconds",
+  "spell.legendarymage.giant_snowball.spell_power": "Spell Power: %s",
+
+  "entity.legendarymage.giant_snowball": "Giant Snowball"
 }

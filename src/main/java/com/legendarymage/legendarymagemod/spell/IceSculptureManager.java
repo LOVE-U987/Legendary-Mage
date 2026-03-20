@@ -32,7 +32,7 @@ import java.util.*;
  * 5. 法术持续期间不断生成新的冰雕
  * 
  * @author Love_U
- * @version 3.0.0
+ * @version 0.0.2
  */
 public class IceSculptureManager {
 

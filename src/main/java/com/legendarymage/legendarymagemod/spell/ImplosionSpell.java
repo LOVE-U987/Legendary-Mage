@@ -446,6 +446,28 @@ public class ImplosionSpell extends AbstractSpell {
     }
 
     /**
+     * 服务器端每 tick 调用 - 在呤唱期间持续吸引敌人
+     *
+     * @param level       世界
+     * @param spellLevel  法术等级
+     * @param entity      施法实体
+     * @param magicData   魔法数据
+     */
+    @Override
+    public void onServerCastTick(Level level, int spellLevel, LivingEntity entity, MagicData magicData) {
+        if (level instanceof ServerLevel serverLevel) {
+            UUID casterId = entity.getUUID();
+            Vec3 centerPos = casterTargetPositions.get(casterId);
+            Integer storedRange = casterRanges.get(casterId);
+            
+            if (centerPos != null && storedRange != null) {
+                // 在呤唱期间持续吸引敌人（较弱的吸引力）
+                performContinuousPull(serverLevel, centerPos, storedRange, entity);
+            }
+        }
+    }
+
+    /**
      * 施法逻辑 - 在施法结束时直接执行聚集和爆炸
      *
      * @param level       世界
@@ -571,6 +593,45 @@ public class ImplosionSpell extends AbstractSpell {
                     direction.x * strength,
                     Math.max(0.2, direction.y * strength + 0.3),
                     direction.z * strength
+            );
+            target.hurtMarked = true;
+        }
+    }
+
+    /**
+     * 持续吸引 - 在呤唱期间每 tick 调用，吸引力较弱
+     *
+     * @param level      服务器世界
+     * @param centerPos  中心位置
+     * @param range      聚集范围
+     * @param caster     施法者
+     */
+    private void performContinuousPull(ServerLevel level, Vec3 centerPos, int range, LivingEntity caster) {
+        AABB pullArea = new AABB(
+                centerPos.x - range, centerPos.y - range, centerPos.z - range,
+                centerPos.x + range, centerPos.y + range, centerPos.z + range
+        );
+        
+        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, pullArea, 
+                entity -> entity != caster && entity.isAlive());
+        
+        // 呤唱期间的吸引力度较弱（约为最终聚集的30%）
+        double continuousStrength = PULL_STRENGTH * 0.3;
+        
+        for (LivingEntity target : targets) {
+            Vec3 targetPos = target.position();
+            Vec3 direction = centerPos.subtract(targetPos).normalize();
+            double distance = targetPos.distanceTo(centerPos);
+            
+            // 根据距离调整拉取力度
+            double strength = continuousStrength * Math.min(1.0, distance / range);
+            
+            // 添加当前速度，实现持续拉动效果
+            Vec3 currentVelocity = target.getDeltaMovement();
+            target.setDeltaMovement(
+                    currentVelocity.x + direction.x * strength * 0.5,
+                    currentVelocity.y + Math.max(0.05, direction.y * strength * 0.3),
+                    currentVelocity.z + direction.z * strength * 0.5
             );
             target.hurtMarked = true;
         }
