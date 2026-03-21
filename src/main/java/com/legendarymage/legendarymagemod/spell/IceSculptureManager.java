@@ -201,12 +201,13 @@ public class IceSculptureManager {
                 // 设置无敌时间，防止生成瞬间受到伤害
                 // 使用 setInvulnerable 方法设置无敌状态，20 tick = 1秒
                 sculpture.setInvulnerable(true);
-                // 使用 level.schedule 在20 tick后取消无敌状态
-                level.getServer().schedule(20, () -> {
-                    if (sculpture.isAlive()) {
-                        sculpture.setInvulnerable(false);
+                // 使用 ServerLevel 的 schedule 方法在20 tick后取消无敌状态
+                final FrozenHumanoid finalSculpture = sculpture;
+                level.getServer().tell(new net.minecraft.server.TickTask(level.getServer().getTickCount() + 20, () -> {
+                    if (finalSculpture.isAlive()) {
+                        finalSculpture.setInvulnerable(false);
                     }
-                });
+                }));
                 // 计算冰雕生命值（基于法术强度，至少有MIN_SCULPTURE_HEALTH点）
                 double sculptureHealth = calculateSculptureHealth(field.spellPower);
                 
