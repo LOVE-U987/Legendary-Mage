@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.spell;
 
 import com.legendarymage.legendarymagemod.Config;
+import com.legendarymage.legendarymagemod.LegendaryMage;
 import com.legendarymage.legendarymagemod.client.IceSculptureTextureManager;
 
 import io.redspace.ironsspellbooks.entity.mobs.frozen_humanoid.FrozenHumanoid;
@@ -82,6 +83,17 @@ public class IceSculptureManager {
     public static void createIceSculptureField(ServerLevel level, Vec3 center, double range, 
                                                 int duration, float spellPower, LivingEntity caster) {
         String dimensionId = level.dimension().location().toString();
+        
+        // 【日志分析】记录冰雕场创建
+        LegendaryMage.LOGGER.info("[冰雕场] 创建冰雕场! 维度={}, 中心=({}, {}, {}), 范围={}, 持续时间={}tick, 法术强度={}, 施法者={}",
+                dimensionId,
+                String.format("%.2f", center.x),
+                String.format("%.2f", center.y),
+                String.format("%.2f", center.z),
+                String.format("%.1f", range),
+                duration,
+                String.format("%.1f", spellPower),
+                caster != null ? caster.getName().getString() : "null");
         
         // 创建冰雕场数据
         IceSculptureField field = new IceSculptureField(
@@ -174,7 +186,8 @@ public class IceSculptureManager {
         if (pos != null) {
             // 创建铁魔法的 FrozenHumanoid 冰雕实体
             FrozenHumanoid sculpture = new FrozenHumanoid(level, field.caster);
-            sculpture.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+            // 确保生成在地面方块上方，避免卡在方块内受到挤压伤害
+            sculpture.setPos(pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5);
             
             // 设置碎裂伤害（基于法术强度）
             float shatterDamage = calculateShatterDamage(field.spellPower);
@@ -185,7 +198,16 @@ public class IceSculptureManager {
             
             // 添加到世界
             if (level.addFreshEntity(sculpture)) {
-                // 计算冰雕生命值（基于法术强度）
+                // 设置无敌时间，防止生成瞬间受到伤害
+                // 使用 setInvulnerable 方法设置无敌状态，20 tick = 1秒
+                sculpture.setInvulnerable(true);
+                // 使用 level.schedule 在20 tick后取消无敌状态
+                level.getServer().schedule(20, () -> {
+                    if (sculpture.isAlive()) {
+                        sculpture.setInvulnerable(false);
+                    }
+                });
+                // 计算冰雕生命值（基于法术强度，至少有MIN_SCULPTURE_HEALTH点）
                 double sculptureHealth = calculateSculptureHealth(field.spellPower);
                 
                 // 设置冰雕生命值
@@ -193,6 +215,8 @@ public class IceSculptureManager {
                 if (maxHealthAttr != null) {
                     maxHealthAttr.setBaseValue(sculptureHealth);
                     sculpture.setHealth((float) sculptureHealth);
+                } else {
+                    LegendaryMage.LOGGER.error("[冰雕生成] 无法获取MAX_HEALTH属性! UUID={}", sculpture.getUUID());
                 }
                 
                 // 给冰雕添加伤害吸收效果，防止被一击秒杀
@@ -241,7 +265,38 @@ public class IceSculptureManager {
                 // 播放冰雕出现音效
                 level.playSound(null, pos,
                         SoundEvents.PLAYER_HURT_FREEZE, SoundSource.HOSTILE, 0.8f, 0.5f);
+                
+                // 【日志分析】记录冰雕生成信息
+                float actualHealth = sculpture.getHealth();
+                float actualMaxHealth = sculpture.getMaxHealth();
+                String healthStatus;
+                if (actualHealth <= 0) {
+                    healthStatus = "【警告:生命值为0】";
+                } else if (actualMaxHealth <= 0) {
+                    healthStatus = "【警告:最大生命值异常】";
+                } else {
+                    healthStatus = "正常";
+                }
+                
+                LegendaryMage.LOGGER.info("[冰雕生成] 冰雕已生成! UUID={}, 位置=({}, {}, {}), 生命值={}/{}, 状态={}, 无敌时间={}, 法术强度={}, 施法者={}",
+                        sculpture.getUUID(),
+                        String.format("%.2f", sculpture.getX()),
+                        String.format("%.2f", sculpture.getY()),
+                        String.format("%.2f", sculpture.getZ()),
+                        String.format("%.1f", actualHealth),
+                        String.format("%.1f", actualMaxHealth),
+                        healthStatus,
+                        sculpture.invulnerableTime,
+                        String.format("%.1f", field.spellPower),
+                        field.caster != null ? field.caster.getName().getString() : "null");
+            } else {
+                // 【日志分析】记录添加实体失败
+                LegendaryMage.LOGGER.warn("[冰雕生成] 添加实体到世界失败! 位置=({}, {}, {})",
+                        pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5);
             }
+        } else {
+            // 【日志分析】记录找不到合适位置
+            LegendaryMage.LOGGER.debug("[冰雕生成] 找不到合适的地面位置! 尝试位置=({}, {})", (int) x, (int) z);
         }
     }
 
@@ -263,6 +318,37 @@ public class IceSculptureManager {
             // 检查冰雕是否还存在
             FrozenHumanoid sculpture = (FrozenHumanoid) level.getEntity(data.sculptureUUID);
             if (sculpture == null || !sculpture.isAlive()) {
+                // 【日志分析】记录冰雕死亡或消失
+                if (sculpture == null) {
+                    LegendaryMage.LOGGER.warn("[冰雕更新] 冰雕实体已不存在! UUID={}, 剩余tick={}, 可能原因: 实体被移除/discarded/区块卸载", 
+                            data.sculptureUUID, data.remainingTicks);
+                } else {
+                    // 获取死亡时的详细信息
+                    float deathHealth = sculpture.getHealth();
+                    float deathMaxHealth = sculpture.getMaxHealth();
+                    String deathReason;
+                    
+                    if (deathHealth <= 0) {
+                        deathReason = "生命值归零";
+                    } else if (deathMaxHealth <= 0) {
+                        deathReason = "最大生命值异常(<=0)";
+                    } else if (data.remainingTicks > 10) {
+                        deathReason = "提前死亡(非正常转化)";
+                    } else {
+                        deathReason = "受到伤害/被击败";
+                    }
+                    
+                    LegendaryMage.LOGGER.warn("[冰雕更新] 冰雕已死亡! UUID={}, 死亡原因: {}, 死亡时生命值={}/{}, 剩余tick={}, 位置=({}, {}, {})", 
+                            data.sculptureUUID, 
+                            deathReason,
+                            String.format("%.1f", deathHealth),
+                            String.format("%.1f", deathMaxHealth),
+                            data.remainingTicks,
+                            String.format("%.2f", sculpture.getX()),
+                            String.format("%.2f", sculpture.getY()),
+                            String.format("%.2f", sculpture.getZ()));
+                }
+                
                 // 冰雕被击败或消失，从活跃列表移除
                 iterator.remove();
                 // 同时从所属 field 的 sculptures 列表中移除
@@ -275,7 +361,23 @@ public class IceSculptureManager {
             }
             
             // 更新当前生命值（用于转化时继承）
-            data.remainingHealth = sculpture.getHealth();
+            float currentHealth = sculpture.getHealth();
+            float maxHealth = sculpture.getMaxHealth();
+            
+            // 【日志分析】检测生命值异常变化
+            if (currentHealth < data.remainingHealth - 0.1f) {
+                LegendaryMage.LOGGER.warn("[冰雕更新] 冰雕受到伤害! UUID={}, 生命值: {} -> {}, 减少={}, 无敌时间={}, 位置=({}, {}, {})",
+                        data.sculptureUUID,
+                        String.format("%.1f", data.remainingHealth),
+                        String.format("%.1f", currentHealth),
+                        String.format("%.1f", data.remainingHealth - currentHealth),
+                        sculpture.invulnerableTime,
+                        String.format("%.2f", sculpture.getX()),
+                        String.format("%.2f", sculpture.getY()),
+                        String.format("%.2f", sculpture.getZ()));
+            }
+            
+            data.remainingHealth = currentHealth;
             
             // 更新倒计时
             data.remainingTicks--;
@@ -285,8 +387,23 @@ public class IceSculptureManager {
                 IceSculptureParticles.playSculptureAmbientEffect(level, sculpture.blockPosition());
             }
             
+            // 【日志分析】记录即将转化的冰雕
+            if (data.remainingTicks == 5) {
+                LegendaryMage.LOGGER.info("[冰雕更新] 冰雕即将转化! UUID={}, 当前生命值={}/{}, 位置=({}, {}, {})",
+                        data.sculptureUUID,
+                        String.format("%.1f", currentHealth),
+                        String.format("%.1f", maxHealth),
+                        String.format("%.2f", sculpture.getX()),
+                        String.format("%.2f", sculpture.getY()),
+                        String.format("%.2f", sculpture.getZ()));
+            }
+            
             // 检查是否到期（即将自动受伤死亡）
             if (data.remainingTicks <= 0) {
+                // 【日志分析】记录正常转化
+                LegendaryMage.LOGGER.info("[冰雕更新] 冰雕计时器到期，开始转化! UUID={}, 最终生命值={}",
+                        data.sculptureUUID, String.format("%.1f", currentHealth));
+                
                 // 冰雕即将死亡，转化为活体冰雕
                 convertToLivingSculpture(level, sculpture, data);
                 iterator.remove();
@@ -405,6 +522,16 @@ public class IceSculptureManager {
     }
 
     /**
+     * 冰雕最低生命值
+     */
+    private static final double MIN_SCULPTURE_HEALTH = 10.0;
+
+    /**
+     * 活体冰雕最低生命值
+     */
+    private static final double MIN_ENTITY_HEALTH = 20.0;
+
+    /**
      * 计算冰雕生命值（FrozenHumanoid）
      *
      * @param spellPower 法术强度
@@ -412,8 +539,10 @@ public class IceSculptureManager {
      */
     private static double calculateSculptureHealth(float spellPower) {
         // 使用配置：基础生命值 + 每点法术强度增加的生命值
-        return Config.LIVING_ICE_SCULPTURE_HEALTH_BASE.get() 
+        double health = Config.LIVING_ICE_SCULPTURE_HEALTH_BASE.get() 
                 + (spellPower - 10) * Config.LIVING_ICE_SCULPTURE_HEALTH_PER_SPELL_POWER.get();
+        // 确保至少为最低生命值
+        return Math.max(health, MIN_SCULPTURE_HEALTH);
     }
 
     /**
@@ -423,8 +552,9 @@ public class IceSculptureManager {
      * @return 生命值
      */
     private static double calculateEntityHealth(float spellPower) {
-        // 活体冰雕生命值是冰雕的2倍
-        return calculateSculptureHealth(spellPower) * 2.0;
+        // 活体冰雕生命值是冰雕的2倍，但至少有最低生命值
+        double health = calculateSculptureHealth(spellPower) * 2.0;
+        return Math.max(health, MIN_ENTITY_HEALTH);
     }
 
     /**
