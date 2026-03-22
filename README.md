@@ -1,5 +1,3 @@
-## 🚩 [ISS Affiliated]Legendary Mage v.1.0.1
+## 🚩 Art Updates
 
-### ❌ Error fixes:  
-
-* Fixed the issue of abnormal health for summoned creatures in **Living Ice Sculpture**
+### 🎉Changed icons for elemental marks and the Blazing effect
