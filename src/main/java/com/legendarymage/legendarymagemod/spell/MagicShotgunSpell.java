@@ -212,20 +212,25 @@ public class MagicShotgunSpell extends AbstractSpell {
      */
     @Override
     public SchoolType getSchoolType() {
-        // 尝试从SchoolRegistry获取咒刃流派
-        // 由于咒刃是其他模组的流派，我们使用holder方式获取
+        // 尝试从 SchoolRegistry 获取咒刃流派
+        // 由于咒刃是其他模组的流派，我们使用 holder 方式获取
         try {
-            // 使用BuiltInRegistries获取已注册的流派
+            // 使用 BuiltInRegistries 获取已注册的流派
             for (Holder<SchoolType> schoolHolder : SchoolRegistry.REGISTRY.asLookup().listElements().toList()) {
                 SchoolType school = schoolHolder.value();
                 if (school.getId().equals(BLADE_SCHOOL_RESOURCE)) {
+                    LegendaryMage.LOGGER.debug("成功找到咒刃流派：{}", BLADE_SCHOOL_RESOURCE);
                     return school;
                 }
             }
+            // 如果找不到，记录日志
+            LegendaryMage.LOGGER.warn("未找到咒刃流派：{}，将使用末影流派作为替代", BLADE_SCHOOL_RESOURCE);
         } catch (Exception e) {
-            // 如果找不到咒刃流派，使用末影流派作为替代（同为暗色系）
+            // 如果发生异常，记录日志
+            LegendaryMage.LOGGER.error("获取咒刃流派时发生错误：{}", e.getMessage());
         }
         
+        // 如果找不到咒刃流派，使用末影流派作为替代（同为暗色系）
         return SchoolRegistry.ENDER.get();
     }
 

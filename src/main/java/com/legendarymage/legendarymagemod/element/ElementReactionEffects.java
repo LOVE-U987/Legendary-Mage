@@ -1,7 +1,10 @@
 package com.legendarymage.legendarymagemod.element;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.effect.ElectrocutedBuffEffect;
+import com.legendarymage.legendarymagemod.effect.LightningRodBuffEffect;
 import com.legendarymage.legendarymagemod.effect.ModEffects;
+import com.legendarymage.legendarymagemod.effect.PlagueBuffEffect;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -15,8 +18,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -127,9 +132,33 @@ public class ElementReactionEffects {
                 break;
 
             case ENDER_ANY:
-                // 末影与任意：给与施法者Buff"终末回响"
+                // 末影与任意：给与施法者 Buff"终末回响"
                 handleEnderAny(serverLevel, target, attacker, existingElement, newElement, existingLevel);
                 // 反应后移除被反应的元素标记（末影和另一个元素）
+                removeElementMark(target, existingElement);
+                removeElementMark(target, newElement);
+                break;
+
+            case LIGHTNING_POISON:
+                // 雷毒：消耗感电 Buff 释放电磁波范围伤害
+                handleLightningPoison(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                // 反应后移除被反应的元素标记（雷和毒）
+                removeElementMark(target, existingElement);
+                removeElementMark(target, newElement);
+                break;
+
+            case ICE_LIGHTNING:
+                // 冰雷：获得避雷针 Buff
+                handleIceLightning(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                // 反应后移除被反应的元素标记（冰和雷）
+                removeElementMark(target, existingElement);
+                removeElementMark(target, newElement);
+                break;
+
+            case BLOOD_POISON:
+                // 暗毒：获得瘟疫 Buff
+                handleBloodPoison(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                // 反应后移除被反应的元素标记（血和毒）
                 removeElementMark(target, existingElement);
                 removeElementMark(target, newElement);
                 break;
@@ -206,6 +235,24 @@ public class ElementReactionEffects {
         // 检查末影与任意反应
         if (element1 == ElementType.ENDER || element2 == ElementType.ENDER) {
             return ReactionType.ENDER_ANY;
+        }
+
+        // 检查雷毒反应
+        if ((element1 == ElementType.LIGHTNING && element2 == ElementType.POISON) ||
+            (element1 == ElementType.POISON && element2 == ElementType.LIGHTNING)) {
+            return ReactionType.LIGHTNING_POISON;
+        }
+
+        // 检查冰雷反应
+        if ((element1 == ElementType.ICE && element2 == ElementType.LIGHTNING) ||
+            (element1 == ElementType.LIGHTNING && element2 == ElementType.ICE)) {
+            return ReactionType.ICE_LIGHTNING;
+        }
+
+        // 检查暗毒反应（血系 - 毒系）
+        if ((element1 == ElementType.BLOOD && element2 == ElementType.POISON) ||
+            (element1 == ElementType.POISON && element2 == ElementType.BLOOD)) {
+            return ReactionType.BLOOD_POISON;
         }
 
         return ReactionType.UNKNOWN;
@@ -773,11 +820,215 @@ public class ElementReactionEffects {
      */
     public enum ReactionType {
         ICE_FIRE,           // 冰火：单次伤害加成
-        POISON_FIRE,        // 木火：挂上烈焰Buff
+        POISON_FIRE,        // 木火：挂上烈焰 Buff
         LIGHTNING_FIRE,     // 雷火：在实体位置落雷
-        HOLY_BLOOD,         // 神圣-猩红：单次伤害加成
-        ELDRITCH_BLOOD,     // 邪术-猩红：给与施法者Buff"混沌"
-        ENDER_ANY,          // 末影与任意：给与施法者Buff"终末回响"
+        HOLY_BLOOD,         // 神圣 - 猩红：单次伤害加成
+        ELDRITCH_BLOOD,     // 邪术 - 猩红：给与施法者 Buff"混沌"
+        ENDER_ANY,          // 末影与任意：给与施法者 Buff"终末回响"
+        LIGHTNING_POISON,   // 雷毒：消耗感电 Buff 释放电磁波范围伤害
+        ICE_LIGHTNING,      // 冰雷：获得避雷针 Buff
+        BLOOD_POISON,       // 暗毒：获得瘟疫 Buff
         UNKNOWN             // 未知
+    }
+
+    // ==================== 新增元素反应效果 ====================
+
+    /**
+     * 雷毒反应
+     * 消耗感电 Buff 释放电磁波范围伤害
+     * 伤害 = 感电 Buff 等级 × 5，范围 3 格
+     */
+    private static void handleLightningPoison(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                               ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行雷毒反应效果");
+
+        if (attacker == null) return;
+
+        // 获取感电 Buff 等级
+        int electrocutedLevel = getElectrocutedBuffLevel(attacker);
+        if (electrocutedLevel <= 0) {
+            debugLog("施法者没有感电 Buff，跳过雷毒反应");
+            return;
+        }
+
+        // 计算伤害 = Buff 等级 × 5
+        double damage = electrocutedLevel * 5.0;
+
+        // 获取 3 格范围内的所有生物
+        double range = 3.0;
+        AABB area = new AABB(
+                target.position().x - range, target.position().y - range, target.position().z - range,
+                target.position().x + range, target.position().y + range, target.position().z + range
+        );
+
+        List<LivingEntity> entities = serverLevel.getEntitiesOfClass(LivingEntity.class, area);
+
+        int affectedCount = 0;
+        for (LivingEntity entity : entities) {
+            // 排除施法者及其队友
+            if (entity == attacker || isAlly(attacker, entity)) {
+                continue;
+            }
+
+            // 造成伤害（使用魔法伤害源）
+            entity.hurt(serverLevel.damageSources().magic(), (float) damage);
+            affectedCount++;
+        }
+
+        debugLog(String.format("雷毒反应造成电磁波伤害：%.1f (感电等级：%d), 影响 %d 个目标",
+                damage, electrocutedLevel, affectedCount));
+
+        // 消耗感电 Buff
+        removeElectrocutedBuff(attacker);
+
+        // 播放特效
+        playLightningPoisonParticles(serverLevel, target.position(), range);
+    }
+
+    /**
+     * 冰雷反应
+     * 获得避雷针 Buff，减少雷系和冰系元素抗性，每级减少 5%
+     * 注意：避雷针 Buff 是给予敌人的 Debuff，让敌人减少雷冰抗性
+     */
+    private static void handleIceLightning(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                            ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行冰雷反应效果");
+
+        if (attacker == null) return;
+
+        // 计算 Buff 等级（基于元素标记等级）
+        int buffLevel = Math.min(markLevel, LightningRodBuffEffect.MAX_STACKS);
+
+        // 施加避雷针 Buff 给目标（敌人）
+        // 这样施法者才能对带有避雷针 Buff 的敌人造成更高的雷/冰伤害
+        MobEffect lightningRodEffect = ModEffects.LIGHTNING_ROD_BUFF.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(lightningRodEffect);
+        target.addEffect(new MobEffectInstance(
+                effectHolder,
+                LightningRodBuffEffect.DURATION_SECONDS * 20, // 持续时间（tick）
+                buffLevel - 1,   // 等级（0 开始）
+                false, true, true
+        ));
+
+        debugLog(String.format("冰雷反应对目标施加避雷针 Buff: 等级 %d, 持续时间 %d秒",
+                buffLevel, LightningRodBuffEffect.DURATION_SECONDS));
+
+        // 播放特效
+        playIceLightningParticles(serverLevel, target);
+    }
+
+    /**
+     * 暗毒反应
+     * 获得瘟疫 Buff，可叠加，每级减 2% 血量上限
+     * 死亡时 25% 变为我方僵尸，75% 毒爆
+     */
+    private static void handleBloodPoison(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                           ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行暗毒反应效果");
+
+        if (attacker == null) return;
+
+        // 计算 Buff 等级（基于元素标记等级，无上限）
+        int buffLevel = markLevel;
+
+        // 施加瘟疫 Buff
+        MobEffect plagueEffect = ModEffects.PLAGUE_BUFF.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(plagueEffect);
+        MobEffectInstance instance = new MobEffectInstance(
+                effectHolder,
+                PlagueBuffEffect.DURATION_SECONDS * 20, // 持续时间（tick）
+                buffLevel - 1,   // 等级（0 开始）
+                false, true, true
+        );
+        target.addEffect(instance);
+
+        // 在目标 NBT 中记录施法者 UUID（用于死亡时追踪）
+        if (attacker instanceof net.minecraft.server.level.ServerPlayer) {
+            target.getPersistentData().putUUID("PlagueCaster", attacker.getUUID());
+        }
+
+        debugLog(String.format("暗毒反应施加瘟疫 Buff: 等级 %d, 持续时间 %d 秒，施法者：%s",
+                buffLevel, PlagueBuffEffect.DURATION_SECONDS, attacker.getName().getString()));
+
+        // 播放特效
+        playBloodPoisonParticles(serverLevel, target);
+    }
+
+    // ==================== 辅助方法 ====================
+
+    /**
+     * 获取感电 Buff 等级
+     *
+     * @param entity 实体
+     * @return Buff 等级（从 1 开始），如果没有则返回 0
+     */
+    private static int getElectrocutedBuffLevel(LivingEntity entity) {
+        MobEffect electrocutedEffect = ModEffects.ELECTROCUTED_BUFF.get();
+        if (electrocutedEffect == null) {
+            return 0;
+        }
+
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(electrocutedEffect);
+        MobEffectInstance instance = entity.getEffect(effectHolder);
+        return instance != null ? instance.getAmplifier() + 1 : 0;
+    }
+
+    /**
+     * 移除感电 Buff
+     *
+     * @param entity 实体
+     */
+    private static void removeElectrocutedBuff(LivingEntity entity) {
+        MobEffect electrocutedEffect = ModEffects.ELECTROCUTED_BUFF.get();
+        if (electrocutedEffect != null) {
+            Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(electrocutedEffect);
+            entity.removeEffect(effectHolder);
+        }
+    }
+
+    /**
+     * 检查两个实体是否为队友
+     *
+     * @param entity1 实体 1
+     * @param entity2 实体 2
+     * @return 是否为队友
+     */
+    private static boolean isAlly(LivingEntity entity1, LivingEntity entity2) {
+        // 使用铁魔法的团队检查
+        if (entity1 instanceof net.minecraft.world.entity.player.Player player1 &&
+            entity2 instanceof net.minecraft.world.entity.player.Player player2) {
+            return player1.getTeam() != null && player1.getTeam().equals(player2.getTeam());
+        }
+
+        // 检查是否为同一阵营的生物
+        return entity1.getTeam() != null && entity1.getTeam().equals(entity2.getTeam());
+    }
+
+    /**
+     * 播放雷毒反应粒子效果
+     */
+    private static void playLightningPoisonParticles(ServerLevel serverLevel, Vec3 pos, double range) {
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playLightningPoisonReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放冰雷反应粒子效果
+     */
+    private static void playIceLightningParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playIceLightningReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放暗毒反应粒子效果
+     */
+    private static void playBloodPoisonParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playBloodPoisonReaction(serverLevel, pos, range);
     }
 }

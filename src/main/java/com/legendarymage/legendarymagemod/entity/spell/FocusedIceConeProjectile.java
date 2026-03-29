@@ -13,7 +13,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -26,6 +25,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 import com.legendarymage.legendarymagemod.entity.ModEntities;
+import com.legendarymage.legendarymagemod.spell.FocusedIceConeSpell;
 
 import java.util.List;
 import java.util.Optional;
@@ -103,7 +103,7 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
 
     /**
      * 击中实体时的处理
-     * 必定冰冻，可穿透3个敌人
+     * 必定冰冻，可穿透 3 个敌人
      * 
      * @param entityHitResult 实体击中结果
      */
@@ -113,11 +113,13 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
         
         // 只对活着的生物造成伤害
         if (entityHitResult.getEntity() instanceof LivingEntity target && target.isAlive()) {
-            // 对击中的实体造成伤害
-            target.hurt(
-                this.damageSources().source(DamageTypes.MAGIC, getOwner()),
-                getDamage()
-            );
+            // 使用法术伤害来源，以便元素反应系统识别
+            if (getOwner() instanceof LivingEntity owner) {
+                target.hurt(
+                    FocusedIceConeSpell.getFocusedIceConeDamageSource(this, owner),
+                    getDamage()
+                );
+            }
             
             // 必定冰冻 - 添加冰冻效果
             target.setTicksFrozen(target.getTicksFrozen() + 100);
@@ -125,8 +127,8 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
             // 添加缓慢效果
             target.addEffect(new MobEffectInstance(
                 MobEffects.MOVEMENT_SLOWDOWN,
-                100, // 5秒
-                2,   // 3级缓慢
+                100, // 5 秒
+                2,   // 3 级缓慢
                 false,
                 true
             ));
@@ -183,10 +185,13 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
                 float damageMultiplier = 1.0f - (float) (distance / EXPLOSION_RADIUS) * 0.5f;
                 float actualDamage = explosionDamage * damageMultiplier;
 
-                target.hurt(
-                    this.damageSources().source(DamageTypes.MAGIC, getOwner()),
-                    actualDamage
-                );
+                // 使用法术伤害来源，以便元素反应系统识别
+                if (getOwner() instanceof LivingEntity owner) {
+                    target.hurt(
+                        FocusedIceConeSpell.getFocusedIceConeDamageSource(this, owner),
+                        actualDamage
+                    );
+                }
 
                 // 给目标添加冰冻效果
                 target.setTicksFrozen(target.getTicksFrozen() + 60);
@@ -194,7 +199,7 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
                 // 给目标添加缓慢效果
                 target.addEffect(new MobEffectInstance(
                     MobEffects.MOVEMENT_SLOWDOWN,
-                    60, // 3秒
+                    60, // 3 秒
                     1,
                     false,
                     true
@@ -204,50 +209,50 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
     }
 
     /**
-     * 播放聚能冰锥爆炸音效 - 集中而强烈的冰爆
+     * 播放聚能冰锥爆炸音效 - 法力高度集中的冰爆，更纯粹的法力释放
      * 
      * @param level  服务器世界
      * @param center 爆炸中心位置
      */
     private void playExplosionSounds(ServerLevel level, Vec3 center) {
-        // 主爆炸音效 - 玻璃破碎（清脆强烈）
-        level.playSound(
-            null,
-            center.x, center.y, center.z,
-            SoundEvents.GLASS_BREAK,
-            net.minecraft.sounds.SoundSource.PLAYERS,
-            1.5f,
-            0.5f + level.random.nextFloat() * 0.3f
-        );
-        
-        // 冰冻伤害音效
-        level.playSound(
-            null,
-            center.x, center.y, center.z,
-            SoundEvents.PLAYER_HURT_FREEZE,
-            net.minecraft.sounds.SoundSource.PLAYERS,
-            1.2f,
-            0.7f + level.random.nextFloat() * 0.3f
-        );
-
-        // 铁魔法冰冲击音效
+        // 铁魔法冰冲击主音效 - 法力驱动的核心（更突出）
         level.playSound(
             null,
             center.x, center.y, center.z,
             SoundRegistry.ICE_IMPACT.get(),
             net.minecraft.sounds.SoundSource.PLAYERS,
-            1.0f,
-            0.8f + level.random.nextFloat() * 0.4f
+            1.3f,
+            0.6f + level.random.nextFloat() * 0.4f
         );
 
-        // 紫水晶破碎音效（高频清脆）
+        // 玻璃破碎音效（冰晶高度压缩后碎裂）
         level.playSound(
             null,
             center.x, center.y, center.z,
-            SoundEvents.AMETHYST_BLOCK_BREAK,
+            SoundEvents.GLASS_BREAK,
             net.minecraft.sounds.SoundSource.PLAYERS,
-            0.8f,
-            1.0f + level.random.nextFloat() * 0.3f
+            1.1f,
+            0.5f + level.random.nextFloat() * 0.3f
+        );
+        
+        // 冰冻伤害音效（法力冻结效果）
+        level.playSound(
+            null,
+            center.x, center.y, center.z,
+            SoundEvents.PLAYER_HURT_FREEZE,
+            net.minecraft.sounds.SoundSource.PLAYERS,
+            1.0f,
+            0.6f + level.random.nextFloat() * 0.3f
+        );
+
+        // 魔法能量释放音效（聚能后的法力爆发）
+        level.playSound(
+            null,
+            center.x, center.y, center.z,
+            SoundEvents.ENDER_EYE_DEATH,
+            net.minecraft.sounds.SoundSource.PLAYERS,
+            0.7f,
+            1.3f + level.random.nextFloat() * 0.2f
         );
     }
 

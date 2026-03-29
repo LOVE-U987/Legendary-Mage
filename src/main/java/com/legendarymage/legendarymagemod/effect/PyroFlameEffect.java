@@ -51,11 +51,11 @@ public class PyroFlameEffect extends MobEffect {
     public PyroFlameEffect() {
         super(MobEffectCategory.HARMFUL, EFFECT_COLOR);
         
-        // 添加属性修改器：降低最大生命值
+        // 添加属性修改器：降低最大生命值（每级2%）
         this.addAttributeModifier(
                 Attributes.MAX_HEALTH,
                 ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "pyro_flame_health"),
-                -0.05,
+                -0.02,
                 AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
         );
     }

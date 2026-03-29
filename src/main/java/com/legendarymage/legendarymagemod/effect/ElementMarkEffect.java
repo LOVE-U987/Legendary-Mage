@@ -77,4 +77,17 @@ public abstract class ElementMarkEffect extends MobEffect {
     public static boolean tryUpgrade() {
         return Math.random() < 0.5;
     }
+
+    /**
+     * 判断是否应该应用效果更新
+     * 默认每tick都更新，子类可以重写
+     *
+     * @param duration  剩余持续时间
+     * @param amplifier 效果等级
+     * @return 是否应该更新
+     */
+    @Override
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
+        return true;
+    }
 }

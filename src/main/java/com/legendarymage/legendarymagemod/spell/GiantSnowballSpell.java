@@ -460,9 +460,16 @@ public class GiantSnowballSpell extends AbstractSpell {
             if (snowball != null && snowball.isAlive()) {
                 LegendaryMage.LOGGER.info("[巨雪球] 雪球存在且存活，准备发射");
                 
-                // 记录发射前状态
-                Vec3 posBefore = snowball.position();
-                LegendaryMage.LOGGER.info("[巨雪球] 发射前位置: {}", posBefore);
+                // 计算发射方向（玩家视线方向）
+                Vec3 lookVec = entity.getViewVector(1.0f).normalize();
+                LegendaryMage.LOGGER.info("[巨雪球] 视线方向: {}", lookVec);
+                
+                // 关键修复：将雪球设置到玩家眼睛前方，避免与玩家碰撞
+                // 从玩家眼睛位置开始，沿视线方向向前移动3格
+                Vec3 eyePos = entity.getEyePosition(1.0f);
+                Vec3 launchPos = eyePos.add(lookVec.scale(3.0));
+                snowball.setPos(launchPos);
+                LegendaryMage.LOGGER.info("[巨雪球] 眼睛位置: {}, 调整后的发射位置: {}", eyePos, launchPos);
                 
                 // 设置雪球为发射状态
                 snowball.setLaunched(true);
@@ -472,13 +479,9 @@ public class GiantSnowballSpell extends AbstractSpell {
                 snowball.setCaster(null);
                 LegendaryMage.LOGGER.info("[巨雪球] setCaster(null)已调用");
                 
-                // 计算发射方向（玩家视线方向）
-                // 注意：shoot()方法内部会调用getSpeed()并乘以传入的向量
-                // 所以这里只需要传入归一化的方向向量
-                Vec3 lookVec = entity.getViewVector(1.0f).normalize();
-                LegendaryMage.LOGGER.info("[巨雪球] 视线方向: {}", lookVec);
-                
-                snowball.shoot(lookVec);
+                // 发射雪球
+                // Projectile.shoot() 需要 (x, y, z, velocity, inaccuracy)
+                snowball.shoot(lookVec.x, lookVec.y, lookVec.z, 1.5f, 0);
                 LegendaryMage.LOGGER.info("[巨雪球] shoot()已调用，发射后DeltaMovement: {}", snowball.getDeltaMovement());
                 
                 // 设置伤害和范围
@@ -529,16 +532,23 @@ public class GiantSnowballSpell extends AbstractSpell {
             int explosionRadius = getExplosionRadius(spellLevel, spellPower);
             
             if (snowball != null && snowball.isAlive()) {
+                // 计算发射方向（玩家视线方向）
+                Vec3 lookVec = entity.getViewVector(1.0f).normalize();
+                
+                // 关键修复：将雪球设置到玩家眼睛前方，避免与玩家碰撞
+                Vec3 eyePos = entity.getEyePosition(1.0f);
+                Vec3 launchPos = eyePos.add(lookVec.scale(3.0));
+                snowball.setPos(launchPos);
+                
                 // 设置雪球为发射状态
                 snowball.setLaunched(true);
                 
                 // 清除施法者引用，防止tick中继续跟随
                 snowball.setCaster(null);
                 
-                // 计算发射方向（玩家视线方向）
-                // 注意：shoot()方法内部会调用getSpeed()并乘以传入的向量
-                Vec3 lookVec = entity.getViewVector(1.0f).normalize();
-                snowball.shoot(lookVec);
+                // 发射雪球
+                // Projectile.shoot() 需要 (x, y, z, velocity, inaccuracy)
+                snowball.shoot(lookVec.x, lookVec.y, lookVec.z, 1.5f, 0);
                 
                 // 设置伤害和范围
                 snowball.setDamage(damage);

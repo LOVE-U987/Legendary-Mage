@@ -41,13 +41,27 @@ public class SchoolElementMappingRegistry {
         Map<ResourceLocation, CustomSchoolData> loadedData = CustomSchoolDataLoader.getLoadedSchools();
 
         for (Map.Entry<ResourceLocation, CustomSchoolData> entry : loadedData.entrySet()) {
-            ResourceLocation schoolId = entry.getKey();
+            ResourceLocation jsonId = entry.getKey();  // JSON 文件的 ID（如 legendarymage:blade_school）
             CustomSchoolData data = entry.getValue();
 
             // 检查是否有元素标记映射配置
             if (data.elementMarkMapping().isPresent()) {
                 Map<String, String> mapping = data.elementMarkMapping().get();
-                registerMapping(schoolId, mapping);
+                
+                // 如果有 target_school_id，使用它；否则使用 JSON 文件 ID
+                ResourceLocation targetSchoolId = jsonId;
+                if (data.targetSchoolId().isPresent()) {
+                    String targetId = data.targetSchoolId().get();
+                    try {
+                        targetSchoolId = ResourceLocation.parse(targetId);
+                        LegendaryMage.LOGGER.info("为外部模组流派配置元素标记映射：{} -> {}", targetId, jsonId);
+                    } catch (Exception e) {
+                        LegendaryMage.LOGGER.error("无效的 target_school_id: {} (在 {} 中)", targetId, jsonId);
+                        continue;
+                    }
+                }
+                
+                registerMapping(targetSchoolId, mapping);
             }
         }
 

@@ -1,14 +1,24 @@
 package com.legendarymage.legendarymagemod.effect;
 
 import com.legendarymage.legendarymagemod.element.ElementType;
+import io.redspace.ironsspellbooks.effect.IMobEffectEndCallback;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
- * 雷系标记效果（雷电异常）
+ * 雷电标记效果（雷电异常）
+ * 3级标记时长结束时，获得"感电"buff
+ * 每两秒在自身位置释放一次连锁闪电，伤害固定为5*等级，可叠加
+ * 连锁闪电不会更新元素标记
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.0
  */
-public class LightningMarkEffect extends ElementMarkEffect {
+public class LightningMarkEffect extends ElementMarkEffect implements IMobEffectEndCallback {
 
     /**
      * 效果ID
@@ -21,6 +31,17 @@ public class LightningMarkEffect extends ElementMarkEffect {
     private static final int EFFECT_COLOR = 0x9400D3;
 
     /**
+     * 感电Buff基础持续时间（tick）
+     * 10秒 = 200 tick
+     */
+    private static final int ELECTROCUTED_BUFF_BASE_DURATION = 200;
+
+    /**
+     * 感电Buff每级额外持续时间（tick）
+     */
+    private static final int ELECTROCUTED_BUFF_DURATION_PER_LEVEL = 100;
+
+    /**
      * 构造函数
      */
     public LightningMarkEffect() {
@@ -30,5 +51,70 @@ public class LightningMarkEffect extends ElementMarkEffect {
     @Override
     public String getEffectId() {
         return EFFECT_ID;
+    }
+
+    /**
+     * 当效果被移除时调用
+     * 如果标记为3级（amplifier=2），则给予感电Buff
+     * 
+     * @param entity 实体
+     * @param amplifier 效果等级（0=1级，1=2级，2=3级）
+     */
+    @Override
+    public void onEffectRemoved(LivingEntity entity, int amplifier) {
+        // 检查实体是否已死亡或正在死亡
+        if (!entity.isAlive() || entity.isDeadOrDying()) {
+            return;
+        }
+        
+        // 检查是否为3级标记（amplifier = 2）
+        if (amplifier >= MAX_LEVEL) {
+            applyElectrocutedBuff(entity, amplifier);
+        }
+    }
+
+    /**
+     * 给予感电Buff
+     * Buff等级可无限叠加，每次触发时等级+1
+     * 
+     * @param entity 目标实体
+     * @param markLevel 标记等级（0开始）
+     */
+    private void applyElectrocutedBuff(LivingEntity entity, int markLevel) {
+        if (!(entity.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        // 获取感电效果
+        MobEffect electrocutedEffect = ModEffects.ELECTROCUTED_BUFF.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(electrocutedEffect);
+
+        // 检查目标是否已有感电Buff
+        MobEffectInstance existingEffect = entity.getEffect(effectHolder);
+        int newBuffLevel;
+        int baseDuration;
+
+        if (existingEffect != null) {
+            // 已有Buff，等级+1（无限叠加）
+            newBuffLevel = existingEffect.getAmplifier() + 2;  // +2因为amplifier是0开始的
+            baseDuration = existingEffect.getDuration();
+        } else {
+            // 没有Buff，初始等级为1
+            newBuffLevel = 1;
+            baseDuration = ELECTROCUTED_BUFF_BASE_DURATION;
+        }
+
+        // 计算持续时间（基础持续时间 + 每级额外时间）
+        int duration = baseDuration + (newBuffLevel - 1) * ELECTROCUTED_BUFF_DURATION_PER_LEVEL;
+
+        // 施加感电Buff
+        entity.addEffect(new MobEffectInstance(
+                effectHolder,
+                duration,
+                newBuffLevel - 1,  // 等级（0开始）
+                false,
+                true,
+                true
+        ));
     }
 }

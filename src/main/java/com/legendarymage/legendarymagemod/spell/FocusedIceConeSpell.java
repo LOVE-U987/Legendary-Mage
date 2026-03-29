@@ -365,6 +365,18 @@ public class FocusedIceConeSpell extends AbstractSpell {
     }
 
     /**
+     * 获取聚能冰锥法术的伤害来源（静态方法，方便投射物使用）
+     * 
+     * @param projectile 投射物
+     * @param attacker   攻击者
+     * @return 伤害来源
+     */
+    public static SpellDamageSource getFocusedIceConeDamageSource(Entity projectile, Entity attacker) {
+        FocusedIceConeSpell spell = new FocusedIceConeSpell();
+        return spell.getDamageSource(projectile, attacker);
+    }
+
+    /**
      * 获取独特信息（显示在法术书中）
      * 显示法术强度缩放后的实际数值
      *

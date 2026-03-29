@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.joml.Vector3f;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.effect.EnderMarkEffect;
+import com.legendarymage.legendarymagemod.effect.HolyMarkEffect;
 import com.legendarymage.legendarymagemod.spell.MagicShotgunManager;
 
 import io.redspace.ironsspellbooks.api.events.SpellPreCastEvent;
@@ -302,6 +304,7 @@ public class MagicShotgunEvents {
     /**
      * 生物受伤事件
      * 处理魔法散弹的伤害计算和法术释放
+     * 同时处理末影异常的回响打击
      *
      * @param event 生物受伤事件
      */
@@ -320,6 +323,17 @@ public class MagicShotgunEvents {
             return;
         }
 
+        // 获取实际造成的伤害
+        float actualDamage = event.getNewDamage();
+
+        // 处理3级光明标记的神圣打击（近战触发）
+        // 当目标受到近战伤害时，如果目标有3级光明标记，触发神圣打击
+        HolyMarkEffect.tryTriggerHolyStrike(target);
+
+        // 处理末影异常的回响打击（3级末影标记有50%几率触发）
+        // 注意：这需要在魔法散弹处理之前，因为两者可以共存
+        EnderMarkEffect.tryTriggerEchoStrike(player, target, actualDamage);
+
         // 检查玩家是否有待处理的魔法散弹攻击
         if (!pendingMeleeDamages.containsKey(player.getUUID())) {
             return;
@@ -336,9 +350,6 @@ public class MagicShotgunEvents {
             pendingMeleeDamages.remove(player.getUUID());
             return;
         }
-
-        // 获取实际造成的伤害
-        float actualDamage = event.getNewDamage();
 
         // 释放注入的法术
         boolean released = MagicShotgunManager.releaseInjectedSpell(player, actualDamage, target);

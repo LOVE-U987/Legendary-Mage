@@ -291,6 +291,12 @@
   "effect.legendarymage.chaos_buff.description": "Buff from Eldritch-Scarlet element reaction, increases spell power",
   "effect.legendarymage.ender_echo_buff": "§8Ender Echo§r",
   "effect.legendarymage.ender_echo_buff.description": "Buff from Ender element reaction, increases spell power and resistance",
+  "effect.legendarymage.armor_reduction": "§aArmor Corrosion§r",
+  "effect.legendarymage.armor_reduction.description": "Debuff from Poison element reaction, reduces armor value",
+  "effect.legendarymage.darkness_buff": "§4Darkness§r",
+  "effect.legendarymage.darkness_buff.description": "Debuff from Blood element reaction, reduces spell resistance",
+  "effect.legendarymage.electrocuted_buff": "§dElectrocuted§r",
+  "effect.legendarymage.electrocuted_buff.description": "Debuff from Lightning element reaction, periodically releases chain lightning",
 
   "effect.legendarymage.magic_shotgun_buff": "§5Magic Shotgun§r",
   "effect.legendarymage.magic_shotgun_buff.description": "Blade school special buff, infuses mana into weapon to release through melee attacks",

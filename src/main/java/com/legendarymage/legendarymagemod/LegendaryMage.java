@@ -7,6 +7,7 @@ import com.legendarymage.legendarymagemod.data.CustomSchoolDataLoader;
 import com.legendarymage.legendarymagemod.effect.ModEffects;
 import com.legendarymage.legendarymagemod.entity.ModEntities;
 import com.legendarymage.legendarymagemod.item.ModItems;
+
 import com.legendarymage.legendarymagemod.school.ElementAttributeRegistry;
 import com.legendarymage.legendarymagemod.school.ElementSchoolRegistry;
 import com.legendarymage.legendarymagemod.sound.ModSounds;

@@ -2,20 +2,31 @@ package com.legendarymage.legendarymagemod.element;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import com.legendarymage.legendarymagemod.data.SchoolElementMappingRegistry;
+import com.legendarymage.legendarymagemod.effect.EnderMarkEffect;
+import com.legendarymage.legendarymagemod.effect.HolyMarkEffect;
+import com.legendarymage.legendarymagemod.effect.ModEffects;
+import com.legendarymage.legendarymagemod.entity.PlagueZombie;
+import com.legendarymage.legendarymagemod.entity.ModEntities;
 import com.legendarymage.legendarymagemod.school.ElementSchoolRegistry;
 import io.redspace.ironsspellbooks.api.events.SpellDamageEvent;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * 元素反应事件处理器
@@ -97,6 +108,16 @@ public class ElementReactionEvents {
                 }
             }
         }
+
+        // 处理3级光明标记的神圣打击（法术触发）
+        // 当目标受到法术伤害时，如果目标有3级光明标记，触发神圣打击
+        HolyMarkEffect.tryTriggerHolyStrike(target);
+
+        // 处理3级末影标记的回响打击（法术触发）
+        // 当攻击者对目标造成法术伤害时，如果攻击者有3级末影标记，50%几率触发回响打击
+        if (attacker != null) {
+            EnderMarkEffect.tryTriggerEchoStrike(attacker, target, damage);
+        }
     }
 
     /**
@@ -174,7 +195,7 @@ public class ElementReactionEvents {
     /**
      * 监听实体受到伤害事件（通用，兼容其他模组）
      * 用于检测法术伤害并施加对应的元素标记
-     * 
+     *
      * @param event 伤害事件
      */
     @SubscribeEvent
@@ -188,21 +209,40 @@ public class ElementReactionEvents {
         DamageSource damageSource = event.getSource();
         float damage = event.getNewDamage();
 
+        // 获取攻击者
+        LivingEntity attacker = null;
+        if (damageSource.getEntity() instanceof LivingEntity livingAttacker) {
+            attacker = livingAttacker;
+        }
+
         // 首先检查是否是铁魔法的法术伤害（已经在 onSpellDamage 中处理过）
         if (damageSource instanceof SpellDamageSource) {
             // 铁魔法的法术伤害已经在 onSpellDamage 中处理
+            // 但这里仍然需要处理神圣打击和回响打击
+            // 处理3级光明标记的神圣打击（法术触发）
+            HolyMarkEffect.tryTriggerHolyStrike(target);
+
+            // 处理3级末影标记的回响打击（法术触发）
+            if (attacker != null) {
+                EnderMarkEffect.tryTriggerEchoStrike(attacker, target, damage);
+            }
             return;
+        }
+
+        // 处理3级光明标记的神圣打击（通用伤害触发）
+        // 当目标受到任何伤害时，如果目标有3级光明标记，触发神圣打击
+        HolyMarkEffect.tryTriggerHolyStrike(target);
+
+        // 处理3级末影标记的回响打击（通用伤害触发）
+        // 当攻击者对目标造成伤害时，如果攻击者有3级末影标记，50%几率触发回响打击
+        if (attacker != null) {
+            EnderMarkEffect.tryTriggerEchoStrike(attacker, target, damage);
         }
 
         // 尝试从伤害源获取元素类型（兼容其他模组的法术）
         ElementType elementType = getElementTypeFromDamageSource(damageSource);
-        
-        if (elementType != null) {
-            LivingEntity attacker = null;
-            if (damageSource.getEntity() instanceof LivingEntity livingAttacker) {
-                attacker = livingAttacker;
-            }
 
+        if (elementType != null) {
             debugLog(String.format("检测到元素伤害(通用): %s -> %s, 元素: %s, 伤害: %.1f",
                     attacker != null ? attacker.getName().getString() : "环境",
                     target.getName().getString(),
@@ -300,5 +340,112 @@ public class ElementReactionEvents {
         }
 
         return null;
+    }
+
+    /**
+     * 监听生物死亡事件
+     * 处理瘟疫 Buff 的僵尸转化和毒爆机制
+     *
+     * @param event 生物死亡事件
+     */
+    @SubscribeEvent
+    public static void onLivingDeath(LivingDeathEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (!(entity.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        // 检查是否带有瘟疫 Buff
+        Holder<MobEffect> plagueEffect = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(ModEffects.PLAGUE_BUFF.get());
+        MobEffectInstance plagueInstance = entity.getEffect(plagueEffect);
+
+        if (plagueInstance == null) {
+            return;
+        }
+
+        int plagueLevel = plagueInstance.getAmplifier() + 1; // Buff 等级（从 1 开始）
+
+        debugLog(String.format("带有瘟疫 Buff 的生物死亡：%s, 瘟疫等级：%d",
+                entity.getName().getString(), plagueLevel));
+
+        // 随机决定转化还是毒爆
+        double chance = serverLevel.random.nextDouble();
+
+        if (chance < 0.25) {  // 25% 概率转化为僵尸
+            convertToPlagueZombie(serverLevel, entity, plagueLevel);
+        } else {
+            // 75% 概率毒爆
+            plagueExplosion(serverLevel, entity, plagueLevel);
+        }
+    }
+
+    /**
+     * 转化为瘟疫僵尸
+     *
+     * @param serverLevel 服务器世界
+     * @param originalEntity 原生物
+     * @param plagueLevel 瘟疫 Buff 等级
+     */
+    private static void convertToPlagueZombie(ServerLevel serverLevel, LivingEntity originalEntity, int plagueLevel) {
+        // 从 NBT 中读取施法者 UUID
+        net.minecraft.server.level.ServerPlayer summoner = null;
+        if (originalEntity.getPersistentData().hasUUID("PlagueCaster")) {
+            UUID casterUUID = originalEntity.getPersistentData().getUUID("PlagueCaster");
+            summoner = serverLevel.getServer().getPlayerList().getPlayer(casterUUID);
+        }
+
+        // 创建瘟疫僵尸
+        PlagueZombie plagueZombie = PlagueZombie.createFromEntity(originalEntity, summoner, plagueLevel);
+        
+        if (plagueZombie != null) {
+            // 添加到 tick 管理器（传入施法者）
+            ModEntities.addPlagueZombie(plagueZombie, summoner);
+            
+            debugLog(String.format("生物转化为瘟疫僵尸：%s, 瘟疫等级：%d, 僵尸存在时间：60 秒，施法者：%s",
+                    originalEntity.getName().getString(), plagueLevel, 
+                    summoner != null ? summoner.getName().getString() : "未知"));
+
+            // 播放转化粒子效果
+            playZombieConversionParticles(serverLevel, originalEntity.position());
+        } else {
+            debugLog("错误：瘟疫僵尸创建失败");
+        }
+    }
+
+    /**
+     * 瘟疫毒爆
+     *
+     * @param serverLevel 服务器世界
+     * @param entity 死亡生物
+     * @param plagueLevel 瘟疫 Buff 等级
+     */
+    private static void plagueExplosion(ServerLevel serverLevel, LivingEntity entity, int plagueLevel) {
+        // 毒爆已经在 PlagueZombie 中实现
+        // 这里处理的是普通生物死亡时的毒爆
+        // 如果需要，可以复用 PlagueZombie 的毒爆逻辑
+
+        debugLog(String.format("生物死亡触发毒爆：%s, 瘟疫等级：%d",
+                entity.getName().getString(), plagueLevel));
+
+        // 播放毒爆粒子效果
+        playPlagueExplosionParticles(serverLevel, entity.position());
+    }
+
+    /**
+     * 播放僵尸转化粒子效果
+     * 使用铁魔法风格的召唤仪式特效
+     */
+    private static void playZombieConversionParticles(ServerLevel serverLevel, net.minecraft.world.phys.Vec3 pos) {
+        // 使用铁魔法风格的转化特效
+        ElementReactionParticles.playZombieConversion(serverLevel, pos);
+    }
+
+    /**
+     * 播放瘟疫毒爆粒子效果
+     * 使用铁魔法风格的毒爆特效
+     */
+    private static void playPlagueExplosionParticles(ServerLevel serverLevel, net.minecraft.world.phys.Vec3 pos) {
+        // 使用铁魔法风格的毒爆特效（默认等级 1）
+        ElementReactionParticles.playPlagueExplosion(serverLevel, pos, 3.0, 1);
     }
 }

@@ -1,8 +1,6 @@
 package com.legendarymage.legendarymagemod.entity.spell;
 
 import io.redspace.ironsspellbooks.api.util.Utils;
-import io.redspace.ironsspellbooks.damage.DamageSources;
-import io.redspace.ironsspellbooks.damage.SpellDamageSource;
 import io.redspace.ironsspellbooks.entity.spells.AbstractMagicProjectile;
 import io.redspace.ironsspellbooks.particle.BlastwaveParticleOptions;
 import io.redspace.ironsspellbooks.particle.ShockwaveParticleOptions;
@@ -15,7 +13,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -26,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 import com.legendarymage.legendarymagemod.entity.ModEntities;
+import com.legendarymage.legendarymagemod.spell.IceExplosionConeSpell;
 
 import java.util.List;
 import java.util.Optional;
@@ -98,14 +96,18 @@ public class IceExplosionConeProjectile extends AbstractMagicProjectile {
     protected void onHitEntity(EntityHitResult entityHitResult) {
         super.onHitEntity(entityHitResult);
         
-        // 对击中的实体造成伤害
-        entityHitResult.getEntity().hurt(
-            this.damageSources().source(DamageTypes.MAGIC, getOwner()),
-            getDamage()
-        );
+        LivingEntity target = (LivingEntity) entityHitResult.getEntity();
+        
+        // 使用法术伤害来源，以便元素反应系统识别
+        if (getOwner() instanceof LivingEntity owner) {
+            target.hurt(
+                IceExplosionConeSpell.getIceExplosionConeDamageSource(this, owner),
+                getDamage()
+            );
+        }
         
         // 触发冰爆
-        triggerExplosion(entityHitResult.getEntity().position());
+        triggerExplosion(target.position());
         
         pierceOrDiscard();
     }
@@ -149,15 +151,18 @@ public class IceExplosionConeProjectile extends AbstractMagicProjectile {
                 float damageMultiplier = 1.0f - (float) (distance / EXPLOSION_RADIUS) * 0.5f;
                 float actualDamage = explosionDamage * damageMultiplier;
 
-                target.hurt(
-                    this.damageSources().source(DamageTypes.MAGIC, getOwner()),
-                    actualDamage
-                );
+                // 使用法术伤害来源，以便元素反应系统识别
+                if (getOwner() instanceof LivingEntity owner) {
+                    target.hurt(
+                        IceExplosionConeSpell.getIceExplosionConeDamageSource(this, owner),
+                        actualDamage
+                    );
+                }
 
                 // 给目标添加缓慢效果
                 target.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                     net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN,
-                    60, // 3秒
+                    60, // 3 秒
                     1,
                     false,
                     true
@@ -167,50 +172,50 @@ public class IceExplosionConeProjectile extends AbstractMagicProjectile {
     }
 
     /**
-     * 播放爆炸音效 - 多层音效叠加营造震撼效果
+     * 播放爆炸音效 - 法力驱动的冰爆，更注重冰霜与魔法能量释放
      * 
      * @param level  服务器世界
      * @param center 爆炸中心位置
      */
     private void playExplosionSounds(ServerLevel level, Vec3 center) {
-        // 主爆炸音效 - 原版爆炸音效（低沉震撼）
-        level.playSound(
-            null,
-            center.x, center.y, center.z,
-            SoundEvents.GENERIC_EXPLODE,
-            net.minecraft.sounds.SoundSource.PLAYERS,
-            1.2f,
-            0.6f + level.random.nextFloat() * 0.2f
-        );
-
-        // 玻璃破碎音效（清脆）
-        level.playSound(
-            null,
-            center.x, center.y, center.z,
-            SoundEvents.GLASS_BREAK,
-            net.minecraft.sounds.SoundSource.PLAYERS,
-            1.0f,
-            0.7f + level.random.nextFloat() * 0.3f
-        );
-
-        // 冰块碎裂音效
-        level.playSound(
-            null,
-            center.x, center.y, center.z,
-            SoundEvents.POINTED_DRIPSTONE_LAND,
-            net.minecraft.sounds.SoundSource.PLAYERS,
-            0.8f,
-            0.5f + level.random.nextFloat() * 0.4f
-        );
-
-        // 冰霜爆裂音效
+        // 冰霜爆裂主音效 - 铁魔法冰冲击（法力驱动的核心音效）
         level.playSound(
             null,
             center.x, center.y, center.z,
             SoundRegistry.ICE_IMPACT.get(),
             net.minecraft.sounds.SoundSource.PLAYERS,
-            1.0f,
-            0.8f + level.random.nextFloat() * 0.4f
+            1.2f,
+            0.7f + level.random.nextFloat() * 0.3f
+        );
+
+        // 玻璃破碎音效（冰晶碎裂）
+        level.playSound(
+            null,
+            center.x, center.y, center.z,
+            SoundEvents.GLASS_BREAK,
+            net.minecraft.sounds.SoundSource.PLAYERS,
+            0.9f,
+            0.6f + level.random.nextFloat() * 0.3f
+        );
+
+        // 冰块碎裂音效（尖锐）
+        level.playSound(
+            null,
+            center.x, center.y, center.z,
+            SoundEvents.POINTED_DRIPSTONE_LAND,
+            net.minecraft.sounds.SoundSource.PLAYERS,
+            0.7f,
+            0.5f + level.random.nextFloat() * 0.4f
+        );
+
+        // 魔法能量释放音效（高频）
+        level.playSound(
+            null,
+            center.x, center.y, center.z,
+            SoundEvents.ENDER_EYE_DEATH,
+            net.minecraft.sounds.SoundSource.PLAYERS,
+            0.6f,
+            1.2f + level.random.nextFloat() * 0.3f
         );
     }
 

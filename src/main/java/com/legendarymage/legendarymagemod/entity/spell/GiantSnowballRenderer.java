@@ -112,8 +112,8 @@ public class GiantSnowballRenderer extends EntityRenderer<GiantSnowballEntity> {
             poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
         }
 
-        // 应用缩放 - 基础大小 * 雪球缩放值
-        float renderScale = scale * 0.5f; // 调整整体大小
+        // 应用缩放 - 基础大小 * 雪球缩放值 * 5 倍放大
+        float renderScale = scale * 2.5f; // 0.5 * 5 = 2.5，放大 5 倍
         poseStack.scale(renderScale, renderScale, renderScale);
         
         // 调整位置使模型居中

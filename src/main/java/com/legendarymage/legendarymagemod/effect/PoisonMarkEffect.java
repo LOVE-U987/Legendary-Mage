@@ -7,15 +7,15 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
  * 毒系标记效果（毒素异常）
- * 3级标记时长结束时，给予中毒Buff，可叠加等级
+ * 3级标记时长结束时，给予溶甲Buff，可叠加等级
+ * 溶甲效果：每级减少2%护甲值
  * 
  * @author Love_U
- * @version 0.0.2
+ * @version 0.0.3
  */
 public class PoisonMarkEffect extends ElementMarkEffect implements IMobEffectEndCallback {
 
@@ -30,15 +30,15 @@ public class PoisonMarkEffect extends ElementMarkEffect implements IMobEffectEnd
     private static final int EFFECT_COLOR = 0x32CD32;
 
     /**
-     * 中毒Buff基础持续时间（tick）
+     * 溶甲Buff基础持续时间（tick）
      * 10秒 = 200 tick
      */
-    private static final int POISON_BASE_DURATION = 200;
+    private static final int ARMOR_REDUCTION_BASE_DURATION = 200;
 
     /**
-     * 中毒Buff每级额外持续时间（tick）
+     * 溶甲Buff每级额外持续时间（tick）
      */
-    private static final int POISON_DURATION_PER_LEVEL = 100;
+    private static final int ARMOR_REDUCTION_DURATION_PER_LEVEL = 100;
 
     /**
      * 构造函数
@@ -54,7 +54,7 @@ public class PoisonMarkEffect extends ElementMarkEffect implements IMobEffectEnd
 
     /**
      * 当效果被移除时调用
-     * 如果标记为3级（amplifier=2），则给予中毒Buff
+     * 如果标记为3级（amplifier=2），则给予溶甲Buff
      * 
      * @param entity 实体
      * @param amplifier 效果等级（0=1级，1=2级，2=3级）
@@ -67,26 +67,28 @@ public class PoisonMarkEffect extends ElementMarkEffect implements IMobEffectEnd
         
         // 检查是否为3级标记（amplifier = 2）
         if (amplifier >= MAX_LEVEL) {
-            applyPoisonBuff(entity, amplifier);
+            applyArmorReductionBuff(entity, amplifier);
         }
     }
 
     /**
-     * 给予中毒Buff
+     * 给予溶甲Buff
      * Buff等级可无限叠加，每次触发时等级+1
+     * 每级减少2%护甲值
      * 
      * @param entity 目标实体
      * @param markLevel 标记等级（0开始）
      */
-    private void applyPoisonBuff(LivingEntity entity, int markLevel) {
+    private void applyArmorReductionBuff(LivingEntity entity, int markLevel) {
         if (!(entity.level() instanceof ServerLevel serverLevel)) {
             return;
         }
 
-        // 获取原版中毒效果（在1.21中已经是Holder<MobEffect>）
-        Holder<MobEffect> effectHolder = MobEffects.POISON;
+        // 获取溶甲效果
+        MobEffect armorReductionEffect = ModEffects.ARMOR_REDUCTION.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(armorReductionEffect);
 
-        // 检查目标是否已有中毒Buff
+        // 检查目标是否已有溶甲Buff
         MobEffectInstance existingEffect = entity.getEffect(effectHolder);
         int newBuffLevel;
         int baseDuration;
@@ -98,13 +100,13 @@ public class PoisonMarkEffect extends ElementMarkEffect implements IMobEffectEnd
         } else {
             // 没有Buff，初始等级为1
             newBuffLevel = 1;
-            baseDuration = POISON_BASE_DURATION;
+            baseDuration = ARMOR_REDUCTION_BASE_DURATION;
         }
 
         // 计算持续时间（基础持续时间 + 每级额外时间）
-        int duration = baseDuration + (newBuffLevel - 1) * POISON_DURATION_PER_LEVEL;
+        int duration = baseDuration + (newBuffLevel - 1) * ARMOR_REDUCTION_DURATION_PER_LEVEL;
 
-        // 施加中毒Buff
+        // 施加溶甲Buff
         entity.addEffect(new MobEffectInstance(
                 effectHolder,
                 duration,

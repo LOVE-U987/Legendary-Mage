@@ -11,6 +11,7 @@ description: "提供Iron's Spells 'n Spellbooks模组在NeoForge 1.21.1环境下
 - **平台**: NeoForge 1.21.1
 - **模组版本**: Iron's Spells 'n Spellbooks 3.15.3+
 - **依赖库**: GeckoLib, PlayerAnimator, Curios
+- **扩展API**: Aces_Spell_Utils (可选，提供额外功能)
   ## 在开发时请确定开发环境是否合适！
 
 ***
@@ -215,7 +216,199 @@ level.addFreshEntity(summonedZombie);
 
 ***
 
-## 6. 语言文件
+## 6. Aces_Spell_Utils 扩展API (可选)
+
+Aces_Spell_Utils 是一个为 Iron's Spellbooks 提供扩展功能的API插件，需要额外添加依赖。
+
+### 6.1 自定义施法生物
+
+#### UniqueAbstractSpellCastingMob
+用于创建带有自定义模型和动画的施法生物。
+
+```java
+public class MyCustomCaster extends UniqueAbstractSpellCastingMob {
+    public MyCustomCaster(EntityType<? extends PathfinderMob> entityType, Level level) {
+        super(entityType, level);
+    }
+    
+    // 定义动画控制器
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(instantCastAnimationController);
+        controllers.add(longCastAnimationController);
+        controllers.add(contCastAnimationController);
+        controllers.add(new AnimationController(this, "idle", 0, this::predicate));
+    }
+}
+```
+
+**支持的动画类型**:
+- `instantCast` - 瞬发法术动画
+- `longCast` - 长施法动画
+- `continuousCast` - 持续施法动画
+- `slashCast` - 斩击类法术动画
+- `stompCast` - 踩踏类法术动画
+
+#### GenericUniqueBossEntity
+用于创建带有多阶段系统的Boss。
+
+```java
+public class MyBoss extends GenericUniqueBossEntity {
+    public MyBoss(EntityType<? extends PathfinderMob> entityType, Level level) {
+        super(entityType, level);
+        this.hasCustomMusic = true;
+        this.changeMusicOnPhaseChange = true;
+    }
+    
+    @Override
+    public SoundEvent getBossMusic() {
+        return MySounds.BOSS_MUSIC.get();
+    }
+    
+    // 阶段转换
+    public void onPhaseChange() {
+        if (getHealth() < getMaxHealth() * 0.5) {
+            setPhase(Phase.SecondPhase);
+        }
+    }
+}
+```
+
+**阶段枚举**:
+- `FirstPhase` 到 `TwelfthPhase` (共12个阶段)
+
+### 6.2 自定义法术流派
+
+```java
+public class MySchoolRegistry {
+    private static final DeferredRegister<SchoolType> SCHOOLS = 
+        DeferredRegister.create(SchoolRegistry.SCHOOL_REGISTRY_KEY, "modid");
+    
+    public static final Supplier<SchoolType> CUSTOM_SCHOOL = registerSchool(
+        new SchoolType(
+            ResourceLocation.fromNamespaceAndPath("modid", "custom_school"),
+            MyTags.CUSTOM_FOCUS,                    // 焦点标签
+            Component.translatable("school.modid.custom").withStyle(Style.EMPTY.withColor(0xFF0000)),
+            MyAttributeRegistry.CUSTOM_SPELL_POWER, // 法术强度属性
+            MyAttributeRegistry.CUSTOM_SPELL_RESIST,// 法术抗性属性
+            SoundRegistry.EVOCATION_CAST,           // 施法音效
+            MyDamageTypes.CUSTOM_MAGIC              // 伤害类型
+        )
+    );
+}
+```
+
+### 6.3 特殊物品类型
+
+#### MagicGunItem - 魔法枪械
+```java
+public class MyMagicGun extends MagicGunItem {
+    public MyMagicGun(Tier tier, Properties properties, SpellDataRegistryHolder[] spells) {
+        super(tier, properties, spells);
+    }
+    
+    @Override
+    protected int getPassiveCooldownTicks() {
+        return 100; // 被动技能冷却（tick）
+    }
+    
+    @Override
+    protected int getActiveCooldownTicks() {
+        return 200; // 主动技能冷却（tick）
+    }
+    
+    @Override
+    public boolean isHeavyGun() {
+        return true; // 重型枪械
+    }
+}
+```
+
+#### PassiveAbilitySpellbook - 被动技能法术书
+```java
+public class MySpellbook extends PassiveAbilitySpellbook {
+    public MySpellbook() {
+        super(5); // 5个法术槽位
+    }
+    
+    @Override
+    protected int getCooldownTicks() {
+        return 300; // 被动技能冷却
+    }
+}
+```
+
+#### 链锤类武器
+```java
+// 可附魔链锤
+public class MyMace extends ImbueableMaceItem {
+    public MyMace(Tier tier, Properties properties, SpellDataRegistryHolder[] spells) {
+        super(tier, properties, spells);
+    }
+}
+
+// 链锤法杖
+public class MyMaceStaff extends MaceStaffItem {
+    public MyMaceStaff(Tier tier, Properties properties, SpellDataRegistryHolder[] spells) {
+        super(tier, properties, spells);
+    }
+}
+```
+
+### 6.4 召唤法术基类
+
+```java
+public class MySummonSpell extends AbstractSummonSpell {
+    @Override
+    protected int onSummoningCast(Level level, int spellLevel, LivingEntity caster, 
+                                   CastSource castSource, MagicData playerMagicData, 
+                                   SummonedEntitiesCastData castData) {
+        // 召唤生物
+        spawnHelper(x, y, z, caster, level, summonTimer, castData, 
+            () -> new MySummonEntity(level), 
+            getSpellId(), spellLevel);
+        
+        return 600; // 召唤物持续时间（tick）
+    }
+}
+```
+
+### 6.5 着色器效果
+
+```java
+// 发送着色器效果包到客户端
+AddShaderEffectPacket packet = new AddShaderEffectPacket(
+    player.getUUID(), 
+    "aces_spell_utils:grayscale", // 着色器ID
+    100 // 持续时间（tick）
+);
+PacketDistributor.sendToPlayer(player, packet);
+
+// 移除着色器效果
+RemoveShaderEffectPacket removePacket = new RemoveShaderEffectPacket(
+    player.getUUID()
+);
+PacketDistributor.sendToPlayer(player, removePacket);
+```
+
+**内置着色器**:
+- `aces_spell_utils:grayscale` - 灰度效果
+- `aces_spell_utils:grayscale_darker` - 深灰度效果
+
+### 6.6 实用工具类
+
+```java
+// 获取标签中的法术列表
+List<AbstractSpell> slashSpells = ASUtils.getSpellsFromTag(ASTags.SLASH_LIKE_SPELL);
+List<AbstractSpell> stompSpells = ASUtils.getSpellsFromTag(ASTags.STOMP_LIKE_SPELL);
+
+// 时间格式化
+String time = Utils.timeFromTicks(ticks, decimalPlaces);
+```
+
+***
+
+## 7. 语言文件
 
 ### 中文 (zh_cn.json)
 
@@ -230,7 +423,7 @@ level.addFreshEntity(summonedZombie);
 
 ***
 
-## 7. 常用事件
+## 8. 常用事件
 
 ### 生物死亡事件
 
@@ -257,9 +450,9 @@ public static void onLevelTick(LevelTickEvent.Post event) {
 
 ***
 
-## 8. 常见错误与解决方案
+## 9. 常见错误与解决方案
 
-### 8.1 法术强度计算错误
+### 9.1 法术强度计算错误
 
 **问题**: Iron's Spellbooks 的 `SPELL_POWER` 属性默认值为 `1.0`（表示100%），而不是 `10.0`。
 
@@ -290,7 +483,7 @@ public class SpellPowerHelper {
 }
 ```
 
-### 8.2 MobEffect 属性修饰符重复添加
+### 9.2 MobEffect 属性修饰符重复添加
 
 **问题**: 在 `MobEffect` 的构造函数中使用 `addAttributeModifier()` 添加属性修饰符，然后在外部代码中又手动添加相同ID的修饰符，导致 `IllegalArgumentException: Modifier is already applied on this attribute!`
 
@@ -370,7 +563,7 @@ public void applyBuff(Player player, double spellPowerBonus) {
 }
 ```
 
-### 8.3 固定值属性修饰符在Buff提示中显示问题
+### 9.3 固定值属性修饰符在Buff提示中显示问题
 
 **问题**: 希望Buff的某个属性固定值（如-30%最大法力值），但Minecraft会自动将属性修饰符的值乘以 `(amplifier + 1)`（即Buff等级），导致5级时显示-150%。
 
@@ -424,7 +617,7 @@ public void applyBuff(Player player, int buffLevel) {
 
 **注意**: 这种方法在5级Buff时会正确显示-30%，但在1级Buff时会显示-6%。这是Minecraft属性系统的限制。
 
-### 8.4 死亡检查保护
+### 9.4 死亡检查保护
 
 **问题**: 在实体死亡时处理效果（如清除标记、触发反应）可能导致 `ConcurrentModificationException`，特别是在 `HashMap` 迭代过程中修改效果列表。
 
@@ -450,7 +643,7 @@ public static void removeElementMark(LivingEntity target, ElementType elementTyp
 }
 ```
 
-### 8.5 属性默认值
+### 9.5 属性默认值
 
 **重要**: Iron's Spellbooks 的所有属性默认值都是 `1.0`（表示100%），不是 `0` 或 `10.0`。
 
@@ -471,7 +664,7 @@ double spellPowerBonus = enderBonus * 0.333; // 计算最终加成
 
 ***
 
-## 9. 注意事项
+## 10. 注意事项
 
 1. **必须在服务器端执行**: 大多数法术逻辑应该在 `ServerLevel` 中执行
 2. **检查玩家在线**: 使用 `ServerPlayer` 时注意检查玩家是否在线
@@ -480,6 +673,7 @@ double spellPowerBonus = enderBonus * 0.333; // 计算最终加成
 5. **网络同步**: 需要客户端显示的效果要手动同步
 6. **属性修饰符唯一性**: 确保每个属性修饰符的ID唯一，避免重复添加
 7. **死亡检查**: 在处理实体效果时，始终检查 `isAlive()` 和 `isDeadOrDying()`
+8. **Aces_Spell_Utils依赖**: 如果使用Aces_Spell_Utils的功能，需要将其添加到项目依赖中
 
 ***
 
@@ -488,3 +682,4 @@ double spellPowerBonus = enderBonus * 0.333; // 计算最终加成
 - [Iron's Spells GitHub](https://github.com/iron431/Irons-Spellbooks)
 - [NeoForge Documentation](https://docs.neoforged.net/)
 - [Minecraft Forge Wiki](https://mcforge.readthedocs.io/)
+- [Aces_Spell_Utils GitHub](https://github.com/ACETHEELDRITCHKING/Aces_Spell_Utils) (如果可用)

@@ -20,6 +20,7 @@ public record CustomSchoolData(
         String name,                    // 流派名称（用于显示）
         int color,                      // 流派颜色（十六进制）
         Optional<String> description,   // 流派描述（可选）
+        Optional<String> targetSchoolId, // 目标流派 ID（用于兼容其他模组的流派，可选）
         List<String> compatibleElements,// 兼容的元素类型
         Optional<AttributeModifiers> attributeModifiers, // 属性修饰符（可选）
         Optional<SpellStats> spellStats, // 法术统计（可选）
@@ -27,13 +28,14 @@ public record CustomSchoolData(
 ) {
 
     /**
-     * Codec 用于序列化和反序列化JSON
+     * Codec 用于序列化和反序列化 JSON
      */
     public static final Codec<CustomSchoolData> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Codec.STRING.fieldOf("name").forGetter(CustomSchoolData::name),
                     Codec.INT.fieldOf("color").forGetter(CustomSchoolData::color),
                     Codec.STRING.optionalFieldOf("description").forGetter(CustomSchoolData::description),
+                    Codec.STRING.optionalFieldOf("target_school_id").forGetter(CustomSchoolData::targetSchoolId),
                     Codec.STRING.listOf().fieldOf("compatible_elements").forGetter(CustomSchoolData::compatibleElements),
                     AttributeModifiers.CODEC.optionalFieldOf("attribute_modifiers").forGetter(CustomSchoolData::attributeModifiers),
                     SpellStats.CODEC.optionalFieldOf("spell_stats").forGetter(CustomSchoolData::spellStats),

@@ -72,7 +72,7 @@ public class CustomSchoolRegistry {
     /**
      * 创建 SchoolType 实例
      *
-     * @param id   流派ID
+     * @param id   流派 ID
      * @param data 流派数据
      * @return SchoolType 实例
      */
@@ -85,8 +85,21 @@ public class CustomSchoolRegistry {
                 id.getNamespace(), "focuses/" + id.getPath()));
 
         // 创建显示名称组件
-        Component displayName = Component.translatable("school." + id.getNamespace() + "." + id.getPath())
-                .withStyle(Style.EMPTY.withColor(data.color()));
+        // 如果有 target_school_id，说明是外部模组流派，直接使用 JSON 中的 name
+        // 否则使用翻译键（兼容自定义流派）
+        Component displayName;
+        if (data.targetSchoolId().isPresent()) {
+            // 外部模组流派：直接使用 JSON 中的名称
+            displayName = Component.literal(data.name())
+                    .withStyle(Style.EMPTY.withColor(data.color()));
+            LegendaryMage.LOGGER.debug("为外部模组流派创建显示名称：{} -> {}", id, data.name());
+        } else {
+            // 自定义流派：使用翻译键
+            String translationKey = "school." + id.getNamespace() + "." + id.getPath();
+            displayName = Component.translatable(translationKey)
+                    .withStyle(Style.EMPTY.withColor(data.color()));
+            LegendaryMage.LOGGER.debug("为自定义流派创建显示名称：{} -> {}", id, translationKey);
+        }
 
         // 获取或创建法术强度属性
         Holder<net.minecraft.world.entity.ai.attributes.Attribute> spellPowerAttribute =
@@ -97,7 +110,7 @@ public class CustomSchoolRegistry {
                 CustomSchoolAttributes.getOrCreateMagicResistAttribute(id);
 
         // 创建 SchoolType
-        // 在1.21中，SoundEvent需要包装为Holder
+        // 在 1.21 中，SoundEvent 需要包装为 Holder
         Holder<SoundEvent> castSoundHolder = net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.AMETHYST_BLOCK_CHIME);
 
         // 创建 SchoolType

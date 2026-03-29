@@ -1,0 +1,28 @@
+{
+  "name": "自定义火焰学派",
+  "color": 16711680,
+  "description": "修改版火焰学派，造成毒素标记而不是火焰标记",
+  "target_school_id": "irons_spellbooks:fire",
+  "compatible_elements": [
+    "poison",
+    "fire",
+    "blood"
+  ],
+  "attribute_modifiers": {
+    "spell_power_bonus": 0.1,
+    "magic_resist_bonus": 0.1,
+    "mana_cost_reduction": 0.05,
+    "cast_time_reduction": 0.05
+  },
+  "spell_stats": {
+    "damage_multiplier": 1.1,
+    "range_multiplier": 1.0,
+    "duration_multiplier": 1.2,
+    "cooldown_reduction": 0.05
+  },
+  "element_mark_mapping": {
+    "default": "poison",
+    "critical": "fire",
+    "dot": "poison"
+  }
+}

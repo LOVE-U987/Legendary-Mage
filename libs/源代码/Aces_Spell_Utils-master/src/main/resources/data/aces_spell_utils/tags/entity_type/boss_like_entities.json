@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#c:bosses",
+    {
+      "id": "discerning_the_eldritch:ascended_one",
+      "required": false
+    }
+  ]
+}

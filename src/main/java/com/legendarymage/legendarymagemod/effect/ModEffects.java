@@ -112,6 +112,33 @@ public class ModEffects {
     );
 
     /**
+     * 溶甲效果
+     * 毒素元素反应给予目标的Debuff，降低护甲值
+     */
+    public static final DeferredHolder<MobEffect, ArmorReductionEffect> ARMOR_REDUCTION = EFFECTS.register(
+            ArmorReductionEffect.EFFECT_ID,
+            ArmorReductionEffect::new
+    );
+
+    /**
+     * 暗夜无光效果
+     * 血系元素反应给予目标的Debuff
+     */
+    public static final DeferredHolder<MobEffect, DarknessBuffEffect> DARKNESS_BUFF = EFFECTS.register(
+            DarknessBuffEffect.EFFECT_ID,
+            DarknessBuffEffect::new
+    );
+
+    /**
+     * 触电效果
+     * 雷系元素反应给予目标的Debuff
+     */
+    public static final DeferredHolder<MobEffect, ElectrocutedBuffEffect> ELECTROCUTED_BUFF = EFFECTS.register(
+            ElectrocutedBuffEffect.EFFECT_ID,
+            ElectrocutedBuffEffect::new
+    );
+
+    /**
      * 终末回响Buff效果
      * 末影与任意元素反应给予施法者的Buff
      */
@@ -123,12 +150,30 @@ public class ModEffects {
     // ==================== 魔法散弹效果 ====================
 
     /**
-     * 魔法散弹Buff效果
-     * 咒刃流派的特殊Buff，将法力注入武器以近战形式释放
+     * 魔法散弹 Buff 效果
+     * 咒刃流派的特殊 Buff，将法力注入武器以近战形式释放
      */
     public static final DeferredHolder<MobEffect, MagicShotgunBuffEffect> MAGIC_SHOTGUN_BUFF = EFFECTS.register(
             MagicShotgunBuffEffect.EFFECT_ID,
             MagicShotgunBuffEffect::new
+    );
+
+    /**
+     * 避雷针 Buff 效果
+     * 冰雷元素反应给予施法者的 Buff，减少雷系和冰系抗性
+     */
+    public static final DeferredHolder<MobEffect, LightningRodBuffEffect> LIGHTNING_ROD_BUFF = EFFECTS.register(
+            LightningRodBuffEffect.EFFECT_ID,
+            LightningRodBuffEffect::new
+    );
+
+    /**
+     * 瘟疫 Buff 效果
+     * 暗毒元素反应给予目标的 Debuff，降低生命值并可能转化为僵尸
+     */
+    public static final DeferredHolder<MobEffect, PlagueBuffEffect> PLAGUE_BUFF = EFFECTS.register(
+            PlagueBuffEffect.EFFECT_ID,
+            PlagueBuffEffect::new
     );
 
     /**

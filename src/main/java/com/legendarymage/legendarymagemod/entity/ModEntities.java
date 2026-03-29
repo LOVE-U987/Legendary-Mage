@@ -86,4 +86,15 @@ public class ModEntities {
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);
     }
+
+    /**
+     * 添加瘟疫僵尸到管理器
+     * 便捷方法
+     * 
+     * @param zombie 瘟疫僵尸实例
+     * @param summoner 施法者
+     */
+    public static void addPlagueZombie(PlagueZombie zombie, net.minecraft.server.level.ServerPlayer summoner) {
+        PlagueZombieManager.addPlagueZombie(zombie, summoner);
+    }
 }
