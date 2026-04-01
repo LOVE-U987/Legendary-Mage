@@ -535,7 +535,7 @@ Create **new element reactions** by configuring different mods' schools:
 **Effects**:
 - Player uses both Blade and Fire spells
 - Marks on enemy: Ender + Poison
-- Triggers **Ender-Poison Reaction** (Void Poison)
+- Triggers **Ender-Poison Reaction**
 
 ---
 
