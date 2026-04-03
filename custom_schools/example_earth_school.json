@@ -1,0 +1,27 @@
+{
+  "name": "岩土学派",
+  "color": 10066176,
+  "description": "操控大地与岩石之力的法术流派，擅长防御和持续伤害",
+  "compatible_elements": [
+    "poison",
+    "fire",
+    "blood"
+  ],
+  "attribute_modifiers": {
+    "spell_power_bonus": 0.08,
+    "magic_resist_bonus": 0.2,
+    "mana_cost_reduction": 0.0,
+    "cast_time_reduction": -0.05
+  },
+  "spell_stats": {
+    "damage_multiplier": 0.9,
+    "range_multiplier": 0.8,
+    "duration_multiplier": 1.3,
+    "cooldown_reduction": 0.0
+  },
+  "element_mark_mapping": {
+    "default": "poison",
+    "critical": "blood",
+    "dot": "poison"
+  }
+}

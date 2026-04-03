@@ -1,0 +1,22 @@
+{
+  "name": "自然学派",
+  "color": 65344,
+  "description": "与自然和谐共生的法术流派，擅长生命和毒素魔法",
+  "compatible_elements": [
+    "poison",
+    "holy",
+    "blood"
+  ],
+  "attribute_modifiers": {
+    "spell_power_bonus": 0.1,
+    "magic_resist_bonus": 0.15,
+    "mana_cost_reduction": 0.1,
+    "cast_time_reduction": 0.05
+  },
+  "spell_stats": {
+    "damage_multiplier": 1.0,
+    "range_multiplier": 1.1,
+    "duration_multiplier": 1.25,
+    "cooldown_reduction": 0.05
+  }
+}
