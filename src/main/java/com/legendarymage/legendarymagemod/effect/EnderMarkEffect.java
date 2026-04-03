@@ -21,7 +21,7 @@ import org.joml.Vector3f;
  * 回响打击使用原版伤害源，无法更新元素标记
  *
  * @author Love_U
- * @version 0.0.2
+ * @version 1.0.4
  */
 public class EnderMarkEffect extends ElementMarkEffect {
 

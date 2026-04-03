@@ -15,7 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
  * 溶甲效果：每级减少2%护甲值
  * 
  * @author Love_U
- * @version 0.0.3
+ * @version 1.0.4
  */
 public class PoisonMarkEffect extends ElementMarkEffect implements IMobEffectEndCallback {
 
@@ -67,7 +67,15 @@ public class PoisonMarkEffect extends ElementMarkEffect implements IMobEffectEnd
         
         // 检查是否为3级标记（amplifier = 2）
         if (amplifier >= MAX_LEVEL) {
-            applyArmorReductionBuff(entity, amplifier);
+            // 使用延迟任务避免ConcurrentModificationException
+            // 当牛奶移除效果时，不能在onEffectRemoved中直接访问效果列表
+            // 必须延迟到下一 tick 执行
+            final int finalAmplifier = amplifier;
+            EffectRemovalHandler.addDelayedTask(entity, finalAmplifier, (e, amp) -> {
+                if (e.isAlive() && !e.isDeadOrDying()) {
+                    applyArmorReductionBuff(e, amp);
+                }
+            });
         }
     }
 

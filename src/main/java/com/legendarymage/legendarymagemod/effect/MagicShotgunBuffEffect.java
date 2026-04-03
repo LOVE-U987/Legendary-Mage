@@ -32,7 +32,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  * - 最大法力值：固定-30%（所有级别）
  * 
  * @author Love_U
- * @version 0.0.7
+ * @version 1.0.0
  */
 public class MagicShotgunBuffEffect extends MobEffect {
 

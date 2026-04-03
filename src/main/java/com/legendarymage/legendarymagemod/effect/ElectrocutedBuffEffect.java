@@ -24,7 +24,7 @@ import java.util.List;
  * 带有白名单机制，不会伤害施法者及其队友
  *
  * @author Love_U
- * @version 0.0.5
+ * @version 1.0.4
  */
 public class ElectrocutedBuffEffect extends MobEffect {
 

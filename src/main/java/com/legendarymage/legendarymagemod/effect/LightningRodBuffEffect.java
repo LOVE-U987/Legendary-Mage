@@ -15,7 +15,7 @@ import net.minecraft.core.Holder;
  * 效果：减少雷系和冰系元素抗性，每级减少 5%
  * 
  * @author Love_U
- * @version 1.0.0
+ * @version 1.0.4
  */
 public class LightningRodBuffEffect extends MobEffect {
 

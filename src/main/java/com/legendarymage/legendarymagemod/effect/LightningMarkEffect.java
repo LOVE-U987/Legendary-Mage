@@ -16,7 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
  * 连锁闪电不会更新元素标记
  * 
  * @author Love_U
- * @version 1.0.0
+ * @version 1.0.4
  */
 public class LightningMarkEffect extends ElementMarkEffect implements IMobEffectEndCallback {
 
@@ -69,7 +69,15 @@ public class LightningMarkEffect extends ElementMarkEffect implements IMobEffect
         
         // 检查是否为3级标记（amplifier = 2）
         if (amplifier >= MAX_LEVEL) {
-            applyElectrocutedBuff(entity, amplifier);
+            // 使用延迟任务避免ConcurrentModificationException
+            // 当牛奶移除效果时，不能在onEffectRemoved中直接访问效果列表
+            // 必须延迟到下一 tick 执行
+            final int finalAmplifier = amplifier;
+            EffectRemovalHandler.addDelayedTask(entity, finalAmplifier, (e, amp) -> {
+                if (e.isAlive() && !e.isDeadOrDying()) {
+                    applyElectrocutedBuff(e, amp);
+                }
+            });
         }
     }
 

@@ -15,7 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
  * 减少法术抗性，每级-5%，可叠加
  * 
  * @author Love_U
- * @version 1.0.0
+ * @version 1.0.4
  */
 public class BloodMarkEffect extends ElementMarkEffect implements IMobEffectEndCallback {
 
@@ -68,7 +68,15 @@ public class BloodMarkEffect extends ElementMarkEffect implements IMobEffectEndC
         
         // 检查是否为3级标记（amplifier = 2）
         if (amplifier >= MAX_LEVEL) {
-            applyDarknessBuff(entity, amplifier);
+            // 使用延迟任务避免ConcurrentModificationException
+            // 当牛奶移除效果时，不能在onEffectRemoved中直接访问效果列表
+            // 必须延迟到下一 tick 执行
+            final int finalAmplifier = amplifier;
+            EffectRemovalHandler.addDelayedTask(entity, finalAmplifier, (e, amp) -> {
+                if (e.isAlive() && !e.isDeadOrDying()) {
+                    applyDarknessBuff(e, amp);
+                }
+            });
         }
     }
 

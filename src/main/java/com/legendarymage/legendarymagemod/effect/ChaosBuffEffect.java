@@ -14,7 +14,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
  * 效果：法术强度+10%，每一等级+5%
  * 
  * @author Love_U
- * @version 0.0.2
+ * @version 1.0.0
  */
 public class ChaosBuffEffect extends MobEffect {
 

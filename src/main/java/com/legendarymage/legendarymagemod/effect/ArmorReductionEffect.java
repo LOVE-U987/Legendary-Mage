@@ -12,7 +12,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  * 降低目标的护甲值，每级减少2%
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.4
  */
 public class ArmorReductionEffect extends MobEffect {
 

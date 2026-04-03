@@ -18,7 +18,7 @@ import net.minecraft.resources.ResourceLocation;
  * - 死亡时 75% 概率毒爆
  * 
  * @author Love_U
- * @version 1.0.0
+ * @version 1.0.4
  */
 public class PlagueBuffEffect extends MobEffect {
 
@@ -40,12 +40,12 @@ public class PlagueBuffEffect extends MobEffect {
     /**
      * Buff 持续时间（秒）
      */
-    public static final int DURATION_SECONDS = 20;
+    public static final int DURATION_SECONDS = 10;
 
     /**
-     * 最大叠加层数（无限制）
+     * 最大叠加层数
      */
-    public static final int MAX_STACKS = Integer.MAX_VALUE;
+    public static final int MAX_STACKS = 10;
 
     /**
      * 效果颜色 - 暗绿色

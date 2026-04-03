@@ -11,7 +11,7 @@ import net.minecraft.world.entity.LivingEntity;
  * 所有元素标记效果的基类
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.0
  */
 public abstract class ElementMarkEffect extends MobEffect {
 

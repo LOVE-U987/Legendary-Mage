@@ -14,7 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
  * 3级标记时长结束时，给予铁魔法的冰冻效果（Chilled）
  * 
  * @author Love_U
- * @version 0.0.2
+ * @version 1.0.0
  */
 public class IceMarkEffect extends ElementMarkEffect implements IMobEffectEndCallback {
 
@@ -66,7 +66,15 @@ public class IceMarkEffect extends ElementMarkEffect implements IMobEffectEndCal
         
         // 检查是否为3级标记（amplifier = 2）
         if (amplifier >= MAX_LEVEL) {
-            applyChilledEffect(entity, amplifier);
+            // 使用延迟任务避免ConcurrentModificationException
+            // 当牛奶移除效果时，不能在onEffectRemoved中直接访问效果列表
+            // 必须延迟到下一 tick 执行
+            final int finalAmplifier = amplifier;
+            EffectRemovalHandler.addDelayedTask(entity, finalAmplifier, (e, amp) -> {
+                if (e.isAlive() && !e.isDeadOrDying()) {
+                    applyChilledEffect(e, amp);
+                }
+            });
         }
     }
 

@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * 当带有此效果的生物死亡时，会触发小型爆炸
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.0
  */
 public class PyroFlameEffect extends MobEffect {
 

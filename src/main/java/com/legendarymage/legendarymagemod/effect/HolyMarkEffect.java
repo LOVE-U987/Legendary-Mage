@@ -25,7 +25,7 @@ import java.util.UUID;
  * 使用原版伤害源，不触发铁魔法法术系统
  * 
  * @author Love_U
- * @version 0.0.3
+ * @version 1.0.4
  */
 public class HolyMarkEffect extends ElementMarkEffect {
 

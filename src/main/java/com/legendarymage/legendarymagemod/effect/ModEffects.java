@@ -13,7 +13,7 @@ import com.legendarymage.legendarymagemod.LegendaryMage;
  * 负责注册模组中的所有状态效果
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.0
  */
 public class ModEffects {
 

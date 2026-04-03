@@ -14,7 +14,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
  * 效果：减少法术抗性，每级-5%
  * 
  * @author Love_U
- * @version 0.0.2
+ * @version 1.0.4
  */
 public class DarknessBuffEffect extends MobEffect {
 

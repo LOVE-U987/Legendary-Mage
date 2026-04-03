@@ -18,7 +18,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
  * 这些修饰符提供基础显示值，实际效果由 ElementReactionEffects.handleEnderAny() 动态调整。
  * 
  * @author Love_U
- * @version 0.0.7
+ * @version 1.0.0
  */
 public class EnderEchoBuffEffect extends MobEffect {
 
