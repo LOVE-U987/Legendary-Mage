@@ -1,0 +1,18 @@
+{
+  "name": "spell.legendarymage.living_ice_sculpture",
+  "icon": "legendarymage:textures/entity/ice_sculpture.png",
+  "category": "legendarymage:spells",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "irons_spellbooks:ice_staff",
+      "title": "spell.legendarymage.living_ice_sculpture",
+      "text": "spell.legendarymage.living_ice_sculpture.guide"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.living_ice_sculpture.details"
+    }
+  ],
+  "sortnum": 3
+}

@@ -1,9 +1,12 @@
 package com.legendarymage.legendarymagemod.entity;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.entity.spell.ElementalArrowProjectile;
+import com.legendarymage.legendarymagemod.entity.spell.ElementalOrbProjectile;
 import com.legendarymage.legendarymagemod.entity.spell.FocusedIceConeProjectile;
 import com.legendarymage.legendarymagemod.entity.spell.GiantSnowballEntity;
 import com.legendarymage.legendarymagemod.entity.spell.IceExplosionConeProjectile;
+import com.legendarymage.legendarymagemod.entity.spell.TrailTestProjectile;
 import com.legendarymage.legendarymagemod.spell.LivingIceSculptureEntity;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -76,6 +79,46 @@ public class ModEntities {
                     .clientTrackingRange(10)
                     .updateInterval(1)
                     .build("giant_snowball")
+    );
+
+    /**
+     * 元素球投射物实体
+     * 元素弹幕法术使用的投射物
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<ElementalOrbProjectile>> ELEMENTAL_ORB = ENTITIES.register(
+            "elemental_orb",
+            () -> EntityType.Builder.<ElementalOrbProjectile>of(ElementalOrbProjectile::new, MobCategory.MISC)
+                    .sized(0.3f, 0.3f)  // 小型投射物
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("elemental_orb")
+    );
+
+    /**
+     * 元素箭投射物实体
+     * 三向之矢法术使用的投射物
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<ElementalArrowProjectile>> ELEMENTAL_ARROW = ENTITIES.register(
+            "elemental_arrow",
+            () -> EntityType.Builder.<ElementalArrowProjectile>of(ElementalArrowProjectile::new, MobCategory.MISC)
+                    .sized(0.25f, 0.25f)  // 箭矢尺寸
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .build("elemental_arrow")
+    );
+
+    /**
+     * 拖尾特效测试投射物实体
+     * 专门用于验证TrailEffect API的测试投射物
+     * 必须有独立的EntityType以确保客户端正确实例化此类
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<TrailTestProjectile>> TRAIL_TEST = ENTITIES.register(
+            "trail_test",
+            () -> EntityType.Builder.<TrailTestProjectile>of(TrailTestProjectile::new, MobCategory.MISC)
+                    .sized(0.5f, 0.5f)  // 较大尺寸（便于观察）
+                    .clientTrackingRange(64)   // 超远追踪距离（确保客户端能收到）
+                    .updateInterval(1)       // 每tick更新
+                    .build("trail_test")
     );
 
     /**

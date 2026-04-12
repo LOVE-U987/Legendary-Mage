@@ -1,0 +1,18 @@
+{
+  "name": "spell.legendarymage.resurrection_rune",
+  "icon": "legendarymage:textures/gui/spell_icons/resurrection_rune.png",
+  "category": "legendarymage:spells",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "irons_spellbooks:blood_staff",
+      "title": "spell.legendarymage.resurrection_rune",
+      "text": "spell.legendarymage.resurrection_rune.guide"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.resurrection_rune.details"
+    }
+  ],
+  "sortnum": 0
+}

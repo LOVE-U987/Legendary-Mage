@@ -194,6 +194,9 @@ dependencies {
 
     // Ender's Spells and Stuff: Requiem (安德的咒语和东西：安魂曲)
     implementation files("libs/ess_requiem-0.0.9.jar")
+
+    // Patchouli (帕秋莉手册)
+    implementation files("libs/Patchouli-1.21.1-93-NEOFORGE.jar")
     
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html

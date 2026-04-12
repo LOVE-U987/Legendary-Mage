@@ -224,14 +224,16 @@ public class ElementReactionManager {
                         newElementType.getId()));
                 
                 // 触发元素反应
-                ElementReactionEffects.handleReaction(serverLevel, target, attacker, 
+                ElementReactionEffects.handleReaction(serverLevel, target, attacker,
                         reactableElement, newElementType, reactableLevel);
-                
+
                 // 播放反应粒子效果
                 ElementReactionEffects.playReactionParticles(serverLevel, target, reactableElement, newElementType);
-                
-                // 注意：不再清除被反应的标记，允许多种标记同时存在
-                // 如果需要清除，可以在这里添加逻辑
+
+                // 【重要说明】handleReaction()内部已经清除了参与反应的两个元素标记
+                // （reactableElement 和 newElementType 的标记都会被移除）
+                // 这是设计决策：元素反应是"消耗性"的，反应后标记消失
+                // 但下面的代码会立即重新施加 newElementType 的新标记（1级）
             }
         }
         

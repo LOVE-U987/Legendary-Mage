@@ -1,0 +1,6 @@
+{
+  "name": "legendarymage.patchouli.category.spells",
+  "description": "legendarymage.patchouli.category.spells.desc",
+  "icon": "legendarymage:textures/gui/spell_icons/magic_shotgun.png",
+  "sortnum": 1
+}

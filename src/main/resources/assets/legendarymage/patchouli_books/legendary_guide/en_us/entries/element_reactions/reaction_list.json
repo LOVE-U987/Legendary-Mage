@@ -1,0 +1,43 @@
+{
+  "name": "legendarymage.patchouli.entry.reaction_list",
+  "icon": "irons_spellbooks:lightning_bottle",
+  "category": "legendarymage:element_reactions",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.chaos_buff",
+      "text": "legendarymage.patchouli.page.chaos_reaction"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.ender_echo_buff",
+      "text": "legendarymage.patchouli.page.ender_echo_reaction"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.armor_reduction",
+      "text": "legendarymage.patchouli.page.armor_reduction_reaction"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.darkness_buff",
+      "text": "legendarymage.patchouli.page.darkness_reaction"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.electrocuted_buff",
+      "text": "legendarymage.patchouli.page.electrocuted_reaction"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.lightning_rod_buff",
+      "text": "legendarymage.patchouli.page.lightning_rod_reaction"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.plague_buff",
+      "text": "legendarymage.patchouli.page.plague_reaction"
+    }
+  ],
+  "sortnum": 1
+}

@@ -1,10 +1,12 @@
 package com.legendarymage.legendarymagemod.element;
 
+import java.util.List;
+
 import com.legendarymage.legendarymagemod.LegendaryMage;
-import com.legendarymage.legendarymagemod.effect.ElectrocutedBuffEffect;
 import com.legendarymage.legendarymagemod.effect.LightningRodBuffEffect;
 import com.legendarymage.legendarymagemod.effect.ModEffects;
 import com.legendarymage.legendarymagemod.effect.PlagueBuffEffect;
+
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -21,9 +23,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.UUID;
-
 /**
  * 元素反应效果类
  * 负责处理各种元素反应的效果实现
@@ -34,19 +33,14 @@ import java.util.UUID;
 public class ElementReactionEffects {
 
     /**
-     * 混沌Buff法术强度修饰符UUID
+     * 终末回响法术抗性修饰符名称
      */
-    private static final UUID CHAOS_SPELL_POWER_UUID = UUID.fromString("42345678-1234-1234-1234-123456789abc");
+    private static final String ENDER_ECHO_RESIST_MODIFIER_NAME = "ender_echo_spell_resist";
 
     /**
-     * 终末回响法术抗性修饰符UUID
+     * 终末回响法术强度修饰符名称
      */
-    private static final UUID ENDER_ECHO_RESIST_UUID = UUID.fromString("52345678-1234-1234-1234-123456789abc");
-
-    /**
-     * 终末回响法术强度修饰符UUID
-     */
-    private static final UUID ENDER_ECHO_SPELL_POWER_UUID = UUID.fromString("62345678-1234-1234-1234-123456789abc");
+    private static final String ENDER_ECHO_SPELL_POWER_MODIFIER_NAME = "ender_echo_spell_power";
 
     /**
      * 输出调试日志
@@ -464,6 +458,11 @@ public class ElementReactionEffects {
      * "终末回响"Buff：加成施法者法术抗性与法术强度
      * +末影加成/2的法术抗性
      * +末影加成/3的法术强度
+     *
+     * 注意：此方法的属性修饰符管理采用"先移除旧值→添加效果→替换为动态值"的三步策略
+     * 虽然存在极短时间窗口（1-2 tick）内属性值为构造函数的显示用固定值，
+     * 但由于Minecraft主线程单tick执行特性，其他代码几乎不可能在这个窗口期读取到错误值。
+     * 这是EMIffect等模组兼容性要求的权衡设计。
      */
     private static void handleEnderAny(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
                                         ElementType existingElement, ElementType newElement, int markLevel) {
@@ -479,38 +478,51 @@ public class ElementReactionEffects {
         double spellPowerBonus = enderBonus * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.SPELL_POWER_RATIO;
         double spellResistBonus = enderBonus * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.SPELL_RESIST_RATIO;
 
-        // 移除旧的效果（如果存在）
+        // 第一步：完全移除旧的终末回响效果及其所有动态属性修饰符（如果存在）
         removeOldEnderEchoEffect(attacker);
 
-        // 施加终末回响Buff
-        // 注意：EnderEchoBuffEffect在构造函数中添加了基础属性修饰符用于EMIffect显示
-        // 我们需要移除这些基础修饰符，然后添加动态计算的实际修饰符
+        // 第二步：施加新的终末回响Buff（此时会自动应用构造函数中的基础显示用修饰符）
         MobEffect enderEchoBuffEffect = ModEffects.ENDER_ECHO_BUFF.get();
         Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(enderEchoBuffEffect);
         int duration = 300; // 15秒
-        
-        // 创建效果实例
+
         MobEffectInstance effectInstance = new MobEffectInstance(
                 effectHolder,
                 duration,
                 0,
                 false, true, true
         );
-        
+
         attacker.addEffect(effectInstance);
-        
-        // 移除构造函数中添加的基础修饰符（因为它们只是用于显示的固定值）
-        removeEnderEchoBaseModifiers(attacker);
-        
-        // 手动添加动态属性修饰符（因为这个Buff的数值是基于施法者属性的）
-        // 这些修饰符提供实际的游戏效果
-        addEnderEchoAttributeModifiers(attacker, spellPowerBonus, spellResistBonus);
+
+        // 第三步：立即将基础显示用修饰符替换为动态计算的实际游戏效果修饰符
+        // 这确保属性值在同一个tick内就被修正为正确值
+        replaceEnderEchoModifiersWithDynamicValues(attacker, spellPowerBonus, spellResistBonus);
 
         debugLog(String.format("末影-任意反应给予终末回响Buff: 法术强度+%.1f%%, 法术抗性+%.1f%% (末影: %.1f)",
                 spellPowerBonus * 100, spellResistBonus * 100, enderPower));
 
         // 播放特效
         playEnderAnyParticles(serverLevel, attacker);
+    }
+
+    /**
+     * 将终末回响的基础显示用修饰符替换为动态计算的实际游戏效果修饰符
+     * 这是一个原子操作，确保在同一tick内完成替换，减少竞态条件风险
+     *
+     * @param entity 实体
+     * @param spellPowerBonus 动态计算的法术强度加成
+     * @param spellResistBonus 动态计算的法术抗性加成
+     */
+    private static void replaceEnderEchoModifiersWithDynamicValues(LivingEntity entity, double spellPowerBonus, double spellResistBonus) {
+        // 移除构造函数中自动添加的基础显示用修饰符（固定值，用于EMIffect显示）
+        removeEnderEchoBaseModifiers(entity);
+
+        // 添加基于施法者属性动态计算的实际游戏效果修饰符
+        addEnderEchoAttributeModifiers(entity, spellPowerBonus, spellResistBonus);
+
+        debugLog(String.format("终末回响属性修饰符已替换为动态值: 法术强度+%.1f%%, 法术抗性+%.1f%%",
+                spellPowerBonus * 100, spellResistBonus * 100));
     }
 
     /**
@@ -548,8 +560,8 @@ public class ElementReactionEffects {
         }
         
         // 移除属性修饰符
-        removeAttributeModifier(entity, AttributeRegistry.SPELL_POWER, ENDER_ECHO_SPELL_POWER_UUID);
-        removeAttributeModifier(entity, AttributeRegistry.SPELL_RESIST, ENDER_ECHO_RESIST_UUID);
+        removeAttributeModifier(entity, AttributeRegistry.SPELL_POWER, ENDER_ECHO_SPELL_POWER_MODIFIER_NAME);
+        removeAttributeModifier(entity, AttributeRegistry.SPELL_RESIST, ENDER_ECHO_RESIST_MODIFIER_NAME);
     }
 
     /**
@@ -557,12 +569,12 @@ public class ElementReactionEffects {
      */
     private static void addEnderEchoAttributeModifiers(LivingEntity entity, double spellPowerBonus, double spellResistBonus) {
         // 添加法术强度修饰符
-        addAttributeModifier(entity, AttributeRegistry.SPELL_POWER, ENDER_ECHO_SPELL_POWER_UUID,
-                "ender_echo_spell_power", spellPowerBonus);
-        
+        addAttributeModifier(entity, AttributeRegistry.SPELL_POWER, ENDER_ECHO_SPELL_POWER_MODIFIER_NAME,
+                spellPowerBonus);
+
         // 添加法术抗性修饰符
-        addAttributeModifier(entity, AttributeRegistry.SPELL_RESIST, ENDER_ECHO_RESIST_UUID,
-                "ender_echo_spell_resist", spellResistBonus);
+        addAttributeModifier(entity, AttributeRegistry.SPELL_RESIST, ENDER_ECHO_RESIST_MODIFIER_NAME,
+                spellResistBonus);
     }
 
     /**
@@ -598,18 +610,17 @@ public class ElementReactionEffects {
      *
      * @param entity 实体
      * @param attribute 属性
-     * @param uuid UUID（转换为 ResourceLocation）
-     * @param name 名称
+     * @param modifierName 修饰符名称（用于构建 ResourceLocation ID）
      * @param amount 数值
      */
     private static void addAttributeModifier(LivingEntity entity, Holder<Attribute> attribute,
-                                              UUID uuid, String name, double amount) {
+                                              String modifierName, double amount) {
         if (!entity.getAttributes().hasAttribute(attribute)) return;
 
         AttributeInstance instance = entity.getAttribute(attribute);
         if (instance != null) {
             // 1.21 中 AttributeModifier 使用 ResourceLocation 作为标识符
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, name);
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, modifierName);
             // 使用 ADD_MULTIPLIED_TOTAL 操作类型（百分比加成）
             AttributeModifier modifier = new AttributeModifier(id, amount, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             instance.addTransientModifier(modifier);
@@ -622,20 +633,19 @@ public class ElementReactionEffects {
      *
      * @param entity 实体
      * @param attribute 属性
-     * @param uuid UUID（转换为 ResourceLocation）
+     * @param modifierName 修饰符名称（用于构建 ResourceLocation ID）
      */
-    private static void removeAttributeModifier(LivingEntity entity, Holder<Attribute> attribute, UUID uuid) {
+    private static void removeAttributeModifier(LivingEntity entity, Holder<Attribute> attribute, String modifierName) {
         if (!entity.getAttributes().hasAttribute(attribute)) return;
 
         AttributeInstance instance = entity.getAttribute(attribute);
         if (instance != null) {
             // 1.21 中通过 ResourceLocation 移除修饰符
-            // 我们需要遍历所有修饰符并找到匹配的
-            for (AttributeModifier modifier : instance.getModifiers()) {
-                // 检查修饰符的 ID 是否匹配（通过名称）
-                if (modifier.id().getPath().contains("ender_echo")) {
-                    instance.removeModifier(modifier.id());
-                }
+            // 使用传入的修饰符名称构建完整的 ResourceLocation ID
+            ResourceLocation modifierId = ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, modifierName);
+            if (instance.getModifier(modifierId) != null) {
+                instance.removeModifier(modifierId);
+                debugLog(String.format("成功移除属性修饰符: %s (属性: %s)", modifierName, attribute.unwrapKey().map(k -> k.location().getPath()).orElse("unknown")));
             }
         }
     }
@@ -835,8 +845,20 @@ public class ElementReactionEffects {
 
     /**
      * 雷毒反应
-     * 消耗感电 Buff 释放电磁波范围伤害
-     * 伤害 = 感电 Buff 等级 × 5，范围 3 格
+     * 消耗目标身上的感电 Buff 释放电磁波范围伤害
+     * 游戏玩法逻辑：
+     * 1. 施法者先对目标施加感电Buff（通过其他雷系法术或效果）
+     * 2. 然后使用毒系法术触发雷毒反应
+     * 3. 反应会消耗目标身上的感电Buff，释放电磁波范围伤害
+     *
+     * 这种设计鼓励玩家组合使用不同元素的法术，形成连招策略。
+     *
+     * @param serverLevel 服务器世界
+     * @param target 目标实体（需要拥有感电Buff才能触发）
+     * @param attacker 攻击者（施法者）
+     * @param existingElement 已有元素（雷系）
+     * @param newElement 新施加元素（毒系）
+     * @param markLevel 元素标记等级
      */
     private static void handleLightningPoison(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
                                                ElementType existingElement, ElementType newElement, int markLevel) {
@@ -844,10 +866,10 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 获取感电 Buff 等级
-        int electrocutedLevel = getElectrocutedBuffLevel(attacker);
+        // 获取目标身上的感电 Buff 等级（关键：检查的是目标，不是施法者）
+        int electrocutedLevel = getElectrocutedBuffLevel(target);
         if (electrocutedLevel <= 0) {
-            debugLog("施法者没有感电 Buff，跳过雷毒反应");
+            debugLog("目标没有感电 Buff，跳过雷毒反应（提示：需要先对目标施加感电效果）");
             return;
         }
 
@@ -878,8 +900,8 @@ public class ElementReactionEffects {
         debugLog(String.format("雷毒反应造成电磁波伤害：%.1f (感电等级：%d), 影响 %d 个目标",
                 damage, electrocutedLevel, affectedCount));
 
-        // 消耗感电 Buff
-        removeElectrocutedBuff(attacker);
+        // 消耗目标身上的感电 Buff
+        removeElectrocutedBuff(target);
 
         // 播放特效
         playLightningPoisonParticles(serverLevel, target.position(), range);

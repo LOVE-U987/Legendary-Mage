@@ -219,7 +219,6 @@ public class MagicShotgunSpell extends AbstractSpell {
             for (Holder<SchoolType> schoolHolder : SchoolRegistry.REGISTRY.asLookup().listElements().toList()) {
                 SchoolType school = schoolHolder.value();
                 if (school.getId().equals(BLADE_SCHOOL_RESOURCE)) {
-                    LegendaryMage.LOGGER.debug("成功找到咒刃流派：{}", BLADE_SCHOOL_RESOURCE);
                     return school;
                 }
             }

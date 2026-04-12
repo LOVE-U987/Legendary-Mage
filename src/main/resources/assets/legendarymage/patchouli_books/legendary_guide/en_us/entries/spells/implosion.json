@@ -1,0 +1,18 @@
+{
+  "name": "spell.legendarymage.implosion",
+  "icon": "legendarymage:textures/gui/spell_icons/implosion.png",
+  "category": "legendarymage:spells",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "irons_spellbooks:cinder_essence",
+      "title": "spell.legendarymage.implosion",
+      "text": "spell.legendarymage.implosion.guide"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.implosion.details"
+    }
+  ],
+  "sortnum": 2
+}

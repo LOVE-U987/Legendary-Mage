@@ -1,0 +1,16 @@
+{
+  "name": "legendarymage.patchouli.entry.about_spells",
+  "icon": "irons_spellbooks:gold_spell_book",
+  "category": "legendarymage:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.about_spells.1"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.about_spells.2"
+    }
+  ],
+  "sortnum": 1
+}

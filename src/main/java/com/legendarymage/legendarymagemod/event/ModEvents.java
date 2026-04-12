@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.event;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.effect.HolyMarkEffect;
 import com.legendarymage.legendarymagemod.effect.ModEffects;
 import com.legendarymage.legendarymagemod.effect.PyroFlameEffect;
 import com.legendarymage.legendarymagemod.entity.ModEntities;
@@ -8,6 +9,7 @@ import com.legendarymage.legendarymagemod.spell.LivingIceSculptureEntity;
 import com.legendarymage.legendarymagemod.spell.IceSculptureManager;
 import com.legendarymage.legendarymagemod.spell.ResurrectionRuneManager;
 import com.legendarymage.legendarymagemod.spell.BlizzardManager;
+import com.legendarymage.legendarymagemod.spell.ElementalPrismManager;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -32,6 +34,17 @@ public class ModEvents {
      * 调试模式开关
      */
     private static final boolean DEBUG_MODE = false;
+
+    /**
+     * 清理计数器
+     */
+    private static int cleanupCounter = 0;
+
+    /**
+     * 清理间隔（tick）
+     * 每 5 分钟（6000 tick）清理一次
+     */
+    private static final int CLEANUP_INTERVAL = 6000;
 
     /**
      * 输出调试日志
@@ -59,6 +72,9 @@ public class ModEvents {
         if (!(entity.level() instanceof ServerLevel serverLevel)) {
             return;
         }
+        
+        // 清理 HolyMarkEffect 中的静态 Map 数据
+        HolyMarkEffect.cleanupEntity(entity);
         
         // ========== 处理烈焰效果爆炸 ==========
         handlePyroFlameExplosion(entity);
@@ -135,6 +151,13 @@ public class ModEvents {
             return;
         }
         
+        // 定期清理过期数据
+        cleanupCounter++;
+        if (cleanupCounter >= CLEANUP_INTERVAL) {
+            cleanupCounter = 0;
+            HolyMarkEffect.cleanupExpiredCooldowns(serverLevel.getGameTime());
+        }
+        
         // 更新复苏符文区域
         ResurrectionRuneManager manager = ResurrectionRuneManager.load(serverLevel);
         manager.tick(serverLevel);
@@ -144,6 +167,9 @@ public class ModEvents {
         
         // 更新暴风雪区域
         BlizzardManager.tick(serverLevel);
+        
+        // 更新元素棱镜区域
+        ElementalPrismManager.tick(serverLevel);
     }
 
     /**

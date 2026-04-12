@@ -1,0 +1,18 @@
+{
+  "name": "spell.legendarymage.giant_snowball",
+  "icon": "legendarymage:textures/mob_effect/magic_shotgun_buff.png",
+  "category": "legendarymage:spells",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "irons_spellbooks:permafrost_shard",
+      "title": "spell.legendarymage.giant_snowball",
+      "text": "spell.legendarymage.giant_snowball.guide"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.giant_snowball.details"
+    }
+  ],
+  "sortnum": 9
+}

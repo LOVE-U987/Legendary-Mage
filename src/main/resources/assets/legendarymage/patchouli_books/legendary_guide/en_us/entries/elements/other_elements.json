@@ -1,0 +1,33 @@
+{
+  "name": "legendarymage.patchouli.entry.other_elements",
+  "icon": "irons_spellbooks:blood_staff",
+  "category": "legendarymage:elements",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.blood_mark",
+      "text": "legendarymage.patchouli.page.blood.details"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.holy_mark",
+      "text": "legendarymage.patchouli.page.holy.details"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.eldritch_mark",
+      "text": "legendarymage.patchouli.page.eldritch.details"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.poison_mark",
+      "text": "legendarymage.patchouli.page.poison.details"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "effect.legendarymage.ender_mark",
+      "text": "legendarymage.patchouli.page.ender.details"
+    }
+  ],
+  "sortnum": 2
+}

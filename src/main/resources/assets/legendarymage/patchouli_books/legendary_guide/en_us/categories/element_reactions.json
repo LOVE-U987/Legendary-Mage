@@ -1,0 +1,6 @@
+{
+  "name": "legendarymage.patchouli.category.element_reactions",
+  "description": "legendarymage.patchouli.category.element_reactions.desc",
+  "icon": "legendarymage:textures/mob_effect/electrocuted_buff.png",
+  "sortnum": 3
+}

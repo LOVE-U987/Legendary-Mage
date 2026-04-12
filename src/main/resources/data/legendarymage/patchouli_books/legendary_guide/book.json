@@ -1,0 +1,20 @@
+{
+  "name": "item.legendarymage.legendary_guide",
+  "landing_text": "legendarymage.patchouli.landing_text",
+  "version": 1,
+  "creative_tab": "irons_spellbooks:spellbooks",
+  "use_resource_pack": true,
+  "book_texture": "patchouli:textures/gui/book_purple.png",
+  "model": "legendarymage:legendary_guide",
+  "index_icon": "legendarymage:textures/mob_effect/holy_mark.png",
+  "text_color": "440066",
+  "header_color": "660099",
+  "nameplate_color": "9933CC",
+  "link_color": "6600CC",
+  "link_hover_color": "9933FF",
+  "progress_bar_color": "9933CC",
+  "progress_bar_background": "E6CCFF",
+  "show_progress": true,
+  "show_toasts": true,
+  "i18n": true
+}

@@ -26,6 +26,8 @@ import org.joml.Vector3f;
 
 import com.legendarymage.legendarymagemod.entity.ModEntities;
 import com.legendarymage.legendarymagemod.spell.FocusedIceConeSpell;
+import com.legendarymage.legendarymagemod.trail.SimpleTrailEffect;
+import com.legendarymage.legendarymagemod.trail.SimpleTrailManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,8 +69,19 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
     private int pierceCount = 0;
 
     /**
+     * 拖尾特效实例（每个投射物拥有独立的拖尾）
+     * 仅在客户端创建和使用
+     */
+    private SimpleTrailEffect coneTrail = null;
+
+    /**
+     * 拖尾是否已初始化标志
+     */
+    private boolean trailInitialized = false;
+
+    /**
      * 构造函数
-     * 
+     *
      * @param entityType 实体类型
      * @param level      世界
      */
@@ -89,15 +102,47 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
     }
 
     /**
+     * 初始化聚能冰锥的拖尾特效
+     * 创建冰元素拖尾
+     */
+    private void initializeConeTrail() {
+        if (trailInitialized) return;
+
+        // 生成唯一ID - 使用UUID确保每个投射物都有独立的拖尾
+        String trailId = "focused_ice_cone_" + this.getUUID().toString();
+
+        // 创建冰元素拖尾
+        SimpleTrailManager manager = SimpleTrailManager.getInstance();
+        coneTrail = manager.createIceElementTrail(trailId, this);
+
+        trailInitialized = true;
+    }
+
+    /**
+     * 清理拖尾特效资源
+     * 在投射物销毁时调用，防止内存泄漏
+     */
+    private void cleanupTrail() {
+        if (coneTrail != null) {
+            // 停止拖尾效果（让剩余的点自然淡出）
+            if (coneTrail.isActive()) {
+                coneTrail.stop();
+            }
+            coneTrail = null;
+        }
+    }
+
+    /**
      * 击中方块时的处理
      * 撞向墙体后产生大冰爆
-     * 
+     *
      * @param blockHitResult 方块击中结果
      */
     @Override
     protected void onHitBlock(BlockHitResult blockHitResult) {
         super.onHitBlock(blockHitResult);
         triggerExplosion(blockHitResult.getLocation());
+        cleanupTrail();
         discard();
     }
 
@@ -140,6 +185,7 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
             if (pierceCount >= MAX_PIERCE_COUNT) {
                 // 触发大冰爆
                 triggerExplosion(target.position());
+                cleanupTrail();
                 discard();
             }
             // 否则继续穿透（不销毁投射物）
@@ -356,18 +402,32 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
 
     /**
      * 轨迹粒子效果（客户端每tick调用）- 聚能冰锥的高速冰霜轨迹
+     * 集成简单拖尾特效API
      */
     @Override
     public void trailParticles() {
         Level level = this.level();
-        
+
+        // ========== 集成简单拖尾特效 ==========
+        // 仅在客户端且拖尾已初始化时更新拖尾
+        if (level.isClientSide()) {
+            // 延迟初始化拖尾
+            if (!trailInitialized) {
+                initializeConeTrail();
+            }
+
+            // SimpleTrailEffect 使用自动更新机制，不需要手动添加点
+            // 更新在 SimpleTrailClientHandler 中通过 onRenderLevel 事件处理
+        }
+
+        // ========== 原有粒子效果（保留不变） ==========
         // 1. 冰晶轨迹 - 参考铁魔法Icicle，更加集中
         for (int i = 0; i < 2; i++) {
             double speed = 0.04;
             double dx = Utils.random.nextDouble() * 2 * speed - speed;
             double dy = Utils.random.nextDouble() * 2 * speed - speed;
             double dz = Utils.random.nextDouble() * 2 * speed - speed;
-            
+
             // 混合使用铁魔法雪花和原版雪花
             level.addParticle(
                 Utils.random.nextDouble() < 0.4 ? ParticleRegistry.SNOWFLAKE_PARTICLE.get() : ParticleTypes.SNOWFLAKE,
@@ -384,7 +444,7 @@ public class FocusedIceConeProjectile extends AbstractMagicProjectile {
                 0, 0, 0
             );
         }
-        
+
         // 3. 亮蓝色火花 - 聚能核心
         if (Utils.random.nextDouble() < 0.25) {
             level.addParticle(

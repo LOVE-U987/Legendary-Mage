@@ -17,13 +17,13 @@ import java.util.Random;
  * 特性：
  * - 血量为原生物的 50%
  * - 伤害为原生物的 50%
- * - 存在 1 分钟后死亡并毒爆
+ * - 存在 30 秒后死亡并毒爆
  * - 毒爆范围 3 格，伤害 = 2 × 瘟疫 Buff 等级
  * - 毒爆传播瘟疫给周围生物
  * - 使用铁魔法的 SummonedZombie 实现召唤机制
  *
  * @author Love_U
- * @version 1.0.0
+ * @version 1.0.1
  */
 public class PlagueZombie {
 
@@ -153,8 +153,8 @@ public class PlagueZombie {
         // 增加存在时间
         existTime++;
 
-        // 检查是否超过 1 分钟（60 秒 = 1200 tick）
-        if (existTime >= 1200) {
+        // 检查是否超过 30 秒（30 秒 = 600 tick）
+        if (existTime >= 600) {
             // 死亡并毒爆
             explode();
         }
@@ -304,7 +304,7 @@ public class PlagueZombie {
      * @return 剩余 tick 数
      */
     public int getRemainingTime() {
-        return Math.max(0, 1200 - existTime);
+        return Math.max(0, 600 - existTime);
     }
 
     /**

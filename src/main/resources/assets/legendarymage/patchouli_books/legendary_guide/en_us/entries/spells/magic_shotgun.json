@@ -1,0 +1,18 @@
+{
+  "name": "spell.legendarymage.magic_shotgun",
+  "icon": "legendarymage:textures/gui/spell_icons/magic_shotgun.png",
+  "category": "legendarymage:spells",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "irons_spellbooks:arcane_rune",
+      "title": "spell.legendarymage.magic_shotgun",
+      "text": "spell.legendarymage.magic_shotgun.guide"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.magic_shotgun.details"
+    }
+  ],
+  "sortnum": 6
+}

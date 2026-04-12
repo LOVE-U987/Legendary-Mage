@@ -1,0 +1,23 @@
+{
+  "name": "legendarymage.patchouli.entry.fire_ice_lightning",
+  "icon": "irons_spellbooks:cinder_essence",
+  "category": "legendarymage:elements",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "element.legendarymage.fire",
+      "text": "legendarymage.patchouli.page.fire.details"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "element.legendarymage.ice",
+      "text": "legendarymage.patchouli.page.ice.details"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "element.legendarymage.lightning",
+      "text": "legendarymage.patchouli.page.lightning.details"
+    }
+  ],
+  "sortnum": 1
+}

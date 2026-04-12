@@ -102,13 +102,9 @@ public class ElementReactionEvents {
 
         // 处理3级光明标记的神圣打击（法术触发）
         // 当目标受到法术伤害时，如果目标有3级光明标记，触发神圣打击
-        HolyMarkEffect.tryTriggerHolyStrike(target);
-
         // 处理3级末影标记的回响打击（法术触发）
         // 当攻击者对目标造成法术伤害时，如果攻击者有3级末影标记，50%几率触发回响打击
-        if (attacker != null) {
-            EnderMarkEffect.tryTriggerEchoStrike(attacker, target, damage);
-        }
+        triggerSpecialMarkEffects(target, attacker, damage);
     }
 
     /**
@@ -210,25 +206,12 @@ public class ElementReactionEvents {
         if (damageSource instanceof SpellDamageSource) {
             // 铁魔法的法术伤害已经在 onSpellDamage 中处理
             // 但这里仍然需要处理神圣打击和回响打击
-            // 处理3级光明标记的神圣打击（法术触发）
-            HolyMarkEffect.tryTriggerHolyStrike(target);
-
-            // 处理3级末影标记的回响打击（法术触发）
-            if (attacker != null) {
-                EnderMarkEffect.tryTriggerEchoStrike(attacker, target, damage);
-            }
+            triggerSpecialMarkEffects(target, attacker, damage);
             return;
         }
 
-        // 处理3级光明标记的神圣打击（通用伤害触发）
-        // 当目标受到任何伤害时，如果目标有3级光明标记，触发神圣打击
-        HolyMarkEffect.tryTriggerHolyStrike(target);
-
-        // 处理3级末影标记的回响打击（通用伤害触发）
-        // 当攻击者对目标造成伤害时，如果攻击者有3级末影标记，50%几率触发回响打击
-        if (attacker != null) {
-            EnderMarkEffect.tryTriggerEchoStrike(attacker, target, damage);
-        }
+        // 处理3级光明标记的神圣打击和3级末影标记的回响打击（通用伤害触发）
+        triggerSpecialMarkEffects(target, attacker, damage);
 
         // 尝试从伤害源获取元素类型（兼容其他模组的法术）
         ElementType elementType = getElementTypeFromDamageSource(damageSource);
@@ -260,6 +243,27 @@ public class ElementReactionEvents {
 
         // 更新元素反应管理器
         ElementReactionManager.tick(serverLevel);
+    }
+
+    /**
+     * 触发特殊标记效果（神圣打击和回响打击）
+     * 统一处理3级光明标记的神圣打击和3级末影标记的回响打击
+     * 此方法被多个事件处理器调用，避免代码重复
+     *
+     * @param target 受到伤害的目标实体（用于检查神圣标记）
+     * @param attacker 造成伤害的攻击者（用于检查末影标记，可为null）
+     * @param damage 伤害值（用于回响打击计算）
+     */
+    private static void triggerSpecialMarkEffects(LivingEntity target, LivingEntity attacker, float damage) {
+        // 处理3级光明标记的神圣打击
+        // 当目标受到伤害时，如果目标有3级光明标记，触发神圣打击
+        HolyMarkEffect.tryTriggerHolyStrike(target);
+
+        // 处理3级末影标记的回响打击
+        // 当攻击者对目标造成伤害时，如果攻击者有3级末影标记，50%几率触发回响打击
+        if (attacker != null) {
+            EnderMarkEffect.tryTriggerEchoStrike(attacker, target, damage);
+        }
     }
 
     /**

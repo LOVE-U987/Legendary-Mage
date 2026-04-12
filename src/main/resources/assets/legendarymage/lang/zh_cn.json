@@ -294,11 +294,11 @@
   "effect.legendarymage.armor_reduction": "§a溶甲§r",
   "effect.legendarymage.armor_reduction.description": "毒素元素反应获得的Debuff，护甲值降低",
   "effect.legendarymage.darkness_buff": "§4暗夜无光§r",
-  "effect.legendarymage.darkness_buff.description": "血系元素反应获得的Debuff，法术抗性降低",
+  "effect.legendarymage.darkness_buff.description": "血系元素反应获得的Debuff，血系法术抗性降低5%",
   "effect.legendarymage.electrocuted_buff": "§d感电§r",
   "effect.legendarymage.electrocuted_buff.description": "雷系元素反应获得的 Debuff，周期性释放连锁闪电",
   "effect.legendarymage.lightning_rod_buff": "§b避雷针§r",
-  "effect.legendarymage.lightning_rod_buff.description": "冰雷元素反应给予目标的 Debuff，减少雷系和冰系元素抗性，每级减少 5%",
+  "effect.legendarymage.lightning_rod_buff.description": "冰雷元素反应给予目标的 Debuff，冰系法术抗性-5%，雷系法术抗性-10%",
   "effect.legendarymage.plague_buff": "§2瘟疫§r",
   "effect.legendarymage.plague_buff.description": "暗毒元素反应给予目标的 Debuff，持续 20 秒，可无限叠加。每级减少 2% 最大生命值，死亡时可能转化为僵尸或毒爆",
 
@@ -348,5 +348,124 @@
   "spell.legendarymage.giant_snowball.duration": "暴风雪持续: %d秒",
   "spell.legendarymage.giant_snowball.spell_power": "法术强度: %s",
 
-  "entity.legendarymage.giant_snowball": "巨雪球"
+  "entity.legendarymage.giant_snowball": "巨雪球",
+
+  "entity.legendarymage.elemental_orb": "元素球",
+
+  "entity.legendarymage.elemental_arrow": "元素箭",
+
+  "spell.legendarymage.elemental_barrage": "元素弹幕",
+  "spell.legendarymage.elemental_barrage.guide": "持续发射冰、火、雷三种元素球。冰球造成范围冰冻效果，火球造成范围烈焰BUFF效果，雷球造成闪电链效果。所有伤害均可造成对应的元素标记。",
+  "spell.legendarymage.elemental_barrage.damage": "伤害: %s",
+  "spell.legendarymage.elemental_barrage.orb_count": "弹幕数量: %d",
+  "spell.legendarymage.elemental_barrage.fire_rate": "发射频率: %s/秒",
+  "spell.legendarymage.elemental_barrage.range": "范围: %d格 (固定)",
+  "spell.legendarymage.elemental_barrage.next_element": "下次元素: %s",
+
+  "spell.legendarymage.trail_test": "§6[测试] 拖尾特效§r",
+  "spell.legendarymage.trail_test.guide": "§e调试法术：§r用于验证TrailEffect API的拖尾特效。发射一个带有超明显彩虹渐变拖尾的测试投射物。如果看到彩色拖尾轨迹，说明拖尾系统工作正常！",
+  "spell.legendarymage.trail_test.purpose": "§a用途：§r验证拖尾特效系统是否正常工作",
+  "spell.legendarymage.trail_test.effect": "§b效果：§r发射带彩虹色几何体拖尾的投射物（红→蓝渐变）",
+  "spell.legendarymage.trail_test.debug": "§c调试：§r控制台会输出详细的创建和更新日志",
+
+  "spell.legendarymage.elemental_prism": "元素棱镜",
+  "spell.legendarymage.elemental_prism.guide": "瞬发创建元素棱镜区域，持续20秒。范围内所有敌人将每2秒共享彼此身上的元素标记类型和等级，且元素反应会触发两次。",
+  "spell.legendarymage.elemental_prism.range": "范围: %s格",
+  "spell.legendarymage.elemental_prism.mana_cost": "蓝耗: %d",
+  "spell.legendarymage.elemental_prism.duration": "持续时间: %d秒",
+  "spell.legendarymage.elemental_prism.double_reaction": "元素反应触发两次",
+
+  "legendarymage.configuration.elementalPrism": "元素棱镜配置",
+  "legendarymage.configuration.elementalPrism.tooltip": "元素棱镜法术的相关配置",
+  "legendarymage.configuration.elementalPrism.button": "元素棱镜配置",
+
+  "legendarymage.configuration.triDirectionalArrow": "三向之矢配置",
+  "legendarymage.configuration.triDirectionalArrow.tooltip": "三向之矢法术的相关配置",
+  "legendarymage.configuration.triDirectionalArrow.button": "三向之矢配置",
+
+  "legendarymage.configuration.elementalBarrage": "元素弹幕配置",
+  "legendarymage.configuration.elementalBarrage.tooltip": "元素弹幕法术的相关配置",
+  "legendarymage.configuration.elementalBarrage.button": "元素弹幕配置",
+
+  "legendarymage.configuration.element_mark_icon": "元素标记图标配置",
+  "legendarymage.configuration.element_mark_icon.tooltip": "配置生物头顶元素标记图标的显示",
+  "legendarymage.configuration.element_mark_icon.button": "元素标记图标配置",
+  "legendarymage.configuration.enabled": "启用",
+  "legendarymage.configuration.enabled.tooltip": "是否启用此功能",
+  "legendarymage.configuration.height_offset": "高度偏移",
+  "legendarymage.configuration.height_offset.tooltip": "图标相对于实体头顶的高度偏移",
+  "legendarymage.configuration.scale": "缩放比例",
+  "legendarymage.configuration.scale.tooltip": "图标的缩放大小",
+
+  "spell.legendarymage.tri_directional_arrow": "三向之矢",
+  "spell.legendarymage.tri_directional_arrow.guide": "长吟唱后依次释放冰、火、雷三种元素箭。冰箭造成冰冻伤害并附加缓慢，火箭造成火焰伤害并附加燃烧，雷箭造成雷电伤害。击中敌人立即造成4格范围元素伤害，箭矢落在地面可产生持续5秒的元素区域伤害。",
+  "spell.legendarymage.tri_directional_arrow.base_damage": "基础伤害: %s",
+  "spell.legendarymage.tri_directional_arrow.final_damage": "最终伤害: %s",
+  "spell.legendarymage.tri_directional_arrow.arrow_count": "箭矢数量: %d",
+  "spell.legendarymage.tri_directional_arrow.ground_damage": "持续伤害: %s/秒",
+  "spell.legendarymage.tri_directional_arrow.area_radius": "范围半径: %d格",
+  "spell.legendarymage.tri_directional_arrow.spell_power": "法术强度: %s",
+
+  "item.legendarymage.legendary_guide": "传奇法师指南",
+  "item.legendarymage.legendary_guide.tooltip": "探索传奇法师的奥秘",
+
+  "legendarymage.patchouli.landing_text": "欢迎来到传奇法师的世界！$(br2)本书将引导你了解本模组的各种法术、元素系统和元素反应机制。$(br2)$(o)愿魔法与你同在！$()",
+
+  "legendarymage.patchouli.category.getting_started": "入门指南",
+  "legendarymage.patchouli.category.getting_started.desc": "传奇法师模组的基础介绍",
+  "legendarymage.patchouli.category.spells": "法术图鉴",
+  "legendarymage.patchouli.category.spells.desc": "所有自定义法术的详细介绍",
+  "legendarymage.patchouli.category.elements": "元素系统",
+  "legendarymage.patchouli.category.elements.desc": "了解各种元素标记及其效果",
+  "legendarymage.patchouli.category.element_reactions": "元素反应",
+  "legendarymage.patchouli.category.element_reactions.desc": "探索元素之间的反应机制",
+
+  "legendarymage.patchouli.entry.welcome": "欢迎",
+  "legendarymage.patchouli.entry.about_spells": "关于法术",
+  "legendarymage.patchouli.entry.element_overview": "元素概述",
+  "legendarymage.patchouli.entry.fire_ice_lightning": "基础三元素",
+  "legendarymage.patchouli.entry.other_elements": "其他元素",
+  "legendarymage.patchouli.entry.reaction_overview": "反应概述",
+  "legendarymage.patchouli.entry.reaction_list": "反应列表",
+
+  "legendarymage.patchouli.page.welcome.1": "$(l)传奇法师$()是一个为$(l)铁魔法书$()模组添加新内容的扩展模组。$(br2)本模组添加了多种全新的法术、独特的元素系统和丰富的元素反应机制。$(br2)无论你是喜欢召唤亡灵大军的死灵法师，还是掌控冰霜之力的冰系法师，这里都有适合你的内容！",
+  "legendarymage.patchouli.page.welcome.2": "$(l)主要特性：$()$(li)10+ 种全新法术$(li)8 种元素标记系统$(li)7 种元素反应$(li)可配置的法术参数$(li)与铁魔法书完美集成$(br2)$(o)提示：使用配置菜单可以调整各种法术的参数！$()",
+
+  "legendarymage.patchouli.page.about_spells.1": "本模组的法术分为几个类别：$(br2)$(l)召唤类：$()复苏符文、活体冰雕术$(br)$(l)范围伤害类：$()纵火狂、聚爆、暴风雪$(br)$(l)特殊机制类：$()元素爆发、魔法散弹$(br)$(l)投射物类：$()冰爆锥、聚能冰锥、巨雪球",
+  "legendarymage.patchouli.page.about_spells.2": "$(l)法术强度$()是影响大多数法术效果的关键属性。你可以通过装备、饰品和升级来提升法术强度。$(br2)$(o)提示：在配置文件中可以调整每个法术的具体参数！$()",
+
+  "legendarymage.patchouli.page.resurrection_rune.details": "$(l)使用技巧：$()$(br)复苏符文最适合在开阔地带使用，因为它需要地表空间来生成亡灵。$(br2)法术强度会影响：$(li)符文持续时间$(li)影响范围$(li)生成亡灵的属性$(br2)$(c)注意：只能在地表使用！$()",
+  "legendarymage.patchouli.page.pyromaniac.details": "$(l)烈焰Buff机制：$()$(br)烈焰效果会叠加等级，等级越高，死亡时的爆炸威力越大。$(br2)搭配高攻速武器可以快速给多个敌人叠加烈焰标记。$(br2)$(o)小心：爆炸可能会伤害到自己！$()",
+  "legendarymage.patchouli.page.implosion.details": "$(l)聚爆连招：$()$(br)聚爆可以与其他范围伤害法术配合使用：$(br2)$(li)先用聚爆聚集敌人$(li)然后使用纵火狂或暴风雪进行范围打击$(li)或者等待聚爆的火焰爆炸$(br2)法术强度同时影响聚集范围和爆炸伤害。",
+  "legendarymage.patchouli.page.living_ice_sculpture.details": "$(l)冰雕机制：$()$(br)冰雕生成后会持续一段时间，然后自动转化为活体冰雕。$(br2)活体冰雕是召唤物，会保护施法者并攻击敌对生物。$(br2)法术强度影响：$(li)冰雕生命值$(li)转化后的攻击力$(li)持续时间",
+  "legendarymage.patchouli.page.blizzard.details": "$(l)暴风雪特性：$()$(br)暴风雪会持续对范围内的敌人造成伤害并附加缓慢效果。$(br2)适合控制大量敌人或配合其他法术使用。$(br2)法术等级和法术强度都会影响范围和伤害。",
+  "legendarymage.patchouli.page.elemental_burst.details": "$(l)元素轮换：$()$(br)元素爆发会按照 火→冰→雷 的顺序轮换元素类型。$(br2)每种元素伤害单独计算对应流派的法术强度加成。$(br2)$(li)火元素：造成燃烧效果$(li)冰元素：造成缓慢效果$(li)雷元素：造成虚弱效果",
+  "legendarymage.patchouli.page.magic_shotgun.details": "$(l)咒刃流派：$()$(br)魔法散弹是一种独特的法术，将法力注入武器进行近战释放。$(br2)$(c)代价：$()失去元素反应能力和部分法术强度$(br2)$(l)收益：$()$(li)大幅减少吟唱时间$(li)增加近战伤害$(br2)适合近战法师使用！",
+  "legendarymage.patchouli.page.ice_explosion_cone.details": "$(l)不稳定冰锥：$()$(br)冰爆锥牺牲了稳定性换取范围伤害能力。$(br2)击中敌人时会触发冰爆，对范围内敌人造成伤害并附加缓慢效果。$(br2)适合对付聚集的敌人。",
+  "legendarymage.patchouli.page.focused_ice_cone.details": "$(l)穿透特性：$()$(br)聚能冰锥可以穿透最多3个敌人，在穿透足够单位或撞击墙体后产生大冰爆。$(br2)击中敌人必定造成冰冻效果。$(br2)高速运动使其成为优秀的远程控制法术。",
+  "legendarymage.patchouli.page.giant_snowball.details": "$(l)吟唱机制：$()$(br)巨雪球在头顶生成后会随着吟唱时间变大。$(br2)你可以控制释放时机：$(br)$(li)立即释放：较小伤害$(li)完全吟唱：最大伤害和范围$(br2)击中后会留下10秒的暴风雪力场。",
+
+  "legendarymage.patchouli.page.element_overview.1": "$(l)元素标记系统$()是本模组的核心机制之一。$(br2)当敌人受到特定类型的法术伤害时，会获得对应的$(l)元素标记$()。$(br2)元素标记本身具有一些效果，但更重要的是，当敌人同时拥有两种标记时，会触发$(l)元素反应$()。",
+  "legendarymage.patchouli.page.element_overview.2": "$(l)8种元素标记：$()$(br)$(c)§4黑暗异常§r$() - 血系$(br)$(6)§6光明异常§r$() - 神圣系$(br)$(5)§5邪术异常§r$() - 邪术系$(br)$(a)§a毒素异常§r$() - 毒系$(br)$(c)§c火焰异常§r$() - 火系$(br)$(b)§b冰冻异常§r$() - 冰系$(br)$(d)§d雷电异常§r$() - 雷系$(br)$(8)§8末影异常§r$() - 末影系",
+
+  "legendarymage.patchouli.page.fire.details": "$(c)§c火焰异常§r$()对应铁魔法的火系流派。$(br2)$(l)效果：$()持续造成火焰伤害$(br2)与冰元素反应会产生$(l)避雷针$()效果，减少目标的雷系和冰系抗性。",
+  "legendarymage.patchouli.page.ice.details": "$(b)§b冰冻异常§r$()对应铁魔法的冰系流派。$(br2)$(l)效果：$()造成缓慢效果$(br2)与火元素反应会产生$(l)避雷针$()效果，减少目标的雷系和冰系抗性。",
+  "legendarymage.patchouli.page.lightning.details": "$(d)§d雷电异常§r$()对应铁魔法的雷系流派。$(br2)$(l)效果：$()可触发感电效果$(br2)与其他元素组合可以产生多种强力反应。",
+
+  "legendarymage.patchouli.page.blood.details": "$(4)§4黑暗异常§r$()对应铁魔法的血系流派。$(br2)$(l)效果：$()血系标记$(br2)与神圣元素反应会产生$(l)暗夜无光$()效果，降低目标法术抗性。",
+  "legendarymage.patchouli.page.holy.details": "$(6)§6光明异常§r$()对应铁魔法的神圣流派。$(br2)$(l)效果：$()神圣标记$(br2)与血系元素反应会产生$(l)暗夜无光$()效果，降低目标法术抗性。",
+  "legendarymage.patchouli.page.eldritch.details": "$(5)§5邪术异常§r$()对应铁魔法的邪术流派。$(br2)$(l)效果：$()邪术标记$(br2)与其他元素组合可以产生$(l)混沌$()效果，提升施法者的法术强度。",
+  "legendarymage.patchouli.page.poison.details": "$(a)§a毒素异常§r$()对应铁魔法的自然流派。$(br2)$(l)效果：$()毒系标记$(br2)与其他元素反应会产生$(l)溶甲$()效果，降低目标护甲值。",
+  "legendarymage.patchouli.page.ender.details": "$(8)§8末影异常§r$()对应铁魔法的末影流派。$(br2)$(l)效果：$()末影标记$(br2)与其他元素反应会产生$(l)终末回响$()效果，提升施法者的法术强度和抗性。",
+
+  "legendarymage.patchouli.page.reaction_overview.1": "$(l)元素反应$()是当目标同时拥有两种不同的元素标记时触发的特殊效果。$(br2)反应会：$(br)$(li)消耗原有的两种标记$(li)产生新的Buff或Debuff$(li)造成额外伤害或效果$(br2)合理搭配元素反应可以大幅提升战斗效率！",
+  "legendarymage.patchouli.page.reaction_overview.2": "$(l)反应策略：$()$(br)不同的反应适用于不同的战斗场景：$(br)$(li)需要爆发伤害？尝试混沌反应$(li)需要控制敌人？使用感电反应$(li)需要削弱Boss？叠加溶甲和暗夜无光$(br2)$(o)探索各种组合，找到最适合你的战斗风格！$()",
+
+  "legendarymage.patchouli.page.chaos_reaction": "$(5)混沌§r反应$(br2)$(l)触发条件：$()邪术 + 其他特定元素$(br2)$(l)效果：$()获得混沌Buff，提升法术强度$(br2)这是提升输出的重要手段，适合在战斗开始时触发。",
+  "legendarymage.patchouli.page.ender_echo_reaction": "$(8)终末回响§r反应$(br2)$(l)触发条件：$()末影 + 其他元素$(br2)$(l)效果：$()获得终末回响Buff，提升法术强度和魔法抗性$(br2)攻防兼备的反应，适合持久战斗。",
+  "legendarymage.patchouli.page.armor_reduction_reaction": "$(a)溶甲§r反应$(br2)$(l)触发条件：$()毒素 + 其他元素$(br2)$(l)效果：$()降低目标护甲值$(br2)对付高护甲敌人的利器，可以大幅提升物理伤害输出。",
+  "legendarymage.patchouli.page.darkness_reaction": "$(4)暗夜无光§r反应$(br2)$(l)触发条件：$()血系 + 神圣系$(br2)$(l)效果：$()降低目标法术抗性$(br2)对付法师型敌人的最佳选择，可以大幅提升法术伤害。",
+  "legendarymage.patchouli.page.electrocuted_reaction": "$(d)感电§r反应$(br2)$(l)触发条件：$()雷电 + 其他元素$(br2)$(l)效果：$()周期性释放连锁闪电$(br2)强力的范围控制效果，可以对多个敌人造成伤害。",
+  "legendarymage.patchouli.page.lightning_rod_reaction": "避雷针反应$(br2)$(l)触发条件：$()火 + 冰$(br2)$(l)效果：$()减少目标雷系和冰系抗性，每级减少5%$(br2)为后续的元素攻击做铺垫。",
+  "legendarymage.patchouli.page.plague_reaction": "$(2)瘟疫§r反应$(br2)$(l)触发条件：$()暗 + 毒$(br2)$(l)效果：$()持续20秒，可无限叠加，每级减少2%最大生命值，死亡时可能转化为僵尸或毒爆$(br2)极其危险的Debuff，适合对付高生命值的敌人。"
 }

@@ -1,0 +1,6 @@
+{
+  "parent": "irons_spellbooks:item/scroll",
+  "textures": {
+    "layer0": "legendarymage:item/scroll_element"
+  }
+}

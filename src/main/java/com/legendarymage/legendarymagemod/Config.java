@@ -58,8 +58,22 @@ public class Config {
     // ==================== 元素爆发法术配置 ====================
     public static final ModConfigSpec.BooleanValue ELEMENTAL_BURST_DEBUG_OUTPUT;
 
+    // ==================== 元素弹幕法术配置 ====================
+    public static final ModConfigSpec.BooleanValue ELEMENTAL_BARRAGE_DEBUG_OUTPUT;
+
+    // ==================== 三向之矢法术配置 ====================
+    public static final ModConfigSpec.BooleanValue TRI_DIRECTIONAL_ARROW_DEBUG_OUTPUT;
+
+    // ==================== 元素棱镜法术配置 ====================
+    public static final ModConfigSpec.BooleanValue ELEMENTAL_PRISM_DEBUG_OUTPUT;
+
     // ==================== 元素反应配置 ====================
     public static final ModConfigSpec.BooleanValue ELEMENT_REACTION_DEBUG_OUTPUT;
+
+    // ==================== 元素标记头顶显示配置 ====================
+    public static final ModConfigSpec.BooleanValue ELEMENT_MARK_ICON_ENABLED;
+    public static final ModConfigSpec.DoubleValue ELEMENT_MARK_ICON_HEIGHT;
+    public static final ModConfigSpec.DoubleValue ELEMENT_MARK_ICON_SCALE;
 
     static {
         // 复苏符文配置
@@ -306,6 +320,36 @@ public class Config {
         
         BUILDER.pop();
 
+        // 元素弹幕配置
+        BUILDER.push("elementalBarrage");
+        
+        ELEMENTAL_BARRAGE_DEBUG_OUTPUT = BUILDER
+                .comment("Enable debug output for Elemental Barrage spell to console.",
+                        "Default: true (will output orb type and damage info)")
+                .define("debugOutput", true);
+        
+        BUILDER.pop();
+
+        // 三向之矢配置
+        BUILDER.push("triDirectionalArrow");
+        
+        TRI_DIRECTIONAL_ARROW_DEBUG_OUTPUT = BUILDER
+                .comment("Enable debug output for Tri Directional Arrow spell to console.",
+                        "Default: true (will output arrow type and damage info)")
+                .define("debugOutput", true);
+        
+        BUILDER.pop();
+
+        // 元素棱镜配置
+        BUILDER.push("elementalPrism");
+        
+        ELEMENTAL_PRISM_DEBUG_OUTPUT = BUILDER
+                .comment("Enable debug output for Elemental Prism spell to console.",
+                        "Default: true (will output mark sharing and reaction info)")
+                .define("debugOutput", true);
+        
+        BUILDER.pop();
+
         // 元素反应配置
         BUILDER.push("elementReaction");
         
@@ -314,6 +358,31 @@ public class Config {
                         "This includes mark application, upgrades, and reaction triggers.",
                         "Default: true (will output debug info)")
                 .define("debugOutput", true);
+        
+        BUILDER.pop();
+
+        // 元素标记头顶显示配置
+        BUILDER.push("element_mark_icon");
+        
+        ELEMENT_MARK_ICON_ENABLED = BUILDER
+                .comment("Enable element mark icons displayed above entities' heads.",
+                        "When enabled, icons representing active element marks will be rendered above entities.",
+                        "Default: true")
+                .define("enabled", true);
+        
+        ELEMENT_MARK_ICON_HEIGHT = BUILDER
+                .comment("Height offset for element mark icons above entity heads.",
+                        "Higher values move the icons further above the entity.",
+                        "Default: 0.5 blocks above entity height",
+                        "Range: 0.1 - 3.0")
+                .defineInRange("height_offset", 0.5, 0.1, 3.0);
+        
+        ELEMENT_MARK_ICON_SCALE = BUILDER
+                .comment("Scale of element mark icons.",
+                        "Higher values make the icons larger.",
+                        "Default: 1.0 (normal size)",
+                        "Range: 0.5 - 3.0")
+                .defineInRange("scale", 1.0, 0.5, 3.0);
         
         BUILDER.pop();
     }

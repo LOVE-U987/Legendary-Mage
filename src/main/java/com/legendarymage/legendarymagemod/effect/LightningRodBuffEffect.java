@@ -12,17 +12,22 @@ import net.minecraft.core.Holder;
 /**
  * 避雷针 Buff 效果
  * 冰雷元素反应产生的 Buff
- * 效果：减少雷系和冰系元素抗性，每级减少 5%
+ * 效果：减少冰系法术抗性5%，减少雷系法术抗性10%
  * 
  * @author Love_U
- * @version 1.0.4
+ * @version 1.0.5
  */
 public class LightningRodBuffEffect extends MobEffect {
 
     /**
-     * 每级减少的元素抗性百分比
+     * 冰系抗性减少百分比（固定-5%）
      */
-    private static final double RESISTANCE_REDUCTION_PER_LEVEL = 0.05; // 5%
+    private static final double ICE_RESIST_REDUCTION = -0.05; // -5%
+
+    /**
+     * 雷系抗性减少百分比（固定-10%）
+     */
+    private static final double LIGHTNING_RESIST_REDUCTION = -0.10; // -10%
 
     /**
      * Buff 持续时间（秒）
@@ -46,22 +51,44 @@ public class LightningRodBuffEffect extends MobEffect {
 
     /**
      * 构造函数
+     * 添加属性修饰符用于EMIffect等模组显示
      */
     public LightningRodBuffEffect() {
-        super(MobEffectCategory.BENEFICIAL, EFFECT_COLOR);
+        super(MobEffectCategory.HARMFUL, EFFECT_COLOR);
         
-        // 避雷针 Buff 通过元素反应系统动态应用效果
-        // 不在构造函数中添加固定修饰符
+        // 添加冰系抗性修饰符（-5%）
+        this.addAttributeModifier(
+                AttributeRegistry.ICE_MAGIC_RESIST,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "lightning_rod_ice_resist"),
+                ICE_RESIST_REDUCTION,
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+        
+        // 添加雷系抗性修饰符（-10%）
+        this.addAttributeModifier(
+                AttributeRegistry.LIGHTNING_MAGIC_RESIST,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "lightning_rod_lightning_resist"),
+                LIGHTNING_RESIST_REDUCTION,
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
     }
 
     /**
-     * 计算元素抗性减少百分比
+     * 获取冰系抗性减少百分比
      * 
-     * @param amplifier Buff 等级（从 0 开始）
-     * @return 抗性减少百分比
+     * @return 冰系抗性减少百分比（固定-5%）
      */
-    public static double calculateResistanceReduction(int amplifier) {
-        return (amplifier + 1) * RESISTANCE_REDUCTION_PER_LEVEL;
+    public static double getIceResistReduction() {
+        return ICE_RESIST_REDUCTION;
+    }
+
+    /**
+     * 获取雷系抗性减少百分比
+     * 
+     * @return 雷系抗性减少百分比（固定-10%）
+     */
+    public static double getLightningResistReduction() {
+        return LIGHTNING_RESIST_REDUCTION;
     }
 
     /**

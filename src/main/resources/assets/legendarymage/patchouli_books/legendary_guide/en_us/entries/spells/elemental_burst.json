@@ -1,0 +1,18 @@
+{
+  "name": "spell.legendarymage.elemental_burst",
+  "icon": "legendarymage:textures/mob_effect/lightning_mark.png",
+  "category": "legendarymage:spells",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "irons_spellbooks:evocation_rune",
+      "title": "spell.legendarymage.elemental_burst",
+      "text": "spell.legendarymage.elemental_burst.guide"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.elemental_burst.details"
+    }
+  ],
+  "sortnum": 5
+}

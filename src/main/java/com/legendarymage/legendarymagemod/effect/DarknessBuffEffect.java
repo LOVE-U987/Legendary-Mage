@@ -11,10 +11,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 /**
  * 暗夜无光效果
  * 血系元素反应给予目标的Debuff
- * 效果：减少法术抗性，每级-5%
+ * 效果：减少血系法术抗性5%
  * 
  * @author Love_U
- * @version 1.0.4
+ * @version 1.0.5
  */
 public class DarknessBuffEffect extends MobEffect {
 
@@ -29,9 +29,9 @@ public class DarknessBuffEffect extends MobEffect {
     private static final int EFFECT_COLOR = 0x8B0000;
 
     /**
-     * 每级法术抗性减少（5% = 0.05）
+     * 血系法术抗性减少（固定-5% = -0.05）
      */
-    public static final double SPELL_RESIST_REDUCTION_PER_LEVEL = -0.05;
+    public static final double BLOOD_MAGIC_RESIST_REDUCTION = -0.05;
 
     /**
      * 构造函数
@@ -40,11 +40,11 @@ public class DarknessBuffEffect extends MobEffect {
     public DarknessBuffEffect() {
         super(MobEffectCategory.HARMFUL, EFFECT_COLOR);
         
-        // 添加法术抗性修饰符（每级-5%）
+        // 添加血系法术抗性修饰符（固定-5%）
         this.addAttributeModifier(
-                AttributeRegistry.SPELL_RESIST,
-                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "darkness_buff_spell_resist"),
-                SPELL_RESIST_REDUCTION_PER_LEVEL,
+                AttributeRegistry.BLOOD_MAGIC_RESIST,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "darkness_buff_blood_resist"),
+                BLOOD_MAGIC_RESIST_REDUCTION,
                 AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
         );
     }
@@ -69,13 +69,12 @@ public class DarknessBuffEffect extends MobEffect {
     }
 
     /**
-     * 计算法术抗性减少值
+     * 获取血系法术抗性减少值
      * 
-     * @param buffLevel Buff等级（1开始）
-     * @return 法术抗性减少值（负数表示减少）
+     * @return 血系法术抗性减少值（固定-5%）
      */
-    public static double calculateSpellResistReduction(int buffLevel) {
-        return SPELL_RESIST_REDUCTION_PER_LEVEL * buffLevel;
+    public static double getBloodMagicResistReduction() {
+        return BLOOD_MAGIC_RESIST_REDUCTION;
     }
 
     /**

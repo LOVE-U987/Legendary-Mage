@@ -1,0 +1,16 @@
+{
+  "name": "legendarymage.patchouli.entry.reaction_overview",
+  "icon": "irons_spellbooks:lightning_bottle",
+  "category": "legendarymage:element_reactions",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.reaction_overview.1"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.reaction_overview.2"
+    }
+  ],
+  "sortnum": 0
+}

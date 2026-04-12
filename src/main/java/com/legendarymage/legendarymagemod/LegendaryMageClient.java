@@ -1,10 +1,14 @@
 package com.legendarymage.legendarymagemod;
 
+import com.legendarymage.legendarymagemod.client.model.ElementalOrbModel;
 import com.legendarymage.legendarymagemod.client.renderer.IceSculptureRenderer;
 import com.legendarymage.legendarymagemod.entity.ModEntities;
+import com.legendarymage.legendarymagemod.entity.spell.ElementalArrowRenderer;
+import com.legendarymage.legendarymagemod.entity.spell.ElementalOrbRenderer;
 import com.legendarymage.legendarymagemod.entity.spell.FocusedIceConeRenderer;
 import com.legendarymage.legendarymagemod.entity.spell.GiantSnowballRenderer;
 import com.legendarymage.legendarymagemod.entity.spell.IceExplosionConeRenderer;
+import com.legendarymage.legendarymagemod.entity.spell.TrailTestProjectileRenderer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -64,10 +68,22 @@ public class LegendaryMageClient {
         // 注册巨雪球渲染器
         EntityRenderers.register(ModEntities.GIANT_SNOWBALL.get(), GiantSnowballRenderer::new);
         
+        // 注册元素球渲染器
+        EntityRenderers.register(ModEntities.ELEMENTAL_ORB.get(), ElementalOrbRenderer::new);
+        
+        // 注册元素箭渲染器
+        EntityRenderers.register(ModEntities.ELEMENTAL_ARROW.get(), ElementalArrowRenderer::new);
+
+        // 注册拖尾测试投射物渲染器
+        EntityRenderers.register(ModEntities.TRAIL_TEST.get(), TrailTestProjectileRenderer::new);
+
         LegendaryMage.LOGGER.info("冰雕生物渲染器已注册");
         LegendaryMage.LOGGER.info("冰爆锥渲染器已注册");
         LegendaryMage.LOGGER.info("聚能冰锥渲染器已注册");
         LegendaryMage.LOGGER.info("巨雪球渲染器已注册");
+        LegendaryMage.LOGGER.info("元素球渲染器已注册");
+        LegendaryMage.LOGGER.info("元素箭渲染器已注册");
+        LegendaryMage.LOGGER.info("拖尾测试投射物渲染器已注册");
     }
 
     /**
@@ -95,8 +111,15 @@ public class LegendaryMageClient {
             GiantSnowballRenderer::createBodyLayer
         );
         
+        // 注册元素球模型层
+        event.registerLayerDefinition(
+            ElementalOrbModel.LAYER_LOCATION,
+            ElementalOrbModel::createBodyLayer
+        );
+        
         LegendaryMage.LOGGER.info("冰爆锥模型层已注册");
         LegendaryMage.LOGGER.info("聚能冰锥模型层已注册");
         LegendaryMage.LOGGER.info("巨雪球模型层已注册");
+        LegendaryMage.LOGGER.info("元素球模型层已注册");
     }
 }

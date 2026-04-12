@@ -1,0 +1,16 @@
+{
+  "name": "legendarymage.patchouli.entry.element_overview",
+  "icon": "irons_spellbooks:arcane_essence",
+  "category": "legendarymage:elements",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.element_overview.1"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "legendarymage.patchouli.page.element_overview.2"
+    }
+  ],
+  "sortnum": 0
+}

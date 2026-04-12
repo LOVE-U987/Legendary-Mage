@@ -380,4 +380,63 @@ public class HolyMarkEffect extends ElementMarkEffect {
                 0
         );
     }
+
+    /**
+     * 清理指定实体的数据
+     * 当实体死亡或效果结束时调用
+     * 
+     * @param entity 目标实体
+     */
+    public static void cleanupEntity(LivingEntity entity) {
+        if (entity == null) {
+            return;
+        }
+        
+        UUID entityId = entity.getUUID();
+        
+        // 清理 CD 记录
+        playerCooldowns.remove(entityId);
+        
+        // 清理触发状态
+        triggeredEntities.remove(entityId);
+    }
+
+    /**
+     * 清理过期的 CD 数据
+     * 移除超过 10 分钟未更新的 CD 记录
+     * 
+     * @param currentTime 当前游戏时间
+     */
+    public static void cleanupExpiredCooldowns(long currentTime) {
+        // 过期时间阈值（tick）
+        // 10 分钟 = 12000 tick
+        final long EXPIRATION_THRESHOLD = 12000;
+        
+        long expirationTime = currentTime - EXPIRATION_THRESHOLD;
+        
+        // 清理过期的 CD 记录
+        playerCooldowns.entrySet().removeIf(entry -> 
+            entry.getValue() < expirationTime
+        );
+        
+        // 清理所有触发状态（因为效果结束后不再需要）
+        // 注意：这里不能直接 clear，因为可能有正在进行的触发
+        // 所以只清理明显过期的数据
+        triggeredEntities.entrySet().removeIf(entry -> {
+            // 如果对应的实体没有 CD 记录，说明可能已经过期
+            return !playerCooldowns.containsKey(entry.getKey());
+        });
+    }
+
+    /**
+     * 当效果被移除时调用
+     * 清理该实体的数据
+     * 
+     * @param entity 实体
+     * @param amplifier 效果等级
+     */
+    public void onEffectRemoved(LivingEntity entity, int amplifier) {
+        // 清理该实体的数据
+        cleanupEntity(entity);
+    }
 }

@@ -100,7 +100,6 @@ public class EnderMarkEffect extends ElementMarkEffect {
         Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(enderMarkEffect);
 
         if (!target.hasEffect(effectHolder)) {
-            LegendaryMage.LOGGER.info("[回响打击调试] 目标 {} 没有末影标记", target.getName().getString());
             return false;
         }
 

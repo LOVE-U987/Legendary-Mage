@@ -8,6 +8,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import com.legendarymage.legendarymagemod.spell.GiantSnowballSpell;
+import com.legendarymage.legendarymagemod.spell.TriDirectionalArrowSpell;
 
 /**
  * 法术注册类
@@ -114,6 +115,54 @@ public class ModSpells {
     public static final DeferredHolder<AbstractSpell, GiantSnowballSpell> GIANT_SNOWBALL = SPELLS.register(
             GiantSnowballSpell.SPELL_ID,
             GiantSnowballSpell::new
+    );
+
+    /**
+     * 元素弹幕法术
+     * 元素流派
+     * 持续发射冰、火、雷三种元素球，每种球都有独特的范围效果
+     * 冰球造成范围冰冻，火球造成范围烈焰，雷球造成闪电链
+     */
+    public static final DeferredHolder<AbstractSpell, ElementalBarrageSpell> ELEMENTAL_BARRAGE = SPELLS.register(
+            ElementalBarrageSpell.SPELL_ID,
+            ElementalBarrageSpell::new
+    );
+
+    /**
+     * 拖尾特效测试法术
+     * 专门用于验证TrailEffect API的测试法术
+     * 发射一个带有超明显拖尾效果的测试投射物
+     *
+     * 【调试用途】
+     * 此法术仅用于开发和测试阶段，
+     * 正式版本中应该移除或隐藏。
+     */
+    public static final DeferredHolder<AbstractSpell, TrailTestSpell> TRAIL_TEST = SPELLS.register(
+            TrailTestSpell.SPELL_ID,
+            TrailTestSpell::new
+    );
+
+    /**
+     * 三向之矢法术
+     * 元素流派
+     * 长吟唱后依次释放冰、火、雷三种元素箭
+     * 击中敌人立即造成4格范围伤害，落地产生持续5秒的元素区域伤害
+     */
+    public static final DeferredHolder<AbstractSpell, TriDirectionalArrowSpell> TRI_DIRECTIONAL_ARROW = SPELLS.register(
+            TriDirectionalArrowSpell.SPELL_ID,
+            TriDirectionalArrowSpell::new
+    );
+
+    /**
+     * 元素棱镜法术
+     * 元素流派
+     * 可折射范围内敌人的元素标记，且可使相关的元素反应触发两次
+     * 吟唱时间两秒，基础范围6格，每级+2格范围
+     * 基础蓝耗125，每级+75，等级1-5，传说品质
+     */
+    public static final DeferredHolder<AbstractSpell, ElementalPrismSpell> ELEMENTAL_PRISM = SPELLS.register(
+            ElementalPrismSpell.SPELL_ID,
+            ElementalPrismSpell::new
     );
 
     /**
