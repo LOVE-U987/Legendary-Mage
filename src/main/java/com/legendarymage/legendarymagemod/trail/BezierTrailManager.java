@@ -53,7 +53,7 @@ public class BezierTrailManager {
     public BezierTrailEffect createTrail(String id, HSVColor color, float width, double maxLifetime) {
         BezierTrailEffect trail = new BezierTrailEffect(id, color, width, maxLifetime);
         activeTrails.put(id, trail);
-        LegendaryMage.LOGGER.debug("[贝塞尔拖尾] 创建拖尾: {}", id);
+        com.legendarymage.legendarymagemod.ModLogger.spellDebug("[贝塞尔拖尾] 创建拖尾: {}", id);
         return trail;
     }
 
@@ -160,6 +160,6 @@ public class BezierTrailManager {
      */
     public void clearAll() {
         activeTrails.clear();
-        LegendaryMage.LOGGER.info("[贝塞尔拖尾] 清除所有拖尾");
+        com.legendarymage.legendarymagemod.ModLogger.spell("[贝塞尔拖尾] 清除所有拖尾");
     }
 }

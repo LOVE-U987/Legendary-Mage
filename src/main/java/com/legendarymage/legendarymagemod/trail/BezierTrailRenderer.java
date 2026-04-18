@@ -66,7 +66,7 @@ public class BezierTrailRenderer {
         }
 
         if (renderedCount > 0) {
-            LegendaryMage.LOGGER.debug("[贝塞尔拖尾渲染] 渲染了 {} 个拖尾", renderedCount);
+            com.legendarymage.legendarymagemod.ModLogger.spellDebug("[贝塞尔拖尾渲染] 渲染了 {} 个拖尾", renderedCount);
         }
     }
 

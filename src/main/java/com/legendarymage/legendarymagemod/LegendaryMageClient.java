@@ -53,7 +53,7 @@ public class LegendaryMageClient {
      */
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
-        LegendaryMage.LOGGER.info("HELLO FROM CLIENT SETUP");
+        com.legendarymage.legendarymagemod.ModLogger.spell("HELLO FROM CLIENT SETUP");
         LegendaryMage.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
         
         // 注册冰雕生物渲染器
@@ -77,13 +77,13 @@ public class LegendaryMageClient {
         // 注册拖尾测试投射物渲染器
         EntityRenderers.register(ModEntities.TRAIL_TEST.get(), TrailTestProjectileRenderer::new);
 
-        LegendaryMage.LOGGER.info("冰雕生物渲染器已注册");
-        LegendaryMage.LOGGER.info("冰爆锥渲染器已注册");
-        LegendaryMage.LOGGER.info("聚能冰锥渲染器已注册");
-        LegendaryMage.LOGGER.info("巨雪球渲染器已注册");
-        LegendaryMage.LOGGER.info("元素球渲染器已注册");
-        LegendaryMage.LOGGER.info("元素箭渲染器已注册");
-        LegendaryMage.LOGGER.info("拖尾测试投射物渲染器已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("冰雕生物渲染器已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("冰爆锥渲染器已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("聚能冰锥渲染器已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("巨雪球渲染器已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("元素球渲染器已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("元素箭渲染器已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("拖尾测试投射物渲染器已注册");
     }
 
     /**
@@ -117,9 +117,9 @@ public class LegendaryMageClient {
             ElementalOrbModel::createBodyLayer
         );
         
-        LegendaryMage.LOGGER.info("冰爆锥模型层已注册");
-        LegendaryMage.LOGGER.info("聚能冰锥模型层已注册");
-        LegendaryMage.LOGGER.info("巨雪球模型层已注册");
-        LegendaryMage.LOGGER.info("元素球模型层已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("冰爆锥模型层已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("聚能冰锥模型层已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("巨雪球模型层已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("元素球模型层已注册");
     }
 }

@@ -10,15 +10,22 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
  * 元素反应管理器
  * 负责处理元素标记 Buff 的施加、升级和元素反应的触发
- * 
+ *
+ * 【性能优化 v3.1】
+ * - 使用 EnumMap 缓存元素类型到效果 Holder 的映射，避免重复查询注册表
+ * - 重用 ArrayList 减少 GC 压力
+ * - 批量处理减少重复代码
+ *
  * @author Love_U
- * @version 3.0.0
+ * @version 1.0.7
  */
 public class ElementReactionManager {
 
@@ -28,15 +35,38 @@ public class ElementReactionManager {
     private static final Random RANDOM = new Random();
 
     /**
+     * 元素类型到效果 Holder 的缓存映射
+     * 避免每次查询都访问注册表，提升性能
+     */
+    private static final Map<ElementType, Holder<MobEffect>> EFFECT_HOLDER_CACHE = new EnumMap<>(ElementType.class);
+
+    /**
+     * 可反应元素列表缓存
+     * 重用此列表避免每帧创建新的 ArrayList
+     */
+    private static final List<ElementType> REACTABLE_MARKS_CACHE = new ArrayList<>(ElementType.values().length);
+
+    /**
+     * 初始化效果 Holder 缓存
+     */
+    static {
+        for (ElementType elementType : ElementType.values()) {
+            MobEffect effect = elementType.getMarkEffect();
+            if (effect != null) {
+                EFFECT_HOLDER_CACHE.put(elementType,
+                        net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect));
+            }
+        }
+    }
+
+    /**
      * 输出调试日志
      * 通过配置开关控制是否输出
      *
      * @param message 日志消息
      */
     private static void debugLog(String message) {
-        if (com.legendarymage.legendarymagemod.Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
-            LegendaryMage.LOGGER.info("[元素反应] {}", message);
-        }
+        com.legendarymage.legendarymagemod.ModLogger.element("[元素反应] {}", message);
     }
 
     /**
@@ -66,12 +96,14 @@ public class ElementReactionManager {
             return;
         }
         
-        debugLog(String.format("法术伤害: %s -> %s, 流派: %s, 对应元素: %s, 伤害: %.1f",
-                attacker != null ? attacker.getName().getString() : "环境",
-                target.getName().getString(),
-                schoolType.getId().getPath(),
-                elementType.getId(),
-                damage));
+        if (com.legendarymage.legendarymagemod.Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
+            debugLog(String.format("法术伤害: %s -> %s, 流派: %s, 对应元素: %s, 伤害: %.1f",
+                    attacker != null ? attacker.getName().getString() : "环境",
+                    target.getName().getString(),
+                    schoolType.getId().getPath(),
+                    elementType.getId(),
+                    damage));
+        }
         
         // 处理元素标记
         processElementMark(serverLevel, target, attacker, elementType);
@@ -257,34 +289,48 @@ public class ElementReactionManager {
      * 获取实体可以反应的元素标记
      * 等级 >= 2 (amplifier >= 1) 的标记可以反应
      *
+     * 【性能优化】重用缓存列表，避免每帧创建新的 ArrayList
+     *
      * @param target 目标实体
      * @return 可以反应的元素类型列表
      */
     private static List<ElementType> getReactableMarks(LivingEntity target) {
-        List<ElementType> result = new ArrayList<>();
-        
+        // 清空并重用的缓存列表
+        REACTABLE_MARKS_CACHE.clear();
+
         for (ElementType elementType : ElementType.values()) {
             Holder<MobEffect> effectHolder = getEffectHolder(elementType);
             MobEffectInstance effect = target.getEffect(effectHolder);
             if (effect != null && effect.getAmplifier() >= 1) { // 等级 >= 2
-                result.add(elementType);
+                REACTABLE_MARKS_CACHE.add(elementType);
             }
         }
-        
-        return result;
+
+        return REACTABLE_MARKS_CACHE;
     }
 
     /**
      * 获取效果的 Holder
      *
+     * 【性能优化】使用缓存的 Holder，避免重复查询注册表
+     *
      * @param elementType 元素类型
      * @return 效果的 Holder
      */
     private static Holder<MobEffect> getEffectHolder(ElementType elementType) {
+        // 优先从缓存获取
+        Holder<MobEffect> cached = EFFECT_HOLDER_CACHE.get(elementType);
+        if (cached != null) {
+            return cached;
+        }
+
+        // 缓存未命中（理论上不应该发生），动态创建并缓存
         MobEffect effect = elementType.getMarkEffect();
-        // 在 1.21 中，我们需要从注册表获取 Holder
-        // 由于效果已经注册，我们可以直接返回一个直接的 Holder
-        return net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect);
+        if (effect != null) {
+            cached = net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect);
+            EFFECT_HOLDER_CACHE.put(elementType, cached);
+        }
+        return cached;
     }
 
     /**

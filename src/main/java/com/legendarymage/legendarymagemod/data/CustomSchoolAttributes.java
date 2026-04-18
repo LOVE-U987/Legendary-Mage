@@ -80,7 +80,7 @@ public class CustomSchoolAttributes {
         // 存储映射
         SPELL_POWER_ATTRIBUTES.put(schoolId, holder);
 
-        LegendaryMage.LOGGER.debug("创建法术强度属性: {} for {}", attributeId, schoolId);
+        com.legendarymage.legendarymagemod.ModLogger.spellDebug("创建法术强度属性: {} for {}", attributeId, schoolId);
 
         return holder;
     }
@@ -115,7 +115,7 @@ public class CustomSchoolAttributes {
         // 存储映射
         MAGIC_RESIST_ATTRIBUTES.put(schoolId, holder);
 
-        LegendaryMage.LOGGER.debug("创建魔法抗性属性: {} for {}", attributeId, schoolId);
+        com.legendarymage.legendarymagemod.ModLogger.spellDebug("创建魔法抗性属性: {} for {}", attributeId, schoolId);
 
         return holder;
     }

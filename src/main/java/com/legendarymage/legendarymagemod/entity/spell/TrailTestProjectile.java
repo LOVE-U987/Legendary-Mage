@@ -79,30 +79,30 @@ public class TrailTestProjectile extends AbstractMagicProjectile {
 
         String trailId = "simple_trail_" + this.getId();
 
-        LegendaryMage.LOGGER.info("========================================");
-        LegendaryMage.LOGGER.info("[简单拖尾测试] 正在初始化拖尾...");
-        LegendaryMage.LOGGER.info("[简单拖尾测试] 拖尾ID: {}", trailId);
+        com.legendarymage.legendarymagemod.ModLogger.spell("========================================");
+        com.legendarymage.legendarymagemod.ModLogger.spell("[简单拖尾测试] 正在初始化拖尾...");
+        com.legendarymage.legendarymagemod.ModLogger.spell("[简单拖尾测试] 拖尾ID: {}", trailId);
 
         // 创建火元素拖尾（带发光效果）
         simpleTrail = SimpleTrailManager.getInstance().createFireElementTrail(trailId, this);
 
         if (simpleTrail != null) {
-            LegendaryMage.LOGGER.info("[简单拖尾测试] 拖尾创建成功！");
-            LegendaryMage.LOGGER.info("[简单拖尾测试] 配置:");
-            LegendaryMage.LOGGER.info("   - 宽度: 0.1");
-            LegendaryMage.LOGGER.info("   - 最大历史: 12");
-            LegendaryMage.LOGGER.info("   - 更新间隔: 1 tick");
-            LegendaryMage.LOGGER.info("   - 起始颜色: 橙红色 (0xFFFF4500)");
-            LegendaryMage.LOGGER.info("   - 结束颜色: 红色 (0x80FF0000)");
-            LegendaryMage.LOGGER.info("   - 发光: 是");
-            LegendaryMage.LOGGER.info("   - 发光强度: 0.8");
-            LegendaryMage.LOGGER.info("   - 元素类型: FIRE");
+            com.legendarymage.legendarymagemod.ModLogger.spell("[简单拖尾测试] 拖尾创建成功！");
+            com.legendarymage.legendarymagemod.ModLogger.spell("[简单拖尾测试] 配置:");
+            com.legendarymage.legendarymagemod.ModLogger.spell("   - 宽度: 0.1");
+            com.legendarymage.legendarymagemod.ModLogger.spell("   - 最大历史: 12");
+            com.legendarymage.legendarymagemod.ModLogger.spell("   - 更新间隔: 1 tick");
+            com.legendarymage.legendarymagemod.ModLogger.spell("   - 起始颜色: 橙红色 (0xFFFF4500)");
+            com.legendarymage.legendarymagemod.ModLogger.spell("   - 结束颜色: 红色 (0x80FF0000)");
+            com.legendarymage.legendarymagemod.ModLogger.spell("   - 发光: 是");
+            com.legendarymage.legendarymagemod.ModLogger.spell("   - 发光强度: 0.8");
+            com.legendarymage.legendarymagemod.ModLogger.spell("   - 元素类型: FIRE");
         } else {
-            LegendaryMage.LOGGER.error("[简单拖尾测试] 拖尾创建失败！");
+            com.legendarymage.legendarymagemod.ModLogger.error("[简单拖尾测试] 拖尾创建失败！");
         }
 
         trailInitialized = true;
-        LegendaryMage.LOGGER.info("========================================");
+        com.legendarymage.legendarymagemod.ModLogger.spell("========================================");
     }
 
     /**
@@ -140,13 +140,13 @@ public class TrailTestProjectile extends AbstractMagicProjectile {
 
         // 延迟初始化
         if (!trailInitialized && level().isClientSide()) {
-            LegendaryMage.LOGGER.info("[简单拖尾测试] 客户端首次Tick！初始化拖尾...");
+            com.legendarymage.legendarymagemod.ModLogger.spell("[简单拖尾测试] 客户端首次Tick！初始化拖尾...");
             initializeSimpleTrail();
         }
 
         // 15秒后销毁
         if (tickCount > 300) {
-            LegendaryMage.LOGGER.info("[简单拖尾测试] 达到最大生存时间，准备销毁");
+            com.legendarymage.legendarymagemod.ModLogger.spell("[简单拖尾测试] 达到最大生存时间，准备销毁");
             cleanupTrail();
             discard();
         }
@@ -191,7 +191,7 @@ public class TrailTestProjectile extends AbstractMagicProjectile {
      */
     private void cleanupTrail() {
         if (simpleTrail != null) {
-            LegendaryMage.LOGGER.info("[简单拖尾测试] 清理拖尾...");
+            com.legendarymage.legendarymagemod.ModLogger.spell("[简单拖尾测试] 清理拖尾...");
             simpleTrail.stop();
             LegendaryMage.LOGGER.info("[简单拖尾测试] 最终点数: {}", simpleTrail.getPointCount());
             simpleTrail = null;

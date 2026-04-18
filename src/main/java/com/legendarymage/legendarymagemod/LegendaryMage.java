@@ -87,7 +87,7 @@ public class LegendaryMage {
         // 注册数据包重载监听器
         NeoForge.EVENT_BUS.addListener(this::onAddReloadListener);
 
-        LOGGER.info("传奇法师模组已加载");
+        ModLogger.system("传奇法师模组已加载");
     }
 
     /**
@@ -97,7 +97,7 @@ public class LegendaryMage {
      * @param event 添加重载监听器事件
      */
     private void onAddReloadListener(AddReloadListenerEvent event) {
-        LOGGER.info("正在注册自定义法术流派数据包加载器...");
+        ModLogger.system("正在注册自定义法术流派数据包加载器...");
         event.addListener(new CustomSchoolDataLoader());
     }
 

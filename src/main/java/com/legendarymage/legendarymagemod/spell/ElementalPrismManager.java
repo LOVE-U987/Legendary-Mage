@@ -67,7 +67,7 @@ public class ElementalPrismManager {
         // 添加到活跃列表
         activePrisms.computeIfAbsent(dimensionId, k -> new ArrayList<>()).add(prism);
         
-        LegendaryMage.LOGGER.info("[元素棱镜] 已在 {} 创建棱镜区域，范围: {}格，持续时间: {}tick", 
+        com.legendarymage.legendarymagemod.ModLogger.spell("[元素棱镜] 已在 {} 创建棱镜区域，范围: {}格，持续时间: {}tick",
                 dimensionId, String.format("%.1f", range), durationTicks);
     }
 
@@ -96,7 +96,7 @@ public class ElementalPrismManager {
             // 检查是否结束
             if (prism.isFinished()) {
                 iterator.remove();
-                LegendaryMage.LOGGER.debug("[元素棱镜] 棱镜区域已结束");
+                com.legendarymage.legendarymagemod.ModLogger.spellDebug("[元素棱镜] 棱镜区域已结束");
             }
         }
         
@@ -114,7 +114,7 @@ public class ElementalPrismManager {
     public static void clearAll(ServerLevel level) {
         String dimensionId = level.dimension().location().toString();
         activePrisms.remove(dimensionId);
-        LegendaryMage.LOGGER.info("[元素棱镜] 已清除 {} 的所有棱镜区域", dimensionId);
+        com.legendarymage.legendarymagemod.ModLogger.spell("[元素棱镜] 已清除 {} 的所有棱镜区域", dimensionId);
     }
 
     /**
@@ -253,10 +253,8 @@ public class ElementalPrismManager {
                 return;
             }
             
-            if (com.legendarymage.legendarymagemod.Config.ELEMENTAL_PRISM_DEBUG_OUTPUT.get()) {
-                LegendaryMage.LOGGER.info("[元素棱镜] 扫描到 {} 个目标，{} 种元素标记", 
-                        targets.size(), allMarks.size());
-            }
+            com.legendarymage.legendarymagemod.ModLogger.spellDebug("[元素棱镜] 扫描到 {} 个目标，{} 种元素标记",
+                    targets.size(), allMarks.size());
             
             // 共享元素标记给所有目标
             shareMarksToAllTargets(level, targets, allMarks);
@@ -376,10 +374,8 @@ public class ElementalPrismManager {
                         // 播放标记施加粒子效果
                         playMarkApplyParticles(level, target, elementType);
 
-                        if (com.legendarymage.legendarymagemod.Config.ELEMENTAL_PRISM_DEBUG_OUTPUT.get()) {
-                            LegendaryMage.LOGGER.info("[元素棱镜] 共享 {} 标记({}级)给 {}",
-                                    elementType.getId(), markLevel, target.getName().getString());
-                        }
+                        com.legendarymage.legendarymagemod.ModLogger.spellDebug("[元素棱镜] 共享 {} 标记({}级)给 {}",
+                                elementType.getId(), markLevel, target.getName().getString());
                     }
                 }
             }
@@ -416,10 +412,8 @@ public class ElementalPrismManager {
                     com.legendarymage.legendarymagemod.element.ElementReactionEffects.handleReaction(
                             level, target, caster, element1, element2, level1);
 
-                    if (com.legendarymage.legendarymagemod.Config.ELEMENTAL_PRISM_DEBUG_OUTPUT.get()) {
-                        LegendaryMage.LOGGER.info("[元素棱镜] 第一次反应: {} + {} 在 {}",
-                                element1.getId(), element2.getId(), target.getName().getString());
-                    }
+                    com.legendarymage.legendarymagemod.ModLogger.spellDebug("[元素棱镜] 第一次反应: {} + {} 在 {}",
+                            element1.getId(), element2.getId(), target.getName().getString());
                 }
             }
 
@@ -448,10 +442,8 @@ public class ElementalPrismManager {
                                 com.legendarymage.legendarymagemod.element.ElementReactionEffects.handleReaction(
                                         level, target, caster, element1, element2, level1);
 
-                                if (com.legendarymage.legendarymagemod.Config.ELEMENTAL_PRISM_DEBUG_OUTPUT.get()) {
-                                    LegendaryMage.LOGGER.info("[元素棱镜] 第二次反应: {} + {} 在 {}",
-                                            element1.getId(), element2.getId(), target.getName().getString());
-                                }
+                                com.legendarymage.legendarymagemod.ModLogger.spellDebug("[元素棱镜] 第二次反应: {} + {} 在 {}",
+                                        element1.getId(), element2.getId(), target.getName().getString());
                             }
                         }
                     }

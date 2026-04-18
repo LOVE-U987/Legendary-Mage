@@ -52,6 +52,6 @@ public class ModItems {
      */
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
-        LegendaryMage.LOGGER.info("物品已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("物品已注册");
     }
 }

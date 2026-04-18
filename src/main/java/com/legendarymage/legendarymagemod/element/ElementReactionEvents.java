@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.element;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.command.ElementMappingHotReload;
 import com.legendarymage.legendarymagemod.data.SchoolElementMappingRegistry;
 import com.legendarymage.legendarymagemod.effect.EnderMarkEffect;
 import com.legendarymage.legendarymagemod.effect.HolyMarkEffect;
@@ -16,6 +17,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -41,9 +43,7 @@ public class ElementReactionEvents {
      * @param message 日志消息
      */
     private static void debugLog(String message) {
-        if (com.legendarymage.legendarymagemod.Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
-            LegendaryMage.LOGGER.info("[元素反应事件] {}", message);
-        }
+        com.legendarymage.legendarymagemod.ModLogger.element("[元素反应事件] {}", message);
     }
 
     /**
@@ -75,11 +75,13 @@ public class ElementReactionEvents {
             schoolType = spellDamageSource.spell().getSchoolType();
         }
 
-        debugLog(String.format("收到铁魔法法术伤害事件: %s -> %s, 流派: %s, 伤害: %.1f",
-                attacker != null ? attacker.getName().getString() : "未知",
-                target.getName().getString(),
-                schoolType != null ? schoolType.getId().getPath() : "未知",
-                damage));
+        if (com.legendarymage.legendarymagemod.Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
+            debugLog(String.format("收到铁魔法法术伤害事件: %s -> %s, 流派: %s, 伤害: %.1f",
+                    attacker != null ? attacker.getName().getString() : "未知",
+                    target.getName().getString(),
+                    schoolType != null ? schoolType.getId().getPath() : "未知",
+                    damage));
+        }
 
         // 处理法术伤害，施加元素标记
         if (schoolType != null) {
@@ -88,10 +90,10 @@ public class ElementReactionEvents {
                 // 元素流派的法术：随机赋予冰、火、雷元素标记
                 handleElementSchoolDamage(serverLevel, target, attacker, damage);
             } else {
-                // 检查是否有自定义的元素标记映射
+                // 检查是否有自定义的元素标记映射（包括热加载的运行时映射）
                 ResourceLocation schoolId = schoolType.getId();
-                if (SchoolElementMappingRegistry.hasMapping(schoolId)) {
-                    // 使用自定义映射的元素标记
+                if (ElementMappingHotReload.hasMapping(schoolId)) {
+                    // 使用自定义映射的元素标记（支持热加载）
                     handleCustomSchoolDamage(serverLevel, target, attacker, schoolId, damage);
                 } else {
                     // 其他流派的法术：按正常逻辑处理
@@ -148,6 +150,7 @@ public class ElementReactionEvents {
     /**
      * 处理自定义流派的法术伤害
      * 根据数据包配置的映射施加对应的元素标记
+     * 使用热加载系统获取最新的运行时配置
      *
      * @param serverLevel 服务器世界
      * @param target      目标实体
@@ -157,11 +160,11 @@ public class ElementReactionEvents {
      */
     private static void handleCustomSchoolDamage(ServerLevel serverLevel, LivingEntity target,
                                                   LivingEntity attacker, ResourceLocation schoolId, float damage) {
-        // 获取该流派配置的元素标记类型
-        List<ElementType> elementMarks = SchoolElementMappingRegistry.getElementMarksForSchool(schoolId);
+        // 使用热加载系统获取元素标记（自动合并数据包配置和运行时配置）
+        List<ElementType> elementMarks = ElementMappingHotReload.getElementMarksForSchool(schoolId);
 
-        // 检查返回的元素标记列表是否为null或为空
-        if (elementMarks == null || elementMarks.isEmpty()) {
+        // 检查是否有任何元素标记
+        if (elementMarks.isEmpty()) {
             return;
         }
 

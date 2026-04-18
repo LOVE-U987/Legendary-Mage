@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * 当带有此效果的生物死亡时，会触发小型爆炸
  * 
  * @author Love_U
- * @version 1.0.0
+ * @version 1.0.7
  */
 public class PyroFlameEffect extends MobEffect {
 
@@ -120,10 +120,10 @@ public class PyroFlameEffect extends MobEffect {
         Vec3 pos = entity.position();
         
         // 从配置读取爆炸参数
-        float basePower = Config.PYROMANIAC_EXPLOSION_BASE_POWER.get().floatValue();
-        float powerPerLevel = Config.PYROMANIAC_EXPLOSION_POWER_PER_LEVEL.get().floatValue();
-        boolean destroyBlocks = Config.PYROMANIAC_EXPLOSION_DESTROY_BLOCKS.get();
-        boolean causeFire = Config.PYROMANIAC_EXPLOSION_CAUSE_FIRE.get();
+        float basePower = Config.PYRO_FLAME_EXPLOSION_BASE_POWER.get().floatValue();
+        float powerPerLevel = Config.PYRO_FLAME_EXPLOSION_POWER_PER_LEVEL.get().floatValue();
+        boolean destroyBlocks = Config.PYRO_FLAME_EXPLOSION_DESTROY_BLOCKS.get();
+        boolean causeFire = Config.PYRO_FLAME_EXPLOSION_CAUSE_FIRE.get();
         
         // 计算爆炸威力
         float explosionPower = basePower + (amplifier * powerPerLevel);

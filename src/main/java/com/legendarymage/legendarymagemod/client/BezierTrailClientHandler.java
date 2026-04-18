@@ -52,7 +52,7 @@ public class BezierTrailClientHandler {
         if (tickCounter % 100 == 0) {
             int count = BezierTrailManager.getInstance().getActiveTrailCount();
             if (count > 0) {
-                LegendaryMage.LOGGER.info("[贝塞尔拖尾] 活跃拖尾数: {}", count);
+                com.legendarymage.legendarymagemod.ModLogger.spell("[贝塞尔拖尾] 活跃拖尾数: {}", count);
             }
         }
     }
@@ -81,7 +81,7 @@ public class BezierTrailClientHandler {
         if (count != lastRenderedCount) {
             lastRenderedCount = count;
             if (count > 0) {
-                LegendaryMage.LOGGER.debug("[贝塞尔拖尾] 渲染 {} 个拖尾", count);
+                com.legendarymage.legendarymagemod.ModLogger.spellDebug("[贝塞尔拖尾] 渲染 {} 个拖尾", count);
             }
         }
     }

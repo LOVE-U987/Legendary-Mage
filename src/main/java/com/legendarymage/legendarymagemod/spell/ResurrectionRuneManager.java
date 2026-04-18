@@ -78,7 +78,7 @@ public class ResurrectionRuneManager extends SavedData {
      */
     private void debugLog(String message) {
         if (DEBUG_MODE) {
-            LegendaryMage.LOGGER.info("[复苏符文调试] {}", message);
+            com.legendarymage.legendarymagemod.ModLogger.spell("[复苏符文调试] {}", message);
         }
     }
 

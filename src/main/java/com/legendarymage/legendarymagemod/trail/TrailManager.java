@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * - 支持最大数量限制，避免性能问题
  *
  * @author Love_U
- * @version 1.0.6
+ * @version 1.0.7
  */
 public class TrailManager {
 
@@ -198,7 +198,7 @@ public class TrailManager {
     public void addTrail(TrailEffect trail) {
         if (trail == null) {
             if (debugEnabled) {
-                LegendaryMage.LOGGER.warn("尝试添加null拖尾效果");
+                com.legendarymage.legendarymagemod.ModLogger.warn("尝试添加null拖尾效果");
             }
             return;
         }
@@ -270,7 +270,7 @@ public class TrailManager {
         if (oldestId != null) {
             removeTrail(oldestId);
             if (debugEnabled) {
-                LegendaryMage.LOGGER.warn("达到最大拖尾数量限制({})，自动移除最旧拖尾: {}", maxTrails, oldestId);
+                com.legendarymage.legendarymagemod.ModLogger.warn("达到最大拖尾数量限制({})，自动移除最旧拖尾: {}", maxTrails, oldestId);
             }
         }
     }
@@ -296,7 +296,7 @@ public class TrailManager {
         }
 
         if (cleanedCount > 0 && debugEnabled) {
-           LegendaryMage.LOGGER.debug("清理了{}个不活跃的拖尾效果", cleanedCount);
+           com.legendarymage.legendarymagemod.ModLogger.spellDebug("清理了{}个不活跃的拖尾效果", cleanedCount);
         }
 
         return cleanedCount;
@@ -313,11 +313,23 @@ public class TrailManager {
         activeTrails.clear();
 
         if (debugEnabled) {
-            LegendaryMage.LOGGER.info("清空所有拖尾效果");
+            com.legendarymage.legendarymagemod.ModLogger.spell("清空所有拖尾效果");
         }
     }
 
     // ==================== 更新和渲染 ====================
+
+    /**
+     * 清理计时器
+     * 用于控制清理频率，避免每帧都进行清理检查
+     */
+    private int cleanupTimer = 0;
+
+    /**
+     * 清理间隔（帧数）
+     * 每60帧（约1秒@60fps）清理一次
+     */
+    private static final int CLEANUP_INTERVAL = 60;
 
     /**
      * 更新所有活跃的拖尾效果
@@ -326,16 +338,21 @@ public class TrailManager {
      * @param deltaTime 距上一帧的时间（秒），通常为~0.016（60fps）
      */
     public void updateAll(double deltaTime) {
+        // 批量更新所有拖尾
         for (TrailEffect trail : activeTrails.values()) {
             if (trail.isActive()) {
                 trail.update(deltaTime);
             }
         }
 
-        // 定期清理不活跃的拖尾（每100帧清理一次，约1.6秒@60fps）
-        // 这里简化处理：每次update都检查，但只在发现不活跃时才真正清理
-        if (System.currentTimeMillis() % 10 == 0) { // 降低频率
-            cleanupInactiveTrails();
+        // 定期清理不活跃的拖尾（使用计数器而非时间取模，更精确）
+        cleanupTimer++;
+        if (cleanupTimer >= CLEANUP_INTERVAL) {
+            cleanupTimer = 0;
+            int cleaned = cleanupInactiveTrails();
+            if (cleaned > 0 && debugEnabled) {
+                com.legendarymage.legendarymagemod.ModLogger.spellDebug("[TrailManager] 清理了 {} 个不活跃拖尾", cleaned);
+            }
         }
     }
 

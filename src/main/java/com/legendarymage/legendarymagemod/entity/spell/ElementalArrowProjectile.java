@@ -52,7 +52,7 @@ import java.util.Optional;
  * - 落在地面时产生持续5秒的元素区域伤害
  * 
  * @author Love_U
- * @version 1.0.6
+ * @version 1.0.7
  */
 public class ElementalArrowProjectile extends AbstractMagicProjectile {
 
@@ -655,12 +655,10 @@ public class ElementalArrowProjectile extends AbstractMagicProjectile {
 
         trailInitialized = true;
 
-        if (com.legendarymage.legendarymagemod.Config.ELEMENTAL_BARRAGE_DEBUG_OUTPUT.get()) {
-            com.legendarymage.legendarymagemod.LegendaryMage.LOGGER.debug(
-                    "[元素箭-投射物] 初始化拖尾: {} | 类型: {}",
-                    trailId, arrowType.getName()
-            );
-        }
+        com.legendarymage.legendarymagemod.ModLogger.entityDebug(
+                "[元素箭-投射物] 初始化拖尾: {} | 类型: {}",
+                trailId, arrowType.getName()
+        );
     }
 
     /**
@@ -674,11 +672,9 @@ public class ElementalArrowProjectile extends AbstractMagicProjectile {
                 arrowTrail.stop();
             }
 
-            if (com.legendarymage.legendarymagemod.Config.ELEMENTAL_BARRAGE_DEBUG_OUTPUT.get()) {
-                com.legendarymage.legendarymagemod.LegendaryMage.LOGGER.debug(
-                        "[元素箭-投射物] 清理拖尾: {}", arrowTrail.getId()
-                );
-            }
+            com.legendarymage.legendarymagemod.ModLogger.entityDebug(
+                    "[元素箭-投射物] 清理拖尾: {}", arrowTrail.getId()
+            );
 
             arrowTrail = null;
         }

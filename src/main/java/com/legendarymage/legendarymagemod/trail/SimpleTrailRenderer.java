@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.trail;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
@@ -60,7 +61,7 @@ public class SimpleTrailRenderer {
         }
 
         if (renderedCount > 0) {
-            LegendaryMage.LOGGER.debug("[简单拖尾渲染] 渲染了 {} 个拖尾", renderedCount);
+            ModLogger.trailDebug("渲染了 {} 个拖尾", renderedCount);
         }
     }
 

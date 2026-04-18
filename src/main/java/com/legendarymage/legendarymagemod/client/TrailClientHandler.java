@@ -66,15 +66,15 @@ public class TrailClientHandler {
         manager.updateAll(deltaTime);
 
         // 【调试日志】每100tick输出一次状态（约5秒）
-        if (mc.player.tickCount % 100 == 0) {
+        if (mc.player.tickCount % 100 == 0 && com.legendarymage.legendarymagemod.Config.TRAIL_SYSTEM_DEBUG_OUTPUT.get()) {
             int activeCount = manager.getActiveTrailCount();
             int totalCount = manager.getTotalTrailCount();
 
-           LegendaryMage.LOGGER.info("========================================");
-           LegendaryMage.LOGGER.info("[拖尾-ClientHandler] 📊 Tick更新报告");
-           LegendaryMage.LOGGER.info("[拖尾-ClientHandler] 活跃拖尾数: {}", activeCount);
-           LegendaryMage.LOGGER.info("[拖尾-ClientHandler] 总拖尾数: {}", totalCount);
-           LegendaryMage.LOGGER.info("[拖尾-ClientHandler] 上次渲染数: {}", lastRenderedCount);
+           com.legendarymage.legendarymagemod.ModLogger.spell("========================================");
+           com.legendarymage.legendarymagemod.ModLogger.spell("[拖尾-ClientHandler] 📊 Tick更新报告");
+           com.legendarymage.legendarymagemod.ModLogger.spell("[拖尾-ClientHandler] 活跃拖尾数: {}", activeCount);
+           com.legendarymage.legendarymagemod.ModLogger.spell("[拖尾-ClientHandler] 总拖尾数: {}", totalCount);
+           com.legendarymage.legendarymagemod.ModLogger.spell("[拖尾-ClientHandler] 上次渲染数: {}", lastRenderedCount);
 
             if (activeCount > 0) {
                 // 列出前3个活跃拖尾的信息
@@ -85,7 +85,7 @@ public class TrailClientHandler {
                     count++;
                 }
             }
-           LegendaryMage.LOGGER.info("========================================");
+           com.legendarymage.legendarymagemod.ModLogger.spell("========================================");
         }
     }
 
@@ -133,7 +133,9 @@ public class TrailClientHandler {
             // ====== 这里是核心！真正调用渲染器 ======
             try {
                 // 【调试日志】确认渲染事件被触发
-               LegendaryMage.LOGGER.info("[拖尾-渲染] 🎨 渲染事件触发！准备渲染 {} 个拖尾...", activeCount);
+                if (com.legendarymage.legendarymagemod.Config.TRAIL_SYSTEM_DEBUG_OUTPUT.get()) {
+                   com.legendarymage.legendarymagemod.ModLogger.spell("[拖尾-渲染] 🎨 渲染事件触发！准备渲染 {} 个拖尾...", activeCount);
+                }
 
                 // 使用 TrailManager 渲染所有活跃的拖尾
                 // TrailManager内部会遍历所有拖尾并调用TrailRenderer逐个渲染
@@ -145,7 +147,9 @@ public class TrailClientHandler {
                 // 更新调试计数器
                 lastRenderedCount = activeCount;
 
-               LegendaryMage.LOGGER.info("[拖尾-渲染] ✅ 渲染完成！已提交到GPU");
+                if (com.legendarymage.legendarymagemod.Config.TRAIL_SYSTEM_DEBUG_OUTPUT.get()) {
+                   com.legendarymage.legendarymagemod.ModLogger.spell("[拖尾-渲染] ✅ 渲染完成！已提交到GPU");
+                }
 
             } catch (Exception e) {
                 // 捕获并记录任何渲染错误，避免崩溃
@@ -154,8 +158,8 @@ public class TrailClientHandler {
             }
         } else {
             // 【调试日志】每5秒提示一次无拖尾
-            if (Minecraft.getInstance().player.tickCount % 100 == 0) {
-               LegendaryMage.LOGGER.warn("[拖尾-渲染] ⚠️ 当前没有活跃的拖尾需要渲染");
+            if (Minecraft.getInstance().player.tickCount % 100 == 0 && com.legendarymage.legendarymagemod.Config.TRAIL_SYSTEM_DEBUG_OUTPUT.get()) {
+               com.legendarymage.legendarymagemod.ModLogger.warn("[拖尾-渲染] ⚠️ 当前没有活跃的拖尾需要渲染");
             }
         }
     }
@@ -179,7 +183,7 @@ public class TrailClientHandler {
     public static void setTrailEffectsEnabled(boolean enabled) {
         trailEffectsEnabled = enabled;
 
-       LegendaryMage.LOGGER.info("拖尾特效全局开关: {}", enabled ? "启用" : "禁用");
+       com.legendarymage.legendarymagemod.ModLogger.spell("拖尾特效全局开关: {}", enabled ? "启用" : "禁用");
 
         if (!enabled) {
             TrailManager.getInstance().clearAll();

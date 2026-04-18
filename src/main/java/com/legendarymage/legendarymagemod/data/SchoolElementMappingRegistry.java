@@ -31,7 +31,7 @@ public class SchoolElementMappingRegistry {
      * 注册所有从数据包加载的映射
      */
     public static void registerMappings() {
-        LegendaryMage.LOGGER.info("正在注册法术流派-元素标记映射...");
+        com.legendarymage.legendarymagemod.ModLogger.spell("正在注册法术流派-元素标记映射...");
 
         // 清除之前的映射
         SCHOOL_ELEMENT_MAPPINGS.clear();
@@ -54,9 +54,9 @@ public class SchoolElementMappingRegistry {
                     String targetId = data.targetSchoolId().get();
                     try {
                         targetSchoolId = ResourceLocation.parse(targetId);
-                        LegendaryMage.LOGGER.info("为外部模组流派配置元素标记映射：{} -> {}", targetId, jsonId);
+                        com.legendarymage.legendarymagemod.ModLogger.spell("为外部模组流派配置元素标记映射：{} -> {}", targetId, jsonId);
                     } catch (Exception e) {
-                        LegendaryMage.LOGGER.error("无效的 target_school_id: {} (在 {} 中)", targetId, jsonId);
+                        com.legendarymage.legendarymagemod.ModLogger.error("无效的 target_school_id: {} (在 {} 中)", targetId, jsonId);
                         continue;
                     }
                 }
@@ -89,9 +89,9 @@ public class SchoolElementMappingRegistry {
                 // 添加到反向映射
                 ELEMENT_SCHOOL_MAPPINGS.computeIfAbsent(elementType, k -> new ArrayList<>()).add(schoolId);
 
-                LegendaryMage.LOGGER.debug("注册映射: {} [{}] -> {}", schoolId, condition, elementTypeId);
+                com.legendarymage.legendarymagemod.ModLogger.spellDebug("注册映射: {} [{}] -> {}", schoolId, condition, elementTypeId);
             } else {
-                LegendaryMage.LOGGER.warn("未知的元素类型: {} (在 {} 的映射中)", elementTypeId, schoolId);
+                com.legendarymage.legendarymagemod.ModLogger.warn("未知的元素类型: {} (在 {} 的映射中)", elementTypeId, schoolId);
             }
         }
 

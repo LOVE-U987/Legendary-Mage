@@ -392,10 +392,8 @@ public class ElementalBarrageSpell extends AbstractSpell {
         OrbType startOrbType = getCurrentOrbType();
 
         // 调试输出
-        if (com.legendarymage.legendarymagemod.Config.ELEMENTAL_BARRAGE_DEBUG_OUTPUT.get()) {
-            LegendaryMage.LOGGER.info("[元素弹幕] 等级: {} | 伤害: {} | 弹幕数: {} | 间隔: {}tick | 起始元素: {}",
-                    spellLevel, damage, orbCount, fireInterval, startOrbType.getName());
-        }
+        com.legendarymage.legendarymagemod.ModLogger.spell("[元素弹幕] 等级: {} | 伤害: {} | 弹幕数: {} | 间隔: {}tick | 起始元素: {}",
+                spellLevel, damage, orbCount, fireInterval, startOrbType.getName());
 
         // 发射弹幕
         for (int i = 0; i < orbCount; i++) {

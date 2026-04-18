@@ -223,7 +223,7 @@ public class MagicShotgunSpell extends AbstractSpell {
                 }
             }
             // 如果找不到，记录日志
-            LegendaryMage.LOGGER.warn("未找到咒刃流派：{}，将使用末影流派作为替代", BLADE_SCHOOL_RESOURCE);
+            com.legendarymage.legendarymagemod.ModLogger.warn("未找到咒刃流派：{}，将使用末影流派作为替代", BLADE_SCHOOL_RESOURCE);
         } catch (Exception e) {
             // 如果发生异常，记录日志
             LegendaryMage.LOGGER.error("获取咒刃流派时发生错误：{}", e.getMessage());

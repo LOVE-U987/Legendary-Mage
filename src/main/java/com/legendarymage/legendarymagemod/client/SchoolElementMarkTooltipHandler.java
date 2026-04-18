@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.client;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.command.ElementMappingHotReload;
 import com.legendarymage.legendarymagemod.data.SchoolElementMappingRegistry;
 import com.legendarymage.legendarymagemod.element.ElementType;
 import net.minecraft.client.Minecraft;
@@ -14,7 +15,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 流派元素标记 Tooltip 处理器
@@ -62,20 +65,35 @@ public class SchoolElementMarkTooltipHandler {
         
         for (ResourceLocation schoolId : schoolIds) {
             try {
-                // 检查是否有自定义元素标记映射
-                if (SchoolElementMappingRegistry.hasMapping(schoolId)) {
-                    List<ElementType> elementMarks = SchoolElementMappingRegistry.getElementMarksForSchool(schoolId);
+                // 检查是否有自定义元素标记映射（包括数据包配置和热加载的运行时配置）
+                if (SchoolElementMappingRegistry.hasMapping(schoolId) || ElementMappingHotReload.hasMapping(schoolId)) {
+                    // 合并数据包配置和热加载配置
+                    Set<ElementType> mergedMarks = new HashSet<>();
                     
-                    if (!elementMarks.isEmpty()) {
+                    // 添加数据包配置的映射
+                    List<ElementType> dataPackMarks = SchoolElementMappingRegistry.getElementMarksForSchool(schoolId);
+                    if (dataPackMarks != null && !dataPackMarks.isEmpty()) {
+                        mergedMarks.addAll(dataPackMarks);
+                    }
+                    
+                    // 添加热加载的运行时映射
+                    List<ElementType> hotReloadMarks = ElementMappingHotReload.getElementMarksForSchool(schoolId);
+                    if (hotReloadMarks != null && !hotReloadMarks.isEmpty()) {
+                        mergedMarks.addAll(hotReloadMarks);
+                    }
+                    
+                    if (!mergedMarks.isEmpty()) {
                         hasElementMarks = true;
                         
                         // 构建元素标记文本
                         StringBuilder markText = new StringBuilder();
-                        for (int i = 0; i < elementMarks.size(); i++) {
+                        int i = 0;
+                        for (ElementType element : mergedMarks) {
                             if (i > 0) {
                                 markText.append(" §7|§r ");
                             }
-                            markText.append(getElementMarkString(elementMarks.get(i)));
+                            markText.append(getElementMarkString(element));
+                            i++;
                         }
                         
                         // 添加 Tooltip 行

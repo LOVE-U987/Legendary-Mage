@@ -202,11 +202,11 @@ public class TrailTestSpell extends AbstractSpell {
             return;
         }
 
-        LegendaryMage.LOGGER.info("========================================");
-        LegendaryMage.LOGGER.info("[拖尾测试] 开始施放拖尾测试法术！");
+        com.legendarymage.legendarymagemod.ModLogger.spell("========================================");
+        com.legendarymage.legendarymagemod.ModLogger.spell("[拖尾测试] 开始施放拖尾测试法术！");
         LegendaryMage.LOGGER.info("[拖尾测试] 施法者: {}", entity.getName().getString());
         LegendaryMage.LOGGER.info("[拖尾测试] 世界类型: {}", level.isClientSide() ? "客户端" : "服务器");
-        LegendaryMage.LOGGER.info("========================================");
+        com.legendarymage.legendarymagemod.ModLogger.spell("========================================");
 
         // 计算发射位置（从眼睛位置）
         Vec3 eyePos = entity.getEyePosition(1.0f);
@@ -236,7 +236,7 @@ public class TrailTestSpell extends AbstractSpell {
                 String.format("%.2f", velocity.x),
                 String.format("%.2f", velocity.y),
                 String.format("%.2f", velocity.z));
-        LegendaryMage.LOGGER.info("========================================");
+        com.legendarymage.legendarymagemod.ModLogger.spell("========================================");
 
         super.onCast(level, spellLevel, entity, castSource, magicData);
     }

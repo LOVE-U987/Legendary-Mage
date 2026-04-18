@@ -117,7 +117,7 @@ public class PlagueZombieManager {
         }
         
         if (removedCount > 0) {
-            LegendaryMage.LOGGER.debug("[瘟疫僵尸管理器] 清理不存在的瘟疫僵尸记录：{} 条", removedCount);
+            com.legendarymage.legendarymagemod.ModLogger.spellDebug("[瘟疫僵尸管理器] 清理不存在的瘟疫僵尸记录：{} 条", removedCount);
         }
     }
 

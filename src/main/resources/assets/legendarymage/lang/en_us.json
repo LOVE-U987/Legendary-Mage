@@ -259,6 +259,21 @@
   "legendarymage.configuration.elementReaction.debugOutput": "Debug Output",
   "legendarymage.configuration.elementReaction.debugOutput.tooltip": "Whether to output debug information for element reactions to console, including mark application, upgrades, and reaction triggers",
 
+  "legendarymage.configuration.elementalBurstDebugOutput": "Elemental Burst Debug Output",
+  "legendarymage.configuration.elementalBurstDebugOutput.tooltip": "Whether to output debug information for Elemental Burst to console",
+  "legendarymage.configuration.elementReactionDebugOutput": "Element Reaction Debug Output",
+  "legendarymage.configuration.elementReactionDebugOutput.tooltip": "Whether to output debug information for Element Reactions to console",
+  "legendarymage.configuration.triDirectionalArrowDebugOutput": "Tri-Directional Arrow Debug Output",
+  "legendarymage.configuration.triDirectionalArrowDebugOutput.tooltip": "Whether to output debug information for Tri-Directional Arrow to console",
+  "legendarymage.configuration.trailSystemDebugOutput": "Trail System Debug Output",
+  "legendarymage.configuration.trailSystemDebugOutput.tooltip": "Whether to output debug information for Trail System to console",
+  "legendarymage.configuration.echoStrikeDebugOutput": "Echo Strike Debug Output",
+  "legendarymage.configuration.echoStrikeDebugOutput.tooltip": "Whether to output debug information for Echo Strike to console",
+  "legendarymage.configuration.elementalPrismDebugOutput": "Elemental Prism Debug Output",
+  "legendarymage.configuration.elementalPrismDebugOutput.tooltip": "Whether to output debug information for Elemental Prism to console",
+  "legendarymage.configuration.elementalBarrageDebugOutput": "Elemental Barrage Debug Output",
+  "legendarymage.configuration.elementalBarrageDebugOutput.tooltip": "Whether to output debug information for Elemental Barrage to console",
+
   "subtitles.legendarymage.element_cast": "Element resonates",
   "subtitles.legendarymage.when_you_look_at_me": "Music Disc - When You Look At Me",
 

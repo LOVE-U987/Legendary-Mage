@@ -345,10 +345,8 @@ public class TriDirectionalArrowSpell extends AbstractSpell {
         int arrowCount = calculateArrowCount(spellLevel);
 
         // 调试输出
-        if (com.legendarymage.legendarymagemod.Config.TRI_DIRECTIONAL_ARROW_DEBUG_OUTPUT.get()) {
-            LegendaryMage.LOGGER.info("[三向之矢] 等级: {} | 基础伤害: {} | 最终伤害: {} | 箭数: {} | 法术强度: {}",
-                    spellLevel, calculateBaseDamage(spellLevel), finalDamage, arrowCount, spellPower);
-        }
+        com.legendarymage.legendarymagemod.ModLogger.spell("[三向之矢] 等级: {} | 基础伤害: {} | 最终伤害: {} | 箭数: {} | 法术强度: {}",
+                spellLevel, calculateBaseDamage(spellLevel), finalDamage, arrowCount, spellPower);
 
         // 计算发射间隔：总时间3秒 / 箭矢数量
         int fireInterval = (int) (60.0f / arrowCount); // 60 tick = 3秒

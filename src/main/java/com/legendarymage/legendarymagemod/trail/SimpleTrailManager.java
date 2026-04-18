@@ -1,6 +1,6 @@
 package com.legendarymage.legendarymagemod.trail;
 
-import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.element.ElementType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -52,7 +52,7 @@ public class SimpleTrailManager {
     public SimpleTrailEffect createTrail(String id, Entity entity) {
         SimpleTrailEffect trail = new SimpleTrailEffect(id, entity);
         trails.put(id, trail);
-        LegendaryMage.LOGGER.debug("[简单拖尾] 创建拖尾: {}", id);
+        ModLogger.trailDebug("创建拖尾: {}", id);
         return trail;
     }
 
@@ -209,7 +209,7 @@ public class SimpleTrailManager {
 
             // 移除已完全淡出的拖尾
             if (trail.shouldRemove()) {
-                LegendaryMage.LOGGER.debug("[简单拖尾] 移除拖尾: {}", trail.getId());
+                ModLogger.trailDebug("移除拖尾: {}", trail.getId());
                 return true;
             }
 
@@ -256,6 +256,6 @@ public class SimpleTrailManager {
 
     public void clearAll() {
         trails.clear();
-        LegendaryMage.LOGGER.info("[简单拖尾] 清除所有拖尾");
+        ModLogger.trail("清除所有拖尾");
     }
 }

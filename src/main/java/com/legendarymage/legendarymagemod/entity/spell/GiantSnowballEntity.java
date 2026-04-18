@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
  * 使用原生Projectile逻辑，避免AbstractMagicProjectile的复杂击中检测
  * 
  * @author Love_U
- * @version 2.0.0
+ * @version 1.0.7
  */
 public class GiantSnowballEntity extends Projectile {
 
@@ -205,7 +205,7 @@ public class GiantSnowballEntity extends Projectile {
 
         // 超时销毁
         if (this.isLaunched() && this.tickCount > 200) {
-            com.legendarymage.legendarymagemod.LegendaryMage.LOGGER.info("[巨雪球] 超时销毁");
+            com.legendarymage.legendarymagemod.ModLogger.spell("[巨雪球] 超时销毁");
             this.discard();
         }
     }

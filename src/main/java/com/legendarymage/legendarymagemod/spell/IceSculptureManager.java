@@ -321,7 +321,7 @@ public class IceSculptureManager {
             if (sculpture == null || !sculpture.isAlive()) {
                 // 【日志分析】记录冰雕死亡或消失
                 if (sculpture == null) {
-                    LegendaryMage.LOGGER.warn("[冰雕更新] 冰雕实体已不存在! UUID={}, 剩余tick={}, 可能原因: 实体被移除/discarded/区块卸载", 
+                    com.legendarymage.legendarymagemod.ModLogger.warn("[冰雕更新] 冰雕实体已不存在! UUID={}, 剩余tick={}, 可能原因: 实体被移除/discarded/区块卸载", 
                             data.sculptureUUID, data.remainingTicks);
                 } else {
                     // 获取死亡时的详细信息

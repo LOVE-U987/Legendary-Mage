@@ -45,7 +45,7 @@ public class SimpleTrailClientHandler {
         if (tickCounter % 100 == 0) {
             int count = SimpleTrailManager.getInstance().getActiveTrailCount();
             if (count > 0) {
-                LegendaryMage.LOGGER.debug("[简单拖尾] 活跃拖尾数: {}", count);
+                com.legendarymage.legendarymagemod.ModLogger.spellDebug("[简单拖尾] 活跃拖尾数: {}", count);
             }
         }
     }

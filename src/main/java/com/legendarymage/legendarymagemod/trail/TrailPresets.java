@@ -317,7 +317,7 @@ public class TrailPresets {
         trail.setFadeOutEnabled(false);             // 不淡出
         trail.setMaxPoints(100);                     // 允许很多点
 
-        LegendaryMage.LOGGER.info("创建调试拖尾: {}", debugId);
+        com.legendarymage.legendarymagemod.ModLogger.spell("创建调试拖尾: {}", debugId);
 
         return trail;
     }

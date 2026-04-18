@@ -56,7 +56,7 @@ import java.util.Optional;
  * - 雷球：造成闪电链效果（连锁跳跃）
  *
  * @author Love_U
- * @version 2.0.0
+ * @version 1.0.6
  */
 public class ElementalOrbProjectile extends AbstractMagicProjectile {
 
@@ -163,12 +163,10 @@ public class ElementalOrbProjectile extends AbstractMagicProjectile {
 
         trailInitialized = true;
 
-        if (com.legendarymage.legendarymagemod.Config.ELEMENTAL_BARRAGE_DEBUG_OUTPUT.get()) {
-            com.legendarymage.legendarymagemod.LegendaryMage.LOGGER.debug(
-                    "[元素弹幕-投射物] 初始化拖尾: {} | 类型: {}",
-                    trailId, getOrbType().getName()
-            );
-        }
+        com.legendarymage.legendarymagemod.ModLogger.entityDebug(
+                "[元素弹幕-投射物] 初始化拖尾: {} | 类型: {}",
+                trailId, getOrbType().getName()
+        );
     }
 
     /**
@@ -829,11 +827,9 @@ public class ElementalOrbProjectile extends AbstractMagicProjectile {
                 orbTrail.stop();
             }
 
-            if (com.legendarymage.legendarymagemod.Config.ELEMENTAL_BARRAGE_DEBUG_OUTPUT.get()) {
-                com.legendarymage.legendarymagemod.LegendaryMage.LOGGER.debug(
-                        "[元素弹幕-投射物] 清理拖尾: {}", orbTrail.getId()
-                );
-            }
+            com.legendarymage.legendarymagemod.ModLogger.entityDebug(
+                    "[元素弹幕-投射物] 清理拖尾: {}", orbTrail.getId()
+            );
 
             orbTrail = null;
         }

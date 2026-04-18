@@ -96,7 +96,7 @@ public class BlizzardManager {
             // 检查是否结束
             if (blizzard.isFinished()) {
                 iterator.remove();
-                LegendaryMage.LOGGER.debug("[暴风雪] 暴风雪区域已结束");
+                com.legendarymage.legendarymagemod.ModLogger.spellDebug("[暴风雪] 暴风雪区域已结束");
             }
         }
         
@@ -138,7 +138,7 @@ public class BlizzardManager {
     public static void clearAll(ServerLevel level) {
         String dimensionId = level.dimension().location().toString();
         activeBlizzards.remove(dimensionId);
-        LegendaryMage.LOGGER.info("[暴风雪] 已清除 {} 的所有暴风雪区域", dimensionId);
+        com.legendarymage.legendarymagemod.ModLogger.spell("[暴风雪] 已清除 {} 的所有暴风雪区域", dimensionId);
     }
 
     /**

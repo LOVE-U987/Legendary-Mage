@@ -48,7 +48,7 @@ public class CustomSchoolDataLoader extends SimpleJsonResourceReloadListener {
      */
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> data, ResourceManager resourceManager, ProfilerFiller profiler) {
-        LegendaryMage.LOGGER.info("正在加载自定义法术流派数据包...");
+        com.legendarymage.legendarymagemod.ModLogger.spell("正在加载自定义法术流派数据包...");
         LOADED_SCHOOLS.clear();
 
         int successCount = 0;
@@ -73,11 +73,11 @@ public class CustomSchoolDataLoader extends SimpleJsonResourceReloadListener {
                 }
             } catch (Exception e) {
                 failCount++;
-                LegendaryMage.LOGGER.error("加载自定义法术流派时发生错误: {}", id, e);
+                com.legendarymage.legendarymagemod.ModLogger.error("加载自定义法术流派时发生错误: {}", id, e);
             }
         }
 
-        LegendaryMage.LOGGER.info("自定义法术流派加载完成: 成功 {} 个, 失败 {} 个", successCount, failCount);
+        com.legendarymage.legendarymagemod.ModLogger.spell("自定义法术流派加载完成: 成功 {} 个, 失败 {} 个", successCount, failCount);
 
         // 注册加载的自定义流派
         CustomSchoolRegistry.registerLoadedSchools();

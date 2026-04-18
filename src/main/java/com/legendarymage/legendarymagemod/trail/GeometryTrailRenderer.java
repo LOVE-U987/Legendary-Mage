@@ -1,6 +1,5 @@
 package com.legendarymage.legendarymagemod.trail;
 
-import com.legendarymage.legendarymagemod.LegendaryMage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
@@ -16,20 +15,42 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 几何体拖尾渲染器 - v3.0
- * 修复断开问题，实现正确的淡出时机
+ * 几何体拖尾渲染器 - v3.1 (性能优化版)
+ * 修复断开问题，实现正确的淡出时机，并优化内存分配
  *
  * 【核心改进】
  * 1. 使用Triangle Strip正确渲染连续的带状拖尾
  * 2. 淡出时机：拖尾完成后（停止添加点）整体淡出
  * 3. 飞行过程中保持完整显示，不提前淡出
+ * 4. 【v3.1优化】重用集合和向量对象，减少每帧内存分配
+ *
+ * 【性能优化】
+ * - 重用 points 列表，避免每帧创建新的 ArrayList
+ * - 重用 normals 列表，避免重复计算
+ * - 使用对象池获取临时向量
+ * - 减少临时对象的创建
  *
  * @author Love_U
- * @version 3.0.0
+ * @version 1.0.7
  */
 public class GeometryTrailRenderer {
 
     private static GeometryTrailRenderer instance;
+
+    /**
+     * 重用列表，避免每帧创建新的 ArrayList
+     */
+    private final List<TrailPoint> pointCache = new ArrayList<>(128);
+
+    /**
+     * 法线缓存，避免重复计算
+     */
+    private final List<Vec3> normalCache = new ArrayList<>(128);
+
+    /**
+     * 临时向量，用于计算（避免重复创建）
+     */
+    private final Vector3f tempColor = new Vector3f();
 
     public static GeometryTrailRenderer getInstance() {
         if (instance == null) {
@@ -61,7 +82,7 @@ public class GeometryTrailRenderer {
         }
 
         if (renderedCount > 0) {
-            LegendaryMage.LOGGER.debug("[几何拖尾渲染] 渲染了 {} 个拖尾效果", renderedCount);
+            com.legendarymage.legendarymagemod.ModLogger.spellDebug("[几何拖尾渲染] 渲染了 {} 个拖尾效果", renderedCount);
         }
     }
 
@@ -71,13 +92,17 @@ public class GeometryTrailRenderer {
     private void renderTrail(TrailEffect trail, PoseStack poseStack,
                              MultiBufferSource bufferSource, Vec3 cameraPos, float partialTick) {
 
-        // 获取所有点
-        List<TrailPoint> points = new ArrayList<>();
+        // 清空并重用的缓存列表
+        pointCache.clear();
+        normalCache.clear();
+
+        // 获取所有点（重用缓存列表）
         for (TrailPoint point : trail.getPoints()) {
-            points.add(point);
+            pointCache.add(point);
         }
 
-        if (points.size() < 2) {
+        int pointCount = pointCache.size();
+        if (pointCount < 2) {
             return;
         }
 
@@ -101,29 +126,27 @@ public class GeometryTrailRenderer {
 
         float baseWidth = trail.getWidth();
 
-        // 计算每个点的法线方向（垂直于视线和轨迹方向）
-        int pointCount = points.size();
-        List<Vec3> normals = new ArrayList<>();
-
+        // 预计算所有点的法线方向（垂直于视线和轨迹方向）
+        // 重用 normalCache 列表
         for (int i = 0; i < pointCount; i++) {
-            Vec3 tangent = calculateTangent(points, i);
-            Vec3 toCamera = cameraPos.subtract(points.get(i).position).normalize();
+            Vec3 tangent = calculateTangent(pointCache, i);
+            Vec3 toCamera = cameraPos.subtract(pointCache.get(i).position).normalize();
             Vec3 normal = tangent.cross(toCamera).normalize();
-            normals.add(normal);
+            normalCache.add(normal);
         }
 
         // 渲染Triangle Strip
         // 每个点生成两个顶点（左右两侧）
         for (int i = 0; i < pointCount; i++) {
-            TrailPoint point = points.get(i);
+            TrailPoint point = pointCache.get(i);
             Vec3 pos = point.position;
-            Vec3 normal = normals.get(i);
+            Vec3 normal = normalCache.get(i);
 
             // 计算进度（用于颜色渐变）
             float progress = (float) i / (pointCount - 1);
 
-            // 计算颜色（渐变）
-            Vector3f color = interpolateColor(startColor, endColor, progress);
+            // 计算颜色（渐变）- 重用 tempColor 避免创建新对象
+            interpolateColor(startColor, endColor, progress, tempColor);
 
             // 计算宽度（起点粗，终点细）
             float width = baseWidth * (1.0f - progress * 0.3f);
@@ -142,9 +165,9 @@ public class GeometryTrailRenderer {
             float rz = (float) (rightPos.z - cameraPos.z);
 
             // 颜色值
-            int r = (int) (color.x * 255);
-            int g = (int) (color.y * 255);
-            int b = (int) (color.z * 255);
+            int r = (int) (tempColor.x * 255);
+            int g = (int) (tempColor.y * 255);
+            int b = (int) (tempColor.z * 255);
             int a = (int) (globalAlpha * 255);
 
             // Triangle Strip顺序：右、左
@@ -211,13 +234,16 @@ public class GeometryTrailRenderer {
     }
 
     /**
-     * 颜色插值
+     * 颜色插值（重用结果对象）
+     *
+     * @param start  起始颜色
+     * @param end    结束颜色
+     * @param t      插值因子
+     * @param result 结果存储对象（避免创建新对象）
      */
-    private Vector3f interpolateColor(Vector3f start, Vector3f end, float t) {
-        return new Vector3f(
-                start.x + (end.x - start.x) * t,
-                start.y + (end.y - start.y) * t,
-                start.z + (end.z - start.z) * t
-        );
+    private void interpolateColor(Vector3f start, Vector3f end, float t, Vector3f result) {
+        result.x = start.x + (end.x - start.x) * t;
+        result.y = start.y + (end.y - start.y) * t;
+        result.z = start.z + (end.z - start.z) * t;
     }
 }

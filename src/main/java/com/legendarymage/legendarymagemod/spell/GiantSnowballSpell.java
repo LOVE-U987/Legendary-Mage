@@ -33,17 +33,17 @@ import java.util.UUID;
 
 /**
  * 巨雪球法术
- * 铁魔法-冰系
+ * 铁魔法 - 冰系
  * 先在头顶生成一个小型的雪块，这个雪块会因吟唱时间的增加而变大，
- * 当吟唱结束或中断会被释放，击中造成巨大的冰爆，且留下一片10秒的暴风雪力场
+ * 当吟唱结束或中断会被释放，击中造成巨大的冰爆，且留下一片 10 秒的暴风雪力场
  * 
  * @author Love_U
- * @version 1.0.1
+ * @version 1.0.7
  */
 public class GiantSnowballSpell extends AbstractSpell {
 
     /**
-     * 法术ID
+     * 法术 ID
      */
     public static final String SPELL_ID = "giant_snowball";
 
@@ -59,19 +59,19 @@ public class GiantSnowballSpell extends AbstractSpell {
 
     /**
      * 基础施法时间（tick）
-     * 最大吟唱时间10秒 = 200 tick
+     * 最大吟唱时间 10 秒 = 200 tick
      */
     private static final int MAX_CAST_TIME = 200;
 
     /**
      * 冷却时间（tick）
-     * 1分钟 = 1200 tick
+     * 1 分钟 = 1200 tick
      */
     private static final int COOLDOWN_TICKS = 1200;
 
     /**
      * 施法间隔（tick）
-     * 1秒 = 20 tick
+     * 1 秒 = 20 tick
      */
     private static final int CAST_INTERVAL_TICKS = 20;
 
@@ -97,7 +97,7 @@ public class GiantSnowballSpell extends AbstractSpell {
 
     /**
      * 暴风雪力场持续时间（tick）
-     * 固定10秒 = 200 tick
+     * 固定 10 秒 = 200 tick
      */
     private static final int BLIZZARD_DURATION_TICKS = 200;
 
@@ -164,7 +164,7 @@ public class GiantSnowballSpell extends AbstractSpell {
 
     /**
      * 存储施法者当前雪球的映射
-     * 键：施法者UUID，值：当前雪球的缩放值
+     * 键：施法者 UUID，值：当前雪球的缩放值
      */
     private static final Map<UUID, Float> casterSnowballScales = new HashMap<>();
 
@@ -210,7 +210,7 @@ public class GiantSnowballSpell extends AbstractSpell {
                 .setMinRarity(SpellRarity.LEGENDARY)
                 .setMaxLevel(MAX_LEVEL)
                 .setCooldownSeconds(60)
-                .setAllowCrafting(false);  // 不可书写
+                .setAllowCrafting(false);
     }
 
     /**
@@ -378,13 +378,9 @@ public class GiantSnowballSpell extends AbstractSpell {
         if (level instanceof ServerLevel serverLevel) {
             UUID casterId = entity.getUUID();
             
-            // 存储法术等级
             casterSpellLevels.put(casterId, spellLevel);
-            
-            // 初始化雪球缩放值
             casterSnowballScales.put(casterId, 0.1f);
             
-            // 在施法者头顶创建雪球实体
             Vec3 headPos = entity.position().add(0, entity.getBbHeight() + 1.5, 0);
             GiantSnowballEntity snowball = new GiantSnowballEntity(serverLevel, entity, headPos, 0.1f);
             serverLevel.addFreshEntity(snowball);
@@ -410,20 +406,68 @@ public class GiantSnowballSpell extends AbstractSpell {
             GiantSnowballEntity snowball = casterSnowballEntities.get(casterId);
             
             if (snowball != null && snowball.isAlive()) {
-                // 计算当前吟唱进度（0.0 - 1.0）
                 int currentCastTime = magicData.getCastDurationRemaining();
                 float progress = 1.0f - ((float) currentCastTime / MAX_CAST_TIME);
                 
-                // 雪球大小从0.1到1.0
                 float newScale = 0.1f + (progress * 0.9f);
                 casterSnowballScales.put(casterId, newScale);
                 
-                // 更新雪球大小和位置
                 snowball.setScale(newScale);
                 Vec3 headPos = entity.position().add(0, entity.getBbHeight() + 1.5 + (newScale * 0.5), 0);
                 snowball.setPos(headPos);
             }
         }
+    }
+
+    /**
+     * 发射雪球的通用方法
+     *
+     * @param serverLevel 服务器世界
+     * @param entity      施法实体
+     * @param spellLevel  法术等级
+     * @param scale       雪球大小（0.1 - 1.0，基于吟唱时长）
+     */
+    private void launchSnowball(ServerLevel serverLevel, LivingEntity entity, int spellLevel, float scale) {
+        UUID casterId = entity.getUUID();
+        
+        GiantSnowballEntity snowball = casterSnowballEntities.get(casterId);
+        float spellPower = SpellPowerHelper.getBaseSpellPowerAttribute(entity);
+        
+        float damage = getDamage(spellLevel, spellPower, scale);
+        int explosionRadius = getExplosionRadius(spellLevel, spellPower, scale);
+        
+        com.legendarymage.legendarymagemod.ModLogger.spell("[巨雪球] 发射雪球 - 伤害：{}, 范围：{}, 法术强度：{}, 吟唱进度：{}", 
+                damage, explosionRadius, spellPower, scale);
+        
+        if (snowball != null && snowball.isAlive()) {
+            com.legendarymage.legendarymagemod.ModLogger.spell("[巨雪球] 雪球存在且存活，准备发射");
+            
+            Vec3 lookVec = entity.getViewVector(1.0f).normalize();
+            
+            Vec3 eyePos = entity.getEyePosition(1.0f);
+            Vec3 launchPos = eyePos.add(lookVec.scale(3.0));
+            snowball.setPos(launchPos);
+            
+            snowball.setLaunched(true);
+            snowball.setCaster(null);
+            
+            snowball.shoot(lookVec.x, lookVec.y, lookVec.z, 1.5f, 0);
+            
+            snowball.setDamage(damage);
+            snowball.setExplosionRadius(explosionRadius);
+            snowball.setBlizzardDuration(BLIZZARD_DURATION_TICKS);
+            
+            LegendaryMage.LOGGER.info("[巨雪球] 雪球已发射完成！位置：{}, 速度：{}", snowball.position(), snowball.getDeltaMovement().length());
+        } else {
+            com.legendarymage.legendarymagemod.ModLogger.warn("[巨雪球] 雪球不存在或已死亡，直接触发爆炸");
+            Vec3 pos = entity.position().add(0, entity.getBbHeight() + 2, 0);
+            triggerExplosion(serverLevel, pos, damage, explosionRadius, entity);
+            createBlizzardField(serverLevel, pos, explosionRadius, entity);
+        }
+        
+        casterSnowballScales.remove(casterId);
+        casterSnowballEntities.remove(casterId);
+        casterSpellLevels.remove(casterId);
     }
 
     /**
@@ -440,126 +484,49 @@ public class GiantSnowballSpell extends AbstractSpell {
         if (level instanceof ServerLevel serverLevel) {
             UUID casterId = entity.getUUID();
             
-            LegendaryMage.LOGGER.info("[巨雪球] onCast开始 - 施法者: {}, 等级: {}", casterId, spellLevel);
+            com.legendarymage.legendarymagemod.ModLogger.spell("[巨雪球] onCast 开始 - 施法者：{}, 等级：{}", casterId, spellLevel);
             
-            // 获取当前雪球
-            GiantSnowballEntity snowball = casterSnowballEntities.get(casterId);
-            float scale = casterSnowballScales.getOrDefault(casterId, 0.1f);
+            float scale = casterSnowballScales.getOrDefault(casterId, 1.0f);
             
-            LegendaryMage.LOGGER.info("[巨雪球] 当前雪球: {}, 大小: {}", snowball != null ? snowball.getId() : "null", scale);
+            launchSnowball(serverLevel, entity, spellLevel, scale);
             
-            // 获取法术强度
-            float spellPower = SpellPowerHelper.getBaseSpellPowerAttribute(entity);
-            
-            // 计算伤害和范围
-            float damage = getDamage(spellLevel, spellPower, scale);
-            int explosionRadius = getExplosionRadius(spellLevel, spellPower);
-            
-            LegendaryMage.LOGGER.info("[巨雪球] 计算结果 - 伤害: {}, 范围: {}, 法术强度: {}", damage, explosionRadius, spellPower);
-            
-            if (snowball != null && snowball.isAlive()) {
-                LegendaryMage.LOGGER.info("[巨雪球] 雪球存在且存活，准备发射");
-                
-                // 计算发射方向（玩家视线方向）
-                Vec3 lookVec = entity.getViewVector(1.0f).normalize();
-                LegendaryMage.LOGGER.info("[巨雪球] 视线方向: {}", lookVec);
-                
-                // 关键修复：将雪球设置到玩家眼睛前方，避免与玩家碰撞
-                // 从玩家眼睛位置开始，沿视线方向向前移动3格
-                Vec3 eyePos = entity.getEyePosition(1.0f);
-                Vec3 launchPos = eyePos.add(lookVec.scale(3.0));
-                snowball.setPos(launchPos);
-                LegendaryMage.LOGGER.info("[巨雪球] 眼睛位置: {}, 调整后的发射位置: {}", eyePos, launchPos);
-                
-                // 设置雪球为发射状态
-                snowball.setLaunched(true);
-                LegendaryMage.LOGGER.info("[巨雪球] setLaunched(true)已调用");
-                
-                // 清除施法者引用，防止tick中继续跟随
-                snowball.setCaster(null);
-                LegendaryMage.LOGGER.info("[巨雪球] setCaster(null)已调用");
-                
-                // 发射雪球
-                // Projectile.shoot() 需要 (x, y, z, velocity, inaccuracy)
-                snowball.shoot(lookVec.x, lookVec.y, lookVec.z, 1.5f, 0);
-                LegendaryMage.LOGGER.info("[巨雪球] shoot()已调用，发射后DeltaMovement: {}", snowball.getDeltaMovement());
-                
-                // 设置伤害和范围
-                snowball.setDamage(damage);
-                snowball.setExplosionRadius(explosionRadius);
-                snowball.setBlizzardDuration(BLIZZARD_DURATION_TICKS);
-                
-                LegendaryMage.LOGGER.info("[巨雪球] 雪球已发射完成！位置: {}, 速度: {}", snowball.position(), snowball.getDeltaMovement().length());
-            } else {
-                LegendaryMage.LOGGER.warn("[巨雪球] 雪球不存在或已死亡，直接触发爆炸");
-                // 如果雪球不存在，直接在当前位置触发爆炸
-                Vec3 pos = entity.position().add(0, entity.getBbHeight() + 2, 0);
-                triggerExplosion(serverLevel, pos, damage, explosionRadius, entity);
-                createBlizzardField(serverLevel, pos, explosionRadius, entity);
-            }
-            
-            // 清理存储的数据
-            casterSnowballScales.remove(casterId);
-            casterSnowballEntities.remove(casterId);
-            casterSpellLevels.remove(casterId);
-            
-            LegendaryMage.LOGGER.info("[巨雪球] onCast结束 - 数据已清理");
+            com.legendarymage.legendarymagemod.ModLogger.spell("[巨雪球] onCast 结束 - 数据已清理");
         }
 
         super.onCast(level, spellLevel, entity, castSource, magicData);
     }
 
     /**
-     * 施法被取消时的处理
+     * 施法被取消时的处理（铁魔法调用）
+     *
+     * @param level      世界
+     * @param spellLevel 法术等级
+     * @param entity     施法实体
+     * @param magicData  魔法数据
+     * @param cancelled  是否被取消
+     */
+    @Override
+    public void onServerCastComplete(Level level, int spellLevel, LivingEntity entity, MagicData magicData, boolean cancelled) {
+        if (cancelled) {
+            com.legendarymage.legendarymagemod.ModLogger.spell("[巨雪球] 施法被取消，触发中断发射");
+            onCastCanceled(level, spellLevel, entity);
+        }
+        super.onServerCastComplete(level, spellLevel, entity, magicData, cancelled);
+    }
+
+    /**
+     * 施法被取消时的处理（内部方法）
      *
      * @param level      世界
      * @param spellLevel 法术等级
      * @param entity     施法实体
      */
     public void onCastCanceled(Level level, int spellLevel, LivingEntity entity) {
+        LegendaryMage.LOGGER.info("[巨雪球] onCastCanceled 被调用 - 施法者：{}, 等级：{}", entity.getUUID(), spellLevel);
+        
         if (level instanceof ServerLevel serverLevel) {
-            UUID casterId = entity.getUUID();
-            
-            // 获取当前雪球
-            GiantSnowballEntity snowball = casterSnowballEntities.get(casterId);
-            float scale = casterSnowballScales.getOrDefault(casterId, 0.1f);
-            
-            // 获取法术强度
-            float spellPower = SpellPowerHelper.getBaseSpellPowerAttribute(entity);
-            
-            // 计算伤害和范围（根据当前大小）
-            float damage = getDamage(spellLevel, spellPower, scale);
-            int explosionRadius = getExplosionRadius(spellLevel, spellPower);
-            
-            if (snowball != null && snowball.isAlive()) {
-                // 计算发射方向（玩家视线方向）
-                Vec3 lookVec = entity.getViewVector(1.0f).normalize();
-                
-                // 关键修复：将雪球设置到玩家眼睛前方，避免与玩家碰撞
-                Vec3 eyePos = entity.getEyePosition(1.0f);
-                Vec3 launchPos = eyePos.add(lookVec.scale(3.0));
-                snowball.setPos(launchPos);
-                
-                // 设置雪球为发射状态
-                snowball.setLaunched(true);
-                
-                // 清除施法者引用，防止tick中继续跟随
-                snowball.setCaster(null);
-                
-                // 发射雪球
-                // Projectile.shoot() 需要 (x, y, z, velocity, inaccuracy)
-                snowball.shoot(lookVec.x, lookVec.y, lookVec.z, 1.5f, 0);
-                
-                // 设置伤害和范围
-                snowball.setDamage(damage);
-                snowball.setExplosionRadius(explosionRadius);
-                snowball.setBlizzardDuration(BLIZZARD_DURATION_TICKS);
-            }
-            
-            // 清理存储的数据
-            casterSnowballScales.remove(casterId);
-            casterSnowballEntities.remove(casterId);
-            casterSpellLevels.remove(casterId);
+            float scale = casterSnowballScales.getOrDefault(entity.getUUID(), 0.1f);
+            launchSnowball(serverLevel, entity, spellLevel, scale);
         }
     }
 
@@ -573,7 +540,6 @@ public class GiantSnowballSpell extends AbstractSpell {
      * @param caster          施法者
      */
     public static void triggerExplosion(ServerLevel level, Vec3 center, float damage, int explosionRadius, LivingEntity caster) {
-        // 播放爆炸音效
         level.playSound(
                 null,
                 center.x, center.y, center.z,
@@ -583,7 +549,6 @@ public class GiantSnowballSpell extends AbstractSpell {
                 0.8f + level.random.nextFloat() * 0.4f
         );
 
-        // 播放爆炸粒子效果
         level.sendParticles(
                 io.redspace.ironsspellbooks.particle.BlastwaveParticleOptions.class.cast(
                     new io.redspace.ironsspellbooks.particle.BlastwaveParticleOptions(
@@ -593,7 +558,6 @@ public class GiantSnowballSpell extends AbstractSpell {
                 1, 0, 0, 0, 0
         );
 
-        // 播放雪花粒子效果
         level.sendParticles(
                 io.redspace.ironsspellbooks.registries.ParticleRegistry.SNOWFLAKE_PARTICLE.get(),
                 center.x, center.y + 0.5, center.z,
@@ -602,7 +566,6 @@ public class GiantSnowballSpell extends AbstractSpell {
                 0.1
         );
 
-        // 对范围内敌人造成伤害
         net.minecraft.world.phys.AABB explosionArea = new net.minecraft.world.phys.AABB(
                 center.x - explosionRadius, center.y - explosionRadius, center.z - explosionRadius,
                 center.x + explosionRadius, center.y + explosionRadius, center.z + explosionRadius
@@ -617,7 +580,6 @@ public class GiantSnowballSpell extends AbstractSpell {
         for (LivingEntity target : targets) {
             double distance = target.position().distanceTo(center);
             if (distance <= explosionRadius) {
-                // 根据距离衰减伤害
                 float damageMultiplier = 1.0f - (float) (distance / explosionRadius) * 0.5f;
                 float actualDamage = damage * damageMultiplier;
 
@@ -626,10 +588,9 @@ public class GiantSnowballSpell extends AbstractSpell {
                         actualDamage
                 );
 
-                // 给目标添加缓慢和冰冻效果
                 target.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                         net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN,
-                        100, // 5秒
+                        100,
                         2,
                         false,
                         true
@@ -647,8 +608,7 @@ public class GiantSnowballSpell extends AbstractSpell {
      * @param caster          施法者
      */
     public static void createBlizzardField(ServerLevel level, Vec3 center, int explosionRadius, LivingEntity caster) {
-        // 使用BlizzardManager创建暴风雪力场
-        float blizzardDamage = 5.0f; // 暴风雪每秒伤害
+        float blizzardDamage = 5.0f;
         BlizzardManager.createBlizzard(level, center, explosionRadius, BLIZZARD_DURATION_TICKS, blizzardDamage, caster);
     }
 
@@ -662,7 +622,7 @@ public class GiantSnowballSpell extends AbstractSpell {
      */
     public float getDamage(int spellLevel, float spellPower, float scale) {
         int baseDamage = BASE_DAMAGE + (spellLevel - 1) * DAMAGE_PER_LEVEL;
-        float scaledDamage = baseDamage * scale; // 根据雪球大小缩放
+        float scaledDamage = baseDamage * scale;
         return scaledDamage * spellPower / 1.0f;
     }
 
@@ -674,6 +634,19 @@ public class GiantSnowballSpell extends AbstractSpell {
      */
     public float getDamage(int spellLevel) {
         return BASE_DAMAGE + (spellLevel - 1) * DAMAGE_PER_LEVEL;
+    }
+
+    /**
+     * 获取爆炸范围（带法术强度加成和吟唱进度）
+     *
+     * @param spellLevel 法术等级
+     * @param spellPower 法术强度
+     * @param scale      雪球大小（0.1 - 1.0，基于吟唱时长）
+     * @return 爆炸范围（格）
+     */
+    public int getExplosionRadius(int spellLevel, float spellPower, float scale) {
+        int baseRadius = BASE_EXPLOSION_RADIUS + (spellLevel - 1) * EXPLOSION_RADIUS_PER_LEVEL;
+        return (int) (baseRadius * scale * spellPower / 1.0f);
     }
 
     /**
@@ -708,14 +681,11 @@ public class GiantSnowballSpell extends AbstractSpell {
      */
     @Override
     public List<MutableComponent> getUniqueInfo(int level, LivingEntity entity) {
-        // 获取法术强度属性值
         float spellPower = SpellPowerHelper.getBaseSpellPowerAttribute(entity);
 
-        // 计算实际数值（带法术强度缩放）
         int actualRadius = getExplosionRadius(level, spellPower);
-        float actualDamage = getDamage(level, spellPower, 1.0f); // 最大伤害
+        float actualDamage = getDamage(level, spellPower, 1.0f);
 
-        // 获取基础数值
         int baseRadius = getExplosionRadius(level);
         float baseDamage = getDamage(level);
 

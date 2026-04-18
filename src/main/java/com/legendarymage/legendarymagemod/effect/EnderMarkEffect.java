@@ -91,7 +91,9 @@ public class EnderMarkEffect extends ElementMarkEffect {
         // 检查攻击者和目标是否已死亡或正在死亡
         if (!attacker.isAlive() || attacker.isDeadOrDying() ||
             !target.isAlive() || target.isDeadOrDying()) {
-            LegendaryMage.LOGGER.info("[回响打击调试] 攻击者或目标已死亡");
+            if (com.legendarymage.legendarymagemod.Config.ECHO_STRIKE_DEBUG_OUTPUT.get()) {
+                com.legendarymage.legendarymagemod.ModLogger.spell("[回响打击调试] 攻击者或目标已死亡");
+            }
             return false;
         }
 
@@ -120,8 +122,10 @@ public class EnderMarkEffect extends ElementMarkEffect {
         // 50%几率触发
         double randomValue = Math.random();
         if (randomValue >= ECHO_STRIKE_CHANCE) {
-            LegendaryMage.LOGGER.info("[回响打击调试] 回响打击未触发（几率失败）：random={}, threshold={}",
-                randomValue, ECHO_STRIKE_CHANCE);
+            if (com.legendarymage.legendarymagemod.Config.ECHO_STRIKE_DEBUG_OUTPUT.get()) {
+                com.legendarymage.legendarymagemod.ModLogger.spell("[回响打击调试] 回响打击未触发（几率失败）：random={}, threshold={}",
+                    randomValue, ECHO_STRIKE_CHANCE);
+            }
             return false;
         }
 

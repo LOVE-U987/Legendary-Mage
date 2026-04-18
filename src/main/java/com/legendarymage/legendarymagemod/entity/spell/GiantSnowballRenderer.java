@@ -24,7 +24,7 @@ import com.legendarymage.legendarymagemod.LegendaryMage;
  * 负责渲染巨雪球实体的模型
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.7
  */
 public class GiantSnowballRenderer extends EntityRenderer<GiantSnowballEntity> {
 

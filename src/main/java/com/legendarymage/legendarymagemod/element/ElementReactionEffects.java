@@ -49,9 +49,7 @@ public class ElementReactionEffects {
      * @param message 日志消息
      */
     private static void debugLog(String message) {
-        if (com.legendarymage.legendarymagemod.Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
-            LegendaryMage.LOGGER.info("[元素反应效果] {}", message);
-        }
+                    com.legendarymage.legendarymagemod.ModLogger.spell("[元素反应效果] {}", message);
     }
 
     /**

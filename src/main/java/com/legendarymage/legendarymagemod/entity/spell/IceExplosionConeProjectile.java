@@ -13,6 +13,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -35,7 +36,7 @@ import java.util.Optional;
  * 一种被迫注入了过多法力的冰锥，变得极为不稳定，在击中敌人时会触发冰爆
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.5
  */
 public class IceExplosionConeProjectile extends AbstractMagicProjectile {
 
@@ -134,15 +135,28 @@ public class IceExplosionConeProjectile extends AbstractMagicProjectile {
 
     /**
      * 击中实体时的处理
-     * 
+     *
+     * 【修复说明】
+     * 添加 instanceof 检查，避免 ClassCastException
+     * 某些实体（如 IceTombEntity）不是 LivingEntity，不能直接转换
+     *
      * @param entityHitResult 实体击中结果
      */
     @Override
     protected void onHitEntity(EntityHitResult entityHitResult) {
         super.onHitEntity(entityHitResult);
-        
-        LivingEntity target = (LivingEntity) entityHitResult.getEntity();
-        
+
+        Entity hitEntity = entityHitResult.getEntity();
+
+        // 【安全修复】检查实体是否为 LivingEntity，避免类型转换异常
+        if (!(hitEntity instanceof LivingEntity target)) {
+            // 非生物实体（如 IceTombEntity），直接触发爆炸但不造成伤害
+            triggerExplosion(hitEntity.position());
+            cleanupTrail();
+            pierceOrDiscard();
+            return;
+        }
+
         // 使用法术伤害来源，以便元素反应系统识别
         if (getOwner() instanceof LivingEntity owner) {
             target.hurt(
@@ -150,7 +164,7 @@ public class IceExplosionConeProjectile extends AbstractMagicProjectile {
                 getDamage()
             );
         }
-        
+
         // 触发冰爆
         triggerExplosion(target.position());
 

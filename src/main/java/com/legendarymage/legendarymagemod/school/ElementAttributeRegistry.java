@@ -52,7 +52,7 @@ public class ElementAttributeRegistry {
      */
     public static void register(IEventBus eventBus) {
         ATTRIBUTES.register(eventBus);
-        LegendaryMage.LOGGER.info("元素流派属性已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("元素流派属性已注册");
     }
 
     /**
@@ -67,6 +67,6 @@ public class ElementAttributeRegistry {
                 event.add(entityType, attribute);
             });
         });
-        LegendaryMage.LOGGER.info("元素流派属性已添加到实体");
+        com.legendarymage.legendarymagemod.ModLogger.spell("元素流派属性已添加到实体");
     }
 }

@@ -53,7 +53,7 @@ public class ModEvents {
      */
     private static void debugLog(String message) {
         if (DEBUG_MODE) {
-            LegendaryMage.LOGGER.info("[事件调试] {}", message);
+            com.legendarymage.legendarymagemod.ModLogger.spell("[事件调试] {}", message);
         }
     }
 

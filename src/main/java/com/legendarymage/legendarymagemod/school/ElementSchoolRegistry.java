@@ -102,7 +102,7 @@ public class ElementSchoolRegistry {
     public static void register(IEventBus eventBus) {
         SOUND_EVENTS.register(eventBus);
         ELEMENT_SCHOOLS.register(eventBus);
-        LegendaryMage.LOGGER.info("元素流派已注册");
+        com.legendarymage.legendarymagemod.ModLogger.spell("元素流派已注册");
     }
 
     /**

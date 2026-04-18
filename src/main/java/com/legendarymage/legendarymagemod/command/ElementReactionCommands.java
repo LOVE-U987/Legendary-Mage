@@ -142,7 +142,7 @@ public class ElementReactionCommands {
                 return 0;
             }
         } catch (Exception e) {
-            LegendaryMage.LOGGER.error("[元素命令] 施加标记失败", e);
+            com.legendarymage.legendarymagemod.ModLogger.error("[元素命令] 施加标记失败", e);
             context.getSource().sendFailure(Component.literal("§c执行失败: " + e.getMessage()));
             return 0;
         }
@@ -189,7 +189,7 @@ public class ElementReactionCommands {
                 return 0;
             }
         } catch (Exception e) {
-            LegendaryMage.LOGGER.error("[元素命令] 施加标记失败", e);
+            com.legendarymage.legendarymagemod.ModLogger.error("[元素命令] 施加标记失败", e);
             context.getSource().sendFailure(Component.literal("§c执行失败: " + e.getMessage()));
             return 0;
         }
@@ -230,7 +230,7 @@ public class ElementReactionCommands {
             context.getSource().sendSuccess(() -> Component.literal(message), true);
             return 1;
         } catch (Exception e) {
-            LegendaryMage.LOGGER.error("[元素命令] 移除标记失败", e);
+            com.legendarymage.legendarymagemod.ModLogger.error("[元素命令] 移除标记失败", e);
             context.getSource().sendFailure(Component.literal("§c执行失败: " + e.getMessage()));
             return 0;
         }
@@ -263,7 +263,7 @@ public class ElementReactionCommands {
             context.getSource().sendSuccess(() -> Component.literal(message), true);
             return 1;
         } catch (Exception e) {
-            LegendaryMage.LOGGER.error("[元素命令] 清除标记失败", e);
+            com.legendarymage.legendarymagemod.ModLogger.error("[元素命令] 清除标记失败", e);
             context.getSource().sendFailure(Component.literal("§c执行失败: " + e.getMessage()));
             return 0;
         }
@@ -297,7 +297,7 @@ public class ElementReactionCommands {
             context.getSource().sendSuccess(() -> Component.literal(message), false);
             return 1;
         } catch (Exception e) {
-            LegendaryMage.LOGGER.error("[元素命令] 获取信息失败", e);
+            com.legendarymage.legendarymagemod.ModLogger.error("[元素命令] 获取信息失败", e);
             context.getSource().sendFailure(Component.literal("§c执行失败: " + e.getMessage()));
             return 0;
         }
@@ -328,7 +328,7 @@ public class ElementReactionCommands {
             context.getSource().sendSuccess(() -> Component.literal(message), false);
             return 1;
         } catch (Exception e) {
-            LegendaryMage.LOGGER.error("[元素命令] 获取信息失败", e);
+            com.legendarymage.legendarymagemod.ModLogger.error("[元素命令] 获取信息失败", e);
             context.getSource().sendFailure(Component.literal("§c执行失败: " + e.getMessage()));
             return 0;
         }
@@ -370,7 +370,7 @@ public class ElementReactionCommands {
             context.getSource().sendSuccess(() -> Component.literal(finalMessage), false);
             return 1;
         } catch (Exception e) {
-            LegendaryMage.LOGGER.error("[元素命令] 列出标记失败", e);
+            com.legendarymage.legendarymagemod.ModLogger.error("[元素命令] 列出标记失败", e);
             context.getSource().sendFailure(Component.literal("§c执行失败: " + e.getMessage()));
             return 0;
         }

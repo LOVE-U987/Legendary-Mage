@@ -39,7 +39,7 @@ import java.util.Optional;
  * 烈焰Buff类似凋零效果，但当带有烈焰的生物死亡时会触发小型爆炸
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.7
  */
 public class PyromaniacSpell extends AbstractSpell {
 
@@ -528,6 +528,7 @@ public class PyromaniacSpell extends AbstractSpell {
     /**
      * 判断施法者是否可以目标指定实体
      * 检查是否为敌对关系，不会伤害友军和召唤物
+     * 同时检查实体是否在烈焰Buff黑名单中
      * 
      * @param caster 施法者
      * @param target 目标
@@ -536,6 +537,11 @@ public class PyromaniacSpell extends AbstractSpell {
     private boolean canTargetEntity(LivingEntity caster, LivingEntity target) {
         // 不能目标自己
         if (caster == target) {
+            return false;
+        }
+        
+        // 检查实体是否在烈焰Buff黑名单中
+        if (isEntityInPyroFlameBlacklist(target)) {
             return false;
         }
         
@@ -592,5 +598,37 @@ public class PyromaniacSpell extends AbstractSpell {
         }
         
         return true;
+    }
+
+    /**
+     * 检查实体是否在烈焰Buff黑名单中
+     * 
+     * @param target 目标实体
+     * @return 是否在黑名单中
+     */
+    private boolean isEntityInPyroFlameBlacklist(LivingEntity target) {
+        // 获取黑名单列表
+        var blacklist = Config.PYRO_FLAME_ENTITY_BLACKLIST.get();
+
+        // 如果黑名单为空，返回false
+        if (blacklist == null || blacklist.isEmpty()) {
+            return false;
+        }
+
+        // 获取实体的资源ID（如 "minecraft:creeper"）
+        String entityTypeId = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(target.getType()).toString();
+
+        // 检查实体类型是否在黑名单中
+        for (String blacklistedEntity : blacklist) {
+            if (blacklistedEntity != null && !blacklistedEntity.isEmpty()) {
+                // 支持两种格式："minecraft:creeper" 或 "creeper"
+                if (blacklistedEntity.equals(entityTypeId) ||
+                    blacklistedEntity.equals(entityTypeId.replace("minecraft:", ""))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

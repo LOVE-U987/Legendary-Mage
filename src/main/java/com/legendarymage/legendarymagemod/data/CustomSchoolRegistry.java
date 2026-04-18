@@ -38,7 +38,7 @@ public class CustomSchoolRegistry {
      * 注册所有从数据包加载的自定义流派
      */
     public static void registerLoadedSchools() {
-        LegendaryMage.LOGGER.info("正在注册自定义法术流派...");
+        com.legendarymage.legendarymagemod.ModLogger.spell("正在注册自定义法术流派...");
 
         // 清除之前的注册
         REGISTERED_SCHOOLS.clear();
@@ -59,7 +59,7 @@ public class CustomSchoolRegistry {
 
                 LegendaryMage.LOGGER.info("已注册自定义法术流派: {} - {}", id, data.name());
             } catch (Exception e) {
-                LegendaryMage.LOGGER.error("注册自定义法术流派失败: {}", id, e);
+                com.legendarymage.legendarymagemod.ModLogger.error("注册自定义法术流派失败: {}", id, e);
             }
         }
 
@@ -98,7 +98,7 @@ public class CustomSchoolRegistry {
             String translationKey = "school." + id.getNamespace() + "." + id.getPath();
             displayName = Component.translatable(translationKey)
                     .withStyle(Style.EMPTY.withColor(data.color()));
-            LegendaryMage.LOGGER.debug("为自定义流派创建显示名称：{} -> {}", id, translationKey);
+            com.legendarymage.legendarymagemod.ModLogger.spellDebug("为自定义流派创建显示名称：{} -> {}", id, translationKey);
         }
 
         // 获取或创建法术强度属性
