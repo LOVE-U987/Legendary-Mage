@@ -1,5 +1,6 @@
 package com.legendarymage.legendarymagemod;
 
+import com.legendarymage.legendarymagemod.client.gui.ModernConfigScreen;
 import com.legendarymage.legendarymagemod.client.model.ElementalOrbModel;
 import com.legendarymage.legendarymagemod.client.renderer.IceSculptureRenderer;
 import com.legendarymage.legendarymagemod.entity.ModEntities;
@@ -21,7 +22,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 /**
@@ -29,7 +29,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
  * 负责注册客户端特有的内容，如渲染器
  * 
  * @author Love_U
- * @version 0.0.1
+ * @version 1.0.8
  */
 @Mod(value = LegendaryMage.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(modid = LegendaryMage.MODID, value = Dist.CLIENT)
@@ -41,8 +41,9 @@ public class LegendaryMageClient {
      * @param container 模组容器
      */
     public LegendaryMageClient(ModContainer container) {
-        // 注册配置界面
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        // 注册现代风格配置界面
+        container.registerExtensionPoint(IConfigScreenFactory.class, 
+            (modContainer, screen) -> new ModernConfigScreen(screen));
     }
 
     /**
