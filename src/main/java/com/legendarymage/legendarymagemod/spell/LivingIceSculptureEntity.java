@@ -4,12 +4,15 @@ import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.entity.ModEntities;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -23,8 +26,10 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -55,6 +60,13 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
      */
     private static final EntityDataAccessor<Integer> DATA_EASTER_EGG_TEXTURE_INDEX = SynchedEntityData.defineId(
             LivingIceSculptureEntity.class, EntityDataSerializers.INT);
+
+    /**
+     * 实体数据同步键 - 是否处于坐下状态
+     * true=坐下（原地待命），false=跟随主人
+     */
+    private static final EntityDataAccessor<Boolean> DATA_ORDERED_TO_SIT = SynchedEntityData.defineId(
+            LivingIceSculptureEntity.class, EntityDataSerializers.BOOLEAN);
 
     /**
      * 基础生命值
@@ -125,6 +137,7 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
         builder.define(DATA_OWNER_UUID, Optional.empty());
         builder.define(DATA_SHATTERING, false);
         builder.define(DATA_EASTER_EGG_TEXTURE_INDEX, 0);  // 默认使用默认纹理
+        builder.define(DATA_ORDERED_TO_SIT, false);  // 默认跟随主人
     }
 
     /**
@@ -163,16 +176,19 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
         this.targetSelector.addGoal(4, new HurtByTargetGoal(this));
 
         // 行为目标
-        // 优先级1：攻击目标
+        // 优先级1：坐下时原地待命（最高优先级，覆盖其他移动行为）
+        this.goalSelector.addGoal(0, new SitGoal(this));
+
+        // 优先级2：攻击目标
         this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.2, true));
 
-        // 优先级2：跟随主人
+        // 优先级3：跟随主人（坐下时不会激活）
         this.goalSelector.addGoal(2, new FollowOwnerGoal(this, 1.0, 10.0, 2.0));
 
-        // 优先级3：随机移动
-        this.goalSelector.addGoal(3, new RandomStrollGoal(this, 0.8));
+        // 优先级4：随机移动（坐下时不会移动）
+        this.goalSelector.addGoal(3, new ConditionalRandomStrollGoal(this, 0.8));
 
-        // 优先级4：看向目标
+        // 优先级5：看向目标
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 8.0f));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
     }
@@ -456,6 +472,7 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
         }
         compound.putInt("LifetimeTicks", this.lifetimeTicksRemaining);
         compound.putInt("EasterEggTextureIndex", this.getEasterEggTextureIndex());
+        compound.putBoolean("OrderedToSit", this.isOrderedToSit());
     }
 
     /**
@@ -474,6 +491,9 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
         }
         if (compound.contains("EasterEggTextureIndex")) {
             this.setEasterEggTextureIndex(compound.getInt("EasterEggTextureIndex"));
+        }
+        if (compound.contains("OrderedToSit")) {
+            this.setOrderedToSit(compound.getBoolean("OrderedToSit"));
         }
     }
 
@@ -508,6 +528,65 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
     }
 
     /**
+     * 获取坐下状态
+     * 
+     * @return 是否处于坐下状态
+     */
+    public boolean isOrderedToSit() {
+        return this.entityData.get(DATA_ORDERED_TO_SIT);
+    }
+
+    /**
+     * 设置坐下状态
+     * 
+     * @param sitting true=坐下（原地待命），false=跟随主人
+     */
+    public void setOrderedToSit(boolean sitting) {
+        this.entityData.set(DATA_ORDERED_TO_SIT, sitting);
+    }
+
+    /**
+     * 玩家与冰雕交互
+     * 主人右键点击时切换跟随/坐下状态
+     * 
+     * @param player 交互的玩家
+     * @param hand   交互的手
+     * @return 交互结果
+     */
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        // 只有主人可以切换状态
+        if (!this.isOwnedBy(player)) {
+            return InteractionResult.PASS;
+        }
+
+        // 只响应主手的空手交互
+        if (hand != InteractionHand.MAIN_HAND) {
+            return InteractionResult.PASS;
+        }
+
+        // 切换坐下/跟随状态
+        boolean wasSitting = this.isOrderedToSit();
+        this.setOrderedToSit(!wasSitting);
+
+        // 播放交互音效
+        this.playSound(SoundEvents.AMETHYST_BLOCK_CHIME, 0.6f, wasSitting ? 1.2f : 0.8f);
+
+        // 发送状态提示消息
+        if (!this.level().isClientSide) {
+            if (wasSitting) {
+                player.displayClientMessage(
+                    Component.translatable("entity.legendarymage.ice_sculpture.follow"), true);
+            } else {
+                player.displayClientMessage(
+                    Component.translatable("entity.legendarymage.ice_sculpture.sit"), true);
+            }
+        }
+
+        return InteractionResult.sidedSuccess(this.level().isClientSide);
+    }
+
+    /**
      * 是否免疫火焰伤害
      * 
      * @return 是否免疫火焰
@@ -537,11 +616,14 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
 
         @Override
         public boolean canUse() {
+            if (this.entity.isOrderedToSit()) {
+                return false;
+            }
             LivingEntity owner = this.entity.getOwner();
             if (owner == null) {
                 return false;
             }
-            if (this.entity.distanceToSqr(owner) < this.startDistance * this.startDistance) {
+            if (owner.distanceToSqr(this.entity) < this.startDistance * this.startDistance) {
                 return false;
             }
             this.owner = owner;
@@ -576,6 +658,64 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
                 this.timeToRecalcPath = 10;
                 this.entity.getNavigation().moveTo(this.owner, this.speedModifier);
             }
+        }
+    }
+
+    /**
+     * 坐下待命目标
+     * 当冰雕被命令坐下时，停止所有导航和移动，原地待命
+     */
+    private static class SitGoal extends Goal {
+        private final LivingIceSculptureEntity entity;
+
+        public SitGoal(LivingIceSculptureEntity entity) {
+            this.entity = entity;
+            this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            return this.entity.isOrderedToSit() && !this.entity.isInWater();
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return this.entity.isOrderedToSit();
+        }
+
+        @Override
+        public void start() {
+            this.entity.getNavigation().stop();
+            this.entity.setTarget(null);
+        }
+    }
+
+    /**
+     * 带坐下检查的随机移动目标
+     * 坐下时不会进行随机移动
+     */
+    private static class ConditionalRandomStrollGoal extends RandomStrollGoal {
+        private final LivingIceSculptureEntity entity;
+
+        public ConditionalRandomStrollGoal(LivingIceSculptureEntity entity, double speedModifier) {
+            super(entity, speedModifier);
+            this.entity = entity;
+        }
+
+        @Override
+        public boolean canUse() {
+            if (this.entity.isOrderedToSit()) {
+                return false;
+            }
+            return super.canUse();
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            if (this.entity.isOrderedToSit()) {
+                return false;
+            }
+            return super.canContinueToUse();
         }
     }
 }

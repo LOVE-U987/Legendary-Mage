@@ -280,6 +280,8 @@
   "spell.legendarymage.living_ice_sculpture.cast_success": "[测试]：§b活体冰雕术§r已释放！范围: %s格，持续时间: %d秒，法术强度: %s",
 
   "entity.legendarymage.ice_sculpture": "活体冰雕",
+  "entity.legendarymage.ice_sculpture.follow": "§b冰雕开始跟随你！§r",
+  "entity.legendarymage.ice_sculpture.sit": "§b冰雕原地坐下待命！§r",
 
   "spell.legendarymage.blizzard": "暴风雪",
   "spell.legendarymage.blizzard.guide": "选定一个目标，在其位置创造一片暴风雪区域，该区域内的敌人每隔0.5秒会受到一次冰冻伤害，并附加缓慢效果。法术等级和法术强度都会影响范围和伤害",

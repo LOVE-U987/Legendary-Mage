@@ -107,6 +107,8 @@
   "spell.legendarymage.living_ice_sculpture.cast_success": "§bLiving Ice Sculpture§r released! Range: %s blocks, Duration: %d seconds, Spell Power: %s",
 
   "entity.legendarymage.ice_sculpture": "Ice Sculpture",
+  "entity.legendarymage.ice_sculpture.follow": "§bIce Sculpture is now following you!§r",
+  "entity.legendarymage.ice_sculpture.sit": "§bIce Sculpture is now sitting!§r",
 
   "spell.legendarymage.blizzard": "Blizzard",
   "spell.legendarymage.blizzard.guide": "Select a target and create a blizzard area at their location. Enemies within this area take frost damage every 0.5 seconds and are slowed. Spell level and spell power affect range and damage.",
