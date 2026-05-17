@@ -26,7 +26,6 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -597,6 +596,20 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
     }
 
     /**
+     * 获取实体姿势
+     * 坐下时返回 SITTING 姿势，触发原版骑乘/坐下动画
+     * 
+     * @return 实体姿势
+     */
+    @Override
+    public Pose getPose() {
+        if (this.isOrderedToSit()) {
+            return Pose.SITTING;
+        }
+        return super.getPose();
+    }
+
+    /**
      * 跟随主人目标类（宠物AI）
      */
     private static class FollowOwnerGoal extends Goal {
@@ -680,7 +693,7 @@ public class LivingIceSculptureEntity extends PathfinderMob implements OwnableEn
 
         @Override
         public boolean canContinueToUse() {
-            return this.entity.isOrderedToSit();
+            return this.entity.isOrderedToSit() && !this.entity.isInWater();
         }
 
         @Override
