@@ -1,5 +1,6 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import io.redspace.ironsspellbooks.particle.ZapParticleOption;
 import io.redspace.ironsspellbooks.registries.SoundRegistry;
@@ -14,12 +15,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * 触电效果
  * 雷系元素反应给予目标的 Debuff
- * 效果：每 2 秒在自身位置释放一次连锁闪电，伤害固定为 5*等级
+ * 效果：按配置间隔在自身位置释放一次连锁闪电，基础伤害从配置读取并乘以等级
  * 使用原版伤害源，不触发铁魔法法术系统
  * 带有白名单机制，不会伤害施法者及其队友
  *
@@ -35,24 +37,35 @@ public class ElectrocutedBuffEffect extends MobEffect {
 
     /**
      * 基础伤害
+     * 从配置读取：感电 Buff 每级连锁闪电基础伤害
      */
-    private static final float BASE_DAMAGE = 5.0f;
+    private static float getBaseDamage() {
+        return Config.ELECTROCUTED_BASE_DAMAGE.get().floatValue();
+    }
 
     /**
      * 触发间隔（tick）
-     * 2 秒 = 40 tick
+     * 从配置读取：感电 Buff 触发间隔
      */
-    private static final int TRIGGER_INTERVAL = 40;
+    private static int getTriggerInterval() {
+        return Config.ELECTROCUTED_TRIGGER_INTERVAL.get();
+    }
 
     /**
      * 连锁闪电范围
+     * 从配置读取：感电 Buff 连锁范围
      */
-    private static final double CHAIN_RANGE = 8.0;
+    private static double getChainRange() {
+        return Config.ELECTROCUTED_CHAIN_RANGE.get();
+    }
 
     /**
      * 连锁闪电最大目标数
+     * 从配置读取：感电 Buff 最大连锁目标数
      */
-    private static final int MAX_CHAIN_TARGETS = 3;
+    private static int getMaxChainTargets() {
+        return Config.ELECTROCUTED_MAX_CHAIN_TARGETS.get();
+    }
 
     /**
      * 构造函数
@@ -81,9 +94,10 @@ public class ElectrocutedBuffEffect extends MobEffect {
             return true;
         }
 
-        // 每 2 秒触发一次连锁闪电
+        // 按配置间隔触发一次连锁闪电
         int duration = effectInstance.getDuration();
-        if (duration % TRIGGER_INTERVAL == 0) {
+        int triggerInterval = getTriggerInterval();
+        if (triggerInterval > 0 && duration % triggerInterval == 0) {
             triggerChainLightning(serverLevel, entity, amplifier);
         }
 
@@ -92,8 +106,9 @@ public class ElectrocutedBuffEffect extends MobEffect {
 
     @Override
     public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
-        // 每 tick 都检查，但在 applyEffectTick 中控制触发频率
-        return true;
+        // [PERF] 按配置间隔触发效果，并在消失前确保触发一次
+        int interval = Config.ELECTROCUTED_TRIGGER_INTERVAL.get();
+        return duration > 0 && duration % interval == 0;
     }
 
     /**
@@ -108,14 +123,15 @@ public class ElectrocutedBuffEffect extends MobEffect {
     private void triggerChainLightning(ServerLevel serverLevel, LivingEntity entity, int amplifier) {
         // 计算伤害（固定值，不受法术强度影响）
         int buffLevel = amplifier + 1;
-        float damage = BASE_DAMAGE * buffLevel;
+        float damage = getBaseDamage() * buffLevel;
 
         Vec3 pos = entity.position();
+        double chainRange = getChainRange();
 
         // 查找范围内的敌对实体
         AABB searchArea = new AABB(
-                pos.x - CHAIN_RANGE, pos.y - CHAIN_RANGE, pos.z - CHAIN_RANGE,
-                pos.x + CHAIN_RANGE, pos.y + CHAIN_RANGE, pos.z + CHAIN_RANGE
+                pos.x - chainRange, pos.y - chainRange, pos.z - chainRange,
+                pos.x + chainRange, pos.y + chainRange, pos.z + chainRange
         );
 
         List<LivingEntity> nearbyEntities = serverLevel.getEntitiesOfClass(
@@ -130,14 +146,18 @@ public class ElectrocutedBuffEffect extends MobEffect {
                 }
         );
 
+        // [PERF] 按距离排序，优先攻击最近的目标
+        nearbyEntities.sort(Comparator.comparingDouble(
+            e -> e.distanceToSqr(entity.position())));
+        // [PERF] 限制连锁目标数量
+        int maxChainTargets = getMaxChainTargets();
+        if (nearbyEntities.size() > maxChainTargets) {
+            nearbyEntities = nearbyEntities.subList(0, maxChainTargets);
+        }
+
         // 对最近的几个目标造成伤害
-        int targetsHit = 0;
         Vec3 lastPos = pos;
         for (LivingEntity target : nearbyEntities) {
-            if (targetsHit >= MAX_CHAIN_TARGETS) {
-                break;
-            }
-
             // 使用 hurt 方法造成伤害
             target.hurt(serverLevel.damageSources().magic(), damage);
 
@@ -148,7 +168,6 @@ public class ElectrocutedBuffEffect extends MobEffect {
             playLightningEffect(serverLevel, target);
 
             lastPos = target.position();
-            targetsHit++;
         }
 
         // 播放中心位置的闪电爆发效果

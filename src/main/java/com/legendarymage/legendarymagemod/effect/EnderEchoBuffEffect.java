@@ -1,5 +1,6 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import net.minecraft.resources.ResourceLocation;
@@ -33,50 +34,53 @@ public class EnderEchoBuffEffect extends MobEffect {
     private static final int EFFECT_COLOR = 0x9932CC;
 
     /**
-     * 法术强度加成比例（末影强度的1/3）
+     * 基础末影强度加成（假设基础末影强度为 1.5，即 50% 加成）
+     * 用于计算 EMIffect 等模组中的显示值
      */
-    public static final double SPELL_POWER_RATIO = 0.333;
+    private static final double BASE_ENDER_POWER_BONUS = 0.5;
 
     /**
-     * 法术抗性加成比例（末影强度的1/2）
+     * 获取基础法术强度加成显示值（用于EMIffect显示）
+     * 计算方式：基础末影加成 * 配置中的法术强度比例
      */
-    public static final double SPELL_RESIST_RATIO = 0.5;
+    public static double getBaseSpellPowerBonusDisplay() {
+        return BASE_ENDER_POWER_BONUS * getSpellPowerRatio();
+    }
 
     /**
-     * 基础法术强度加成显示值（用于EMIffect显示）
-     * 假设基础末影强度为1.5（50%加成），则法术强度加成 = 0.5 * 0.333 = 0.166（16.6%）
+     * 获取基础法术抗性加成显示值（用于EMIffect显示）
+     * 计算方式：基础末影加成 * 配置中的法术抗性比例
      */
-    public static final double BASE_SPELL_POWER_BONUS_DISPLAY = 0.166;
+    public static double getBaseSpellResistBonusDisplay() {
+        return BASE_ENDER_POWER_BONUS * getSpellResistRatio();
+    }
 
     /**
-     * 基础法术抗性加成显示值（用于EMIffect显示）
-     * 假设基础末影强度为1.5（50%加成），则法术抗性加成 = 0.5 * 0.5 = 0.25（25%）
+     * 获取法术强度加成比例（从配置读取）
+     *
+     * @return 法术强度加成比例
      */
-    public static final double BASE_SPELL_RESIST_BONUS_DISPLAY = 0.25;
+    public static double getSpellPowerRatio() {
+        return Config.ENDER_ECHO_SPELL_POWER_RATIO.get();
+    }
+
+    /**
+     * 获取法术抗性加成比例（从配置读取）
+     *
+     * @return 法术抗性加成比例
+     */
+    public static double getSpellResistRatio() {
+        return Config.ENDER_ECHO_SPELL_RESIST_RATIO.get();
+    }
 
     /**
      * 构造函数
-     * 添加基础属性修饰符用于EMIffect等模组显示
-     * 实际效果由 ElementReactionEffects.handleEnderAny() 动态调整
+     * 注意：配置驱动的属性修饰符在 FMLCommonSetupEvent 阶段集中初始化（ModEffects.initConfigModifiers），
+     * 此时 Config 尚未就绪，不可在此处读取配置值。
      */
     public EnderEchoBuffEffect() {
         super(MobEffectCategory.BENEFICIAL, EFFECT_COLOR);
-        
-        // 添加法术强度修饰符（用于EMIffect显示）
-        this.addAttributeModifier(
-                AttributeRegistry.SPELL_POWER,
-                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "ender_echo_spell_power"),
-                BASE_SPELL_POWER_BONUS_DISPLAY,
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-        );
-        
-        // 添加法术抗性修饰符（用于EMIffect显示）
-        this.addAttributeModifier(
-                AttributeRegistry.SPELL_RESIST,
-                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "ender_echo_spell_resist"),
-                BASE_SPELL_RESIST_BONUS_DISPLAY,
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-        );
+        // 属性修饰符在 ModEffects.initConfigModifiers() 中延迟初始化
     }
 
     @Override
@@ -92,22 +96,22 @@ public class EnderEchoBuffEffect extends MobEffect {
 
     /**
      * 计算法术抗性加成
-     * 
+     *
      * @param enderPower 末影法术强度
      * @return 法术抗性加成值
      */
     public static double calculateMagicResistBonus(double enderPower) {
-        return (enderPower - 1.0) * SPELL_RESIST_RATIO; // 减去基础值1.0
+        return (enderPower - 1.0) * getSpellResistRatio(); // 减去基础值1.0
     }
 
     /**
      * 计算法术强度加成
-     * 
+     *
      * @param enderPower 末影法术强度
      * @return 法术强度加成值
      */
     public static double calculateSpellPowerBonus(double enderPower) {
-        return (enderPower - 1.0) * SPELL_POWER_RATIO; // 减去基础值1.0
+        return (enderPower - 1.0) * getSpellPowerRatio(); // 减去基础值1.0
     }
 
     /**

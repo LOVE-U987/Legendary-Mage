@@ -2,7 +2,9 @@ package com.legendarymage.legendarymagemod.element;
 
 import java.util.List;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.effect.LightningRodBuffEffect;
 import com.legendarymage.legendarymagemod.effect.ModEffects;
 import com.legendarymage.legendarymagemod.effect.PlagueBuffEffect;
@@ -49,7 +51,9 @@ public class ElementReactionEffects {
      * @param message 日志消息
      */
     private static void debugLog(String message) {
-                    com.legendarymage.legendarymagemod.ModLogger.spell("[元素反应效果] {}", message);
+        if (Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
+            com.legendarymage.legendarymagemod.ModLogger.spell("[元素反应效果] {}", message);
+        }
     }
 
     /**
@@ -65,101 +69,105 @@ public class ElementReactionEffects {
      */
     public static void handleReaction(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
                                       ElementType existingElement, ElementType newElement, int existingLevel) {
-        // 检查目标是否已死亡或正在死亡
-        if (!target.isAlive() || target.isDeadOrDying()) {
-            debugLog(String.format("目标已死亡或正在死亡，跳过元素反应处理: %s",
-                    target.getName().getString()));
-            return;
-        }
-        
-        // 获取反应类型
-        ReactionType reactionType = getReactionType(existingElement, newElement);
+        try {
+            // 检查目标是否已死亡或正在死亡
+            if (!target.isAlive() || target.isDeadOrDying()) {
+                debugLog(String.format("目标已死亡或正在死亡，跳过元素反应处理: %s",
+                        target.getName().getString()));
+                return;
+            }
+            
+            // 获取反应类型
+            ReactionType reactionType = getReactionType(existingElement, newElement);
 
-        debugLog(String.format("处理反应: %s + %s = %s (等级: %d)",
-                existingElement.getId(),
-                newElement.getId(),
-                reactionType.name(),
-                existingLevel));
+            debugLog(String.format("处理反应: %s + %s = %s (等级: %d)",
+                    existingElement.getId(),
+                    newElement.getId(),
+                    reactionType.name(),
+                    existingLevel));
 
-        // 根据反应类型执行对应效果
-        switch (reactionType) {
-            case ICE_FIRE:
-                // 冰火：单次伤害加成
-                handleIceFire(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                // 反应后移除被反应的元素标记（冰和火）
-                removeElementMark(target, existingElement);
-                removeElementMark(target, newElement);
-                break;
+            // 根据反应类型执行对应效果
+            switch (reactionType) {
+                case ICE_FIRE:
+                    // 冰火：单次伤害加成
+                    handleIceFire(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（冰和火）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
 
-            case POISON_FIRE:
-                // 木火：挂上烈焰Buff
-                handlePoisonFire(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                // 反应后移除被反应的元素标记（毒和火）
-                removeElementMark(target, existingElement);
-                removeElementMark(target, newElement);
-                break;
+                case POISON_FIRE:
+                    // 木火：挂上烈焰Buff
+                    handlePoisonFire(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（毒和火）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
 
-            case LIGHTNING_FIRE:
-                // 雷火：在实体位置落雷
-                handleLightningFire(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                // 反应后移除被反应的元素标记（雷和火）
-                removeElementMark(target, existingElement);
-                removeElementMark(target, newElement);
-                break;
+                case LIGHTNING_FIRE:
+                    // 雷火：在实体位置落雷
+                    handleLightningFire(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（雷和火）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
 
-            case HOLY_BLOOD:
-                // 神圣-猩红：单次伤害加成
-                handleHolyBlood(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                // 反应后移除被反应的元素标记（神圣和血）
-                removeElementMark(target, existingElement);
-                removeElementMark(target, newElement);
-                break;
+                case HOLY_BLOOD:
+                    // 神圣-猩红：单次伤害加成
+                    handleHolyBlood(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（神圣和血）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
 
-            case ELDRITCH_BLOOD:
-                // 邪术-猩红：给与施法者Buff"混沌"
-                handleEldritchBlood(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                // 反应后移除被反应的元素标记（邪术和血）
-                removeElementMark(target, existingElement);
-                removeElementMark(target, newElement);
-                break;
+                case ELDRITCH_BLOOD:
+                    // 邪术-猩红：给与施法者Buff"混沌"
+                    handleEldritchBlood(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（邪术和血）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
 
-            case ENDER_ANY:
-                // 末影与任意：给与施法者 Buff"终末回响"
-                handleEnderAny(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                // 反应后移除被反应的元素标记（末影和另一个元素）
-                removeElementMark(target, existingElement);
-                removeElementMark(target, newElement);
-                break;
+                case ENDER_ANY:
+                    // 末影与任意：给与施法者 Buff"终末回响"
+                    handleEnderAny(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（末影和另一个元素）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
 
-            case LIGHTNING_POISON:
-                // 雷毒：消耗感电 Buff 释放电磁波范围伤害
-                handleLightningPoison(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                // 反应后移除被反应的元素标记（雷和毒）
-                removeElementMark(target, existingElement);
-                removeElementMark(target, newElement);
-                break;
+                case LIGHTNING_POISON:
+                    // 雷毒：消耗感电 Buff 释放电磁波范围伤害
+                    handleLightningPoison(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（雷和毒）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
 
-            case ICE_LIGHTNING:
-                // 冰雷：获得避雷针 Buff
-                handleIceLightning(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                // 反应后移除被反应的元素标记（冰和雷）
-                removeElementMark(target, existingElement);
-                removeElementMark(target, newElement);
-                break;
+                case ICE_LIGHTNING:
+                    // 冰雷：获得避雷针 Buff
+                    handleIceLightning(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（冰和雷）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
 
-            case BLOOD_POISON:
-                // 暗毒：获得瘟疫 Buff
-                handleBloodPoison(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                // 反应后移除被反应的元素标记（血和毒）
-                removeElementMark(target, existingElement);
-                removeElementMark(target, newElement);
-                break;
+                case BLOOD_POISON:
+                    // 暗毒：获得瘟疫 Buff
+                    handleBloodPoison(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（血和毒）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
 
-            case UNKNOWN:
-            default:
-                // 未知反应，播放默认效果
-                handleUnknownReaction(serverLevel, target, attacker, existingElement, newElement, existingLevel);
-                break;
+                case UNKNOWN:
+                default:
+                    // 未知反应，播放默认效果
+                    handleUnknownReaction(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    break;
+            }
+        } catch (Exception e) {
+            ModLogger.error("[元素反应] handleReaction 发生异常", e);
         }
     }
 
@@ -473,8 +481,8 @@ public class ElementReactionEffects {
 
         // 计算加成值（减去基础值1.0后计算）
         double enderBonus = enderPower - 1.0;
-        double spellPowerBonus = enderBonus * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.SPELL_POWER_RATIO;
-        double spellResistBonus = enderBonus * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.SPELL_RESIST_RATIO;
+        double spellPowerBonus = enderBonus * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.getSpellPowerRatio();
+        double spellResistBonus = enderBonus * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.getSpellResistRatio();
 
         // 第一步：完全移除旧的终末回响效果及其所有动态属性修饰符（如果存在）
         removeOldEnderEchoEffect(attacker);
@@ -916,8 +924,10 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 计算 Buff 等级（基于元素标记等级）
-        int buffLevel = Math.min(markLevel, LightningRodBuffEffect.MAX_STACKS);
+        // 计算 Buff 等级（基于元素标记等级，受最大层数限制）
+        int maxStacks = LightningRodBuffEffect.getMaxStacks();
+        int durationSeconds = LightningRodBuffEffect.getDurationSeconds();
+        int buffLevel = Math.min(markLevel, maxStacks);
 
         // 施加避雷针 Buff 给目标（敌人）
         // 这样施法者才能对带有避雷针 Buff 的敌人造成更高的雷/冰伤害
@@ -925,13 +935,13 @@ public class ElementReactionEffects {
         Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(lightningRodEffect);
         target.addEffect(new MobEffectInstance(
                 effectHolder,
-                LightningRodBuffEffect.DURATION_SECONDS * 20, // 持续时间（tick）
+                durationSeconds * 20, // 持续时间（tick）
                 buffLevel - 1,   // 等级（0 开始）
                 false, true, true
         ));
 
         debugLog(String.format("冰雷反应对目标施加避雷针 Buff: 等级 %d, 持续时间 %d秒",
-                buffLevel, LightningRodBuffEffect.DURATION_SECONDS));
+                buffLevel, durationSeconds));
 
         // 播放特效
         playIceLightningParticles(serverLevel, target);
@@ -948,15 +958,17 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 计算 Buff 等级（基于元素标记等级，无上限）
-        int buffLevel = markLevel;
+        // 计算 Buff 等级（基于元素标记等级，受最大层数限制）
+        int maxStacks = PlagueBuffEffect.getMaxStacks();
+        int durationSeconds = PlagueBuffEffect.getDurationSeconds();
+        int buffLevel = Math.min(markLevel, maxStacks);
 
         // 施加瘟疫 Buff
         MobEffect plagueEffect = ModEffects.PLAGUE_BUFF.get();
         Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(plagueEffect);
         MobEffectInstance instance = new MobEffectInstance(
                 effectHolder,
-                PlagueBuffEffect.DURATION_SECONDS * 20, // 持续时间（tick）
+                durationSeconds * 20, // 持续时间（tick）
                 buffLevel - 1,   // 等级（0 开始）
                 false, true, true
         );
@@ -968,7 +980,7 @@ public class ElementReactionEffects {
         }
 
         debugLog(String.format("暗毒反应施加瘟疫 Buff: 等级 %d, 持续时间 %d 秒，施法者：%s",
-                buffLevel, PlagueBuffEffect.DURATION_SECONDS, attacker.getName().getString()));
+                buffLevel, durationSeconds, attacker.getName().getString()));
 
         // 播放特效
         playBloodPoisonParticles(serverLevel, target);

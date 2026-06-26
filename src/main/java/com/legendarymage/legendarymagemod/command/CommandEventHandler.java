@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.command;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -24,10 +25,10 @@ public class CommandEventHandler {
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         // 注册全英文版命令
         ElementCompatEnglishCommand.register(event.getDispatcher());
-        LegendaryMage.LOGGER.info("命令注册完成: /legendarymage elementcompat");
+        ModLogger.system("命令注册完成: /legendarymage elementcompat");
 
         // 注册全中文版命令
         ElementCompatChineseCommand.register(event.getDispatcher());
-        LegendaryMage.LOGGER.info("命令注册完成: /传奇法师 元素兼容性");
+        ModLogger.system("命令注册完成: /传奇法师 元素兼容性");
     }
 }

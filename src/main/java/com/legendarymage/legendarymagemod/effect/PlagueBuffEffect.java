@@ -1,5 +1,6 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -13,39 +14,14 @@ import net.minecraft.resources.ResourceLocation;
  * 瘟疫 Buff 效果
  * 暗毒元素反应产生的 Buff
  * 效果：
- * - 每级减少 2% 最大生命值
- * - 死亡时 25% 概率变为我方僵尸
- * - 死亡时 75% 概率毒爆
- * 
+ * - 每级减少最大生命值（比例从配置读取）
+ * - 死亡时概率变为我方僵尸（从配置读取）
+ * - 死亡时概率毒爆（从配置读取）
+ *
  * @author Love_U
  * @version 1.0.4
  */
 public class PlagueBuffEffect extends MobEffect {
-
-    /**
-     * 每级减少的最大生命值百分比
-     */
-    private static final double MAX_HEALTH_REDUCTION_PER_LEVEL = 0.02; // 2%
-
-    /**
-     * 僵尸转化概率
-     */
-    private static final double ZOMBIE_CONVERSION_CHANCE = 0.25; // 25%
-
-    /**
-     * 毒爆概率
-     */
-    private static final double EXPLOSION_CHANCE = 0.75; // 75%
-
-    /**
-     * Buff 持续时间（秒）
-     */
-    public static final int DURATION_SECONDS = 10;
-
-    /**
-     * 最大叠加层数
-     */
-    public static final int MAX_STACKS = 10;
 
     /**
      * 效果颜色 - 暗绿色
@@ -59,28 +35,22 @@ public class PlagueBuffEffect extends MobEffect {
 
     /**
      * 构造函数
+     * 注意：配置驱动的属性修饰符在 FMLCommonSetupEvent 阶段集中初始化（ModEffects.initConfigModifiers），
+     * 此时 Config 尚未就绪，不可在此处读取配置值。
      */
     public PlagueBuffEffect() {
         super(MobEffectCategory.HARMFUL, EFFECT_COLOR);
-        
-        // 添加最大生命值减少修饰符（每级 -2%）
-        // 注意：Minecraft 会自动乘以 (amplifier + 1)
-        this.addAttributeModifier(
-            Attributes.MAX_HEALTH,
-            ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "plague_max_health"),
-            -MAX_HEALTH_REDUCTION_PER_LEVEL,
-            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-        );
+        // 属性修饰符在 ModEffects.initConfigModifiers() 中延迟初始化
     }
 
     /**
      * 计算最大生命值减少百分比
-     * 
+     *
      * @param amplifier Buff 等级（从 0 开始）
      * @return 生命值减少百分比
      */
     public static double calculateMaxHealthReduction(int amplifier) {
-        return (amplifier + 1) * MAX_HEALTH_REDUCTION_PER_LEVEL;
+        return (amplifier + 1) * Config.PLAGUE_MAX_HEALTH_REDUCTION_PER_LEVEL.get();
     }
 
     /**
@@ -95,20 +65,38 @@ public class PlagueBuffEffect extends MobEffect {
 
     /**
      * 获取僵尸转化概率
-     * 
+     *
      * @return 僵尸转化概率
      */
     public static double getZombieConversionChance() {
-        return ZOMBIE_CONVERSION_CHANCE;
+        return Config.PLAGUE_ZOMBIE_CONVERSION_CHANCE.get();
     }
 
     /**
      * 获取毒爆概率
-     * 
+     *
      * @return 毒爆概率
      */
     public static double getExplosionChance() {
-        return EXPLOSION_CHANCE;
+        return Config.PLAGUE_EXPLOSION_CHANCE.get();
+    }
+
+    /**
+     * 获取瘟疫 Buff 持续时间（秒）
+     *
+     * @return 持续时间（秒）
+     */
+    public static int getDurationSeconds() {
+        return Config.PLAGUE_DURATION_SECONDS.get();
+    }
+
+    /**
+     * 获取瘟疫 Buff 最大层数
+     *
+     * @return 最大层数
+     */
+    public static int getMaxStacks() {
+        return Config.PLAGUE_MAX_STACKS.get();
     }
 
     @Override
@@ -125,10 +113,10 @@ public class PlagueBuffEffect extends MobEffect {
 
     /**
      * 获取效果 ID
-     * 
+     *
      * @return 效果 ID
      */
     public String getEffectId() {
-        return LegendaryMage.MODID + ":plague_buff";
+        return EFFECT_ID;
     }
 }

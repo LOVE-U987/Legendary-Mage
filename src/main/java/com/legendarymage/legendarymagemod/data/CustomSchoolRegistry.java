@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.data;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import io.redspace.ironsspellbooks.api.spells.SchoolType;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -22,6 +23,7 @@ import java.util.Map;
  * @author Love_U
  * @version 1.0.0
  */
+// @Internal("内部注册实现，外部 addon 请使用 com.legendarymage.legendarymagemod.api.school.CustomSchoolApi")
 public class CustomSchoolRegistry {
 
     /**
@@ -38,7 +40,7 @@ public class CustomSchoolRegistry {
      * 注册所有从数据包加载的自定义流派
      */
     public static void registerLoadedSchools() {
-        com.legendarymage.legendarymagemod.ModLogger.spell("正在注册自定义法术流派...");
+        ModLogger.spell("正在注册自定义法术流派...");
 
         // 清除之前的注册
         REGISTERED_SCHOOLS.clear();
@@ -57,13 +59,13 @@ public class CustomSchoolRegistry {
                 REGISTERED_SCHOOLS.put(id, schoolType);
                 SCHOOL_DATA_MAP.put(id, data);
 
-                LegendaryMage.LOGGER.info("已注册自定义法术流派: {} - {}", id, data.name());
+                ModLogger.system("已注册自定义法术流派: {} - {}", id, data.name());
             } catch (Exception e) {
-                com.legendarymage.legendarymagemod.ModLogger.error("注册自定义法术流派失败: {}", id, e);
+                ModLogger.error("注册自定义法术流派失败: {}", id, e);
             }
         }
 
-        LegendaryMage.LOGGER.info("自定义法术流派注册完成: 共 {} 个", REGISTERED_SCHOOLS.size());
+        ModLogger.system("自定义法术流派注册完成: 共 {} 个", REGISTERED_SCHOOLS.size());
 
         // 注册流派-元素标记映射
         SchoolElementMappingRegistry.registerMappings();
@@ -92,13 +94,13 @@ public class CustomSchoolRegistry {
             // 外部模组流派：直接使用 JSON 中的名称
             displayName = Component.literal(data.name())
                     .withStyle(Style.EMPTY.withColor(data.color()));
-            LegendaryMage.LOGGER.debug("为外部模组流派创建显示名称：{} -> {}", id, data.name());
+            ModLogger.systemDebug("为外部模组流派创建显示名称：{} -> {}", id, data.name());
         } else {
             // 自定义流派：使用翻译键
             String translationKey = "school." + id.getNamespace() + "." + id.getPath();
             displayName = Component.translatable(translationKey)
                     .withStyle(Style.EMPTY.withColor(data.color()));
-            com.legendarymage.legendarymagemod.ModLogger.spellDebug("为自定义流派创建显示名称：{} -> {}", id, translationKey);
+            ModLogger.spellDebug("为自定义流派创建显示名称：{} -> {}", id, translationKey);
         }
 
         // 获取或创建法术强度属性

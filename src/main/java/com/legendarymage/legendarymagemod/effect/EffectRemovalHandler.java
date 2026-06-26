@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.effect;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
@@ -90,7 +91,7 @@ public class EffectRemovalHandler {
                 // 执行任务
                 task.handler.accept(entity, task.amplifier);
             } catch (Exception e) {
-                LegendaryMage.LOGGER.error("[EffectRemovalHandler] 执行延迟任务时发生错误: {}", e.getMessage(), e);
+                ModLogger.error("[EffectRemovalHandler] 执行延迟任务时发生错误: {}", e.getMessage(), e);
             }
         }
     }

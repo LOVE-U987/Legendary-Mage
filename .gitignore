@@ -24,3 +24,15 @@ runs
 run-data
 
 repo
+
+# 反编译/二进制类文件
+io/
+*.class
+
+# 第三方模组完整源码
+libs/源代码/
+libs/sources/
+
+# Blockbench 临时工作文件
+model/*.bbmodel
+model/*.java

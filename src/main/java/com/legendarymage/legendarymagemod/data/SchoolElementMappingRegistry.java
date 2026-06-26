@@ -1,6 +1,6 @@
 package com.legendarymage.legendarymagemod.data;
 
-import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.element.ElementType;
 import net.minecraft.resources.ResourceLocation;
 
@@ -31,7 +31,7 @@ public class SchoolElementMappingRegistry {
      * 注册所有从数据包加载的映射
      */
     public static void registerMappings() {
-        com.legendarymage.legendarymagemod.ModLogger.spell("正在注册法术流派-元素标记映射...");
+        ModLogger.spell("正在注册法术流派-元素标记映射...");
 
         // 清除之前的映射
         SCHOOL_ELEMENT_MAPPINGS.clear();
@@ -54,9 +54,9 @@ public class SchoolElementMappingRegistry {
                     String targetId = data.targetSchoolId().get();
                     try {
                         targetSchoolId = ResourceLocation.parse(targetId);
-                        com.legendarymage.legendarymagemod.ModLogger.spell("为外部模组流派配置元素标记映射：{} -> {}", targetId, jsonId);
+                        ModLogger.spell("为外部模组流派配置元素标记映射：{} -> {}", targetId, jsonId);
                     } catch (Exception e) {
-                        com.legendarymage.legendarymagemod.ModLogger.error("无效的 target_school_id: {} (在 {} 中)", targetId, jsonId);
+                        ModLogger.error("无效的 target_school_id: {} (在 {} 中)", targetId, jsonId);
                         continue;
                     }
                 }
@@ -65,7 +65,7 @@ public class SchoolElementMappingRegistry {
             }
         }
 
-        LegendaryMage.LOGGER.info("法术流派-元素标记映射注册完成: 共 {} 个映射", SCHOOL_ELEMENT_MAPPINGS.size());
+        ModLogger.system("法术流派-元素标记映射注册完成: 共 {} 个映射", SCHOOL_ELEMENT_MAPPINGS.size());
     }
 
     /**
@@ -89,9 +89,9 @@ public class SchoolElementMappingRegistry {
                 // 添加到反向映射
                 ELEMENT_SCHOOL_MAPPINGS.computeIfAbsent(elementType, k -> new ArrayList<>()).add(schoolId);
 
-                com.legendarymage.legendarymagemod.ModLogger.spellDebug("注册映射: {} [{}] -> {}", schoolId, condition, elementTypeId);
+                ModLogger.spellDebug("注册映射: {} [{}] -> {}", schoolId, condition, elementTypeId);
             } else {
-                com.legendarymage.legendarymagemod.ModLogger.warn("未知的元素类型: {} (在 {} 的映射中)", elementTypeId, schoolId);
+                ModLogger.warn("未知的元素类型: {} (在 {} 的映射中)", elementTypeId, schoolId);
             }
         }
 

@@ -27,6 +27,7 @@ import java.util.Random;
  * @author Love_U
  * @version 1.0.7
  */
+// @Internal("内部反应实现，外部 addon 请使用 com.legendarymage.legendarymagemod.api.element.ElementReactionApi")
 public class ElementReactionManager {
 
     /**
@@ -66,7 +67,9 @@ public class ElementReactionManager {
      * @param message 日志消息
      */
     private static void debugLog(String message) {
-        com.legendarymage.legendarymagemod.ModLogger.element("[元素反应] {}", message);
+        if (com.legendarymage.legendarymagemod.Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
+            com.legendarymage.legendarymagemod.ModLogger.element("[元素反应] {}", message);
+        }
     }
 
     /**

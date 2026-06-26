@@ -97,7 +97,6 @@ public class ModernConfigScreen extends Screen {
     }
 
     private void initializeCategories() {
-        categories.add(new ConfigCategory("spells", TRANSLATION_PREFIX + ".category.spells", TRANSLATION_PREFIX + ".category.spells.tooltip"));
         categories.add(new ConfigCategory("buffs", TRANSLATION_PREFIX + ".category.buffs", TRANSLATION_PREFIX + ".category.buffs.tooltip"));
         categories.add(new ConfigCategory("debug", TRANSLATION_PREFIX + ".category.debug", TRANSLATION_PREFIX + ".category.debug.tooltip"));
         categories.add(new ConfigCategory("element", TRANSLATION_PREFIX + ".category.element", TRANSLATION_PREFIX + ".category.element.tooltip"));
@@ -158,19 +157,6 @@ public class ModernConfigScreen extends Screen {
 
         switch (selectedCategory) {
             case 0 -> {
-                currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "resurrection_rune.buff_enabled", Config.RESURRECTION_RUNE_BUFF_ENABLED);
-                currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "resurrection_rune.spell_power_multiplier", Config.RESURRECTION_RUNE_SPELL_POWER_MULTIPLIER, 0.1, 5.0);
-                currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "pyromaniac.affect_allies", Config.PYROMANIAC_AFFECT_ALLIES);
-                currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "pyromaniac.affect_summons", Config.PYROMANIAC_AFFECT_SUMMONS);
-                currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "implosion.spell_power_multiplier", Config.IMPLOSION_SPELL_POWER_MULTIPLIER, 0.1, 5.0);
-                currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "implosion.pull_strength", Config.IMPLOSION_PULL_STRENGTH, 0.1, 2.0);
-                currentY = addIntRow(contentLeft, currentY, contentWidth, rowHeight, "living_ice_sculpture.max_sculptures", Config.LIVING_ICE_SCULPTURE_MAX_SCULPTURES, 1, 20);
-                currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "living_ice_sculpture.health_base", Config.LIVING_ICE_SCULPTURE_HEALTH_BASE, 10.0, 200.0);
-                currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "blizzard.base_range", Config.BLIZZARD_BASE_RANGE, 1.0, 20.0);
-                currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "blizzard.base_damage", Config.BLIZZARD_BASE_DAMAGE, 1.0, 50.0);
-                currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "element_mark_icon.enabled", Config.ELEMENT_MARK_ICON_ENABLED);
-            }
-            case 1 -> {
                 currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "lightning_rod.ice_resist_reduction", Config.LIGHTNING_ROD_ICE_RESIST_REDUCTION, -0.5, 0.0);
                 currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "lightning_rod.lightning_resist_reduction", Config.LIGHTNING_ROD_LIGHTNING_RESIST_REDUCTION, -0.5, 0.0);
                 currentY = addIntRow(contentLeft, currentY, contentWidth, rowHeight, "lightning_rod.duration_seconds", Config.LIGHTNING_ROD_DURATION_SECONDS, 1, 60);
@@ -183,17 +169,13 @@ public class ModernConfigScreen extends Screen {
                 currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "ender_echo.spell_power_ratio", Config.ENDER_ECHO_SPELL_POWER_RATIO, 0.0, 1.0);
                 currentY = addDoubleRow(contentLeft, currentY, contentWidth, rowHeight, "pyro_flame.damage_per_second", Config.PYRO_FLAME_DAMAGE_PER_SECOND, 0.5, 10.0);
             }
-            case 2 -> {
+            case 1 -> {
                 currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "debug.global_mode", Config.GLOBAL_DEBUG_MODE);
                 currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "debug.trail_system", Config.TRAIL_SYSTEM_DEBUG_OUTPUT);
                 currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "debug.echo_strike", Config.ECHO_STRIKE_DEBUG_OUTPUT);
-                currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "debug.elemental_burst", Config.ELEMENTAL_BURST_DEBUG_OUTPUT);
                 currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "debug.element_reaction", Config.ELEMENT_REACTION_DEBUG_OUTPUT);
-                currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "debug.elemental_barrage", Config.ELEMENTAL_BARRAGE_DEBUG_OUTPUT);
-                currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "debug.tri_directional_arrow", Config.TRI_DIRECTIONAL_ARROW_DEBUG_OUTPUT);
-                currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "debug.elemental_prism", Config.ELEMENTAL_PRISM_DEBUG_OUTPUT);
             }
-            case 3 -> {
+            case 2 -> {
                 currentY = addInfoRow(contentLeft, currentY, TRANSLATION_PREFIX + ".element.title");
                 currentY = addInfoRow(contentLeft, currentY, TRANSLATION_PREFIX + ".element.description1");
                 currentY = addInfoRow(contentLeft, currentY, TRANSLATION_PREFIX + ".element.description2");
@@ -202,6 +184,8 @@ public class ModernConfigScreen extends Screen {
                 currentY += 5;
                 currentY = addInfoRow(contentLeft, currentY, TRANSLATION_PREFIX + ".element.command");
                 currentY = addInfoRow(contentLeft, currentY, TRANSLATION_PREFIX + ".element.example");
+                currentY += 5;
+                currentY = addBooleanRow(contentLeft, currentY, contentWidth, rowHeight, "element_mark_icon.enabled", Config.ELEMENT_MARK_ICON_ENABLED);
             }
         }
 

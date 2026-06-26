@@ -43,7 +43,9 @@ public class ElementReactionEvents {
      * @param message 日志消息
      */
     private static void debugLog(String message) {
-        com.legendarymage.legendarymagemod.ModLogger.element("[元素反应事件] {}", message);
+        if (com.legendarymage.legendarymagemod.Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
+            com.legendarymage.legendarymagemod.ModLogger.element("[元素反应事件] {}", message);
+        }
     }
 
     /**
@@ -75,13 +77,11 @@ public class ElementReactionEvents {
             schoolType = spellDamageSource.spell().getSchoolType();
         }
 
-        if (com.legendarymage.legendarymagemod.Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
-            debugLog(String.format("收到铁魔法法术伤害事件: %s -> %s, 流派: %s, 伤害: %.1f",
-                    attacker != null ? attacker.getName().getString() : "未知",
-                    target.getName().getString(),
-                    schoolType != null ? schoolType.getId().getPath() : "未知",
-                    damage));
-        }
+        debugLog(String.format("收到铁魔法法术伤害事件: %s -> %s, 流派: %s, 伤害: %.1f",
+                attacker != null ? attacker.getName().getString() : "未知",
+                target.getName().getString(),
+                schoolType != null ? schoolType.getId().getPath() : "未知",
+                damage));
 
         // 处理法术伤害，施加元素标记
         if (schoolType != null) {
@@ -205,10 +205,29 @@ public class ElementReactionEvents {
             attacker = livingAttacker;
         }
 
-        // 首先检查是否是铁魔法的法术伤害（已经在 onSpellDamage 中处理过）
-        if (damageSource instanceof SpellDamageSource) {
-            // 铁魔法的法术伤害已经在 onSpellDamage 中处理
-            // 但这里仍然需要处理神圣打击和回响打击
+        // 检查是否是铁魔法的法术伤害
+        if (damageSource instanceof SpellDamageSource spellDamageSource) {
+            // 尝试从 SpellDamageSource 中提取法术流派并施加元素标记（作为双路保障）
+            // 注：SpellDamageEvent 可能因为版本兼容性问题未触发，
+            // 因此这里作为后备方案仍然尝试施加标记
+            io.redspace.ironsspellbooks.api.spells.SchoolType schoolType = null;
+            if (spellDamageSource.spell() != null) {
+                schoolType = spellDamageSource.spell().getSchoolType();
+            }
+            if (schoolType != null) {
+                ElementType elementType = ElementType.fromSchoolType(schoolType);
+                if (elementType != null) {
+                    debugLog(String.format("法术伤害(后备): %s -> %s, 流派: %s, 元素: %s, 伤害: %.1f",
+                            attacker != null ? attacker.getName().getString() : "环境",
+                            target.getName().getString(),
+                            schoolType.getId().getPath(),
+                            elementType.getId(),
+                            damage));
+                    ElementReactionManager.onElementDamage(serverLevel, target, attacker, elementType, damage);
+                }
+            }
+
+            // 处理神圣打击和回响打击
             triggerSpecialMarkEffects(target, attacker, damage);
             return;
         }

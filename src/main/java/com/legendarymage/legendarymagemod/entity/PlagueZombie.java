@@ -1,6 +1,8 @@
 package com.legendarymage.legendarymagemod.entity;
 
 import com.legendarymage.legendarymagemod.effect.ModEffects;
+import io.redspace.ironsspellbooks.capabilities.magic.SummonManager;
+import io.redspace.ironsspellbooks.registries.EntityRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
@@ -78,9 +80,11 @@ public class PlagueZombie {
         PlagueZombie plagueZombie = new PlagueZombie();
         
         try {
-            // 使用铁魔法的 SummonedZombie - 参考复苏符文
+            // 使用铁魔法的 SummonedZombie（非弃用API）
             io.redspace.ironsspellbooks.entity.mobs.SummonedZombie summonedZombie =
-                new io.redspace.ironsspellbooks.entity.mobs.SummonedZombie(level, summoner, true);
+                new io.redspace.ironsspellbooks.entity.mobs.SummonedZombie(EntityRegistry.SUMMONED_ZOMBIE.get(), level);
+            // 通过 SummonManager 设置所有者（替代已弃用的构造器参数和 setSummoner 方法）
+            SummonManager.setOwner(summonedZombie, summoner);
             
             // 设置位置
             summonedZombie.moveTo(

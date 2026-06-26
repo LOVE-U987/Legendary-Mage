@@ -3,6 +3,7 @@ package com.legendarymage.legendarymagemod.command;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.element.ElementType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -85,14 +86,14 @@ public class DataPackExporter {
             player.sendSystemMessage(Component.literal(
                     "§a成功导出配置到: §f" + outputFile.getAbsolutePath()));
 
-            LegendaryMage.LOGGER.info("[数据包导出] 已导出 {} 的配置到 {}", schoolId, outputFile.getAbsolutePath());
+            ModLogger.system("[数据包导出] 已导出 {} 的配置到 {}", schoolId, outputFile.getAbsolutePath());
 
             return true;
 
         } catch (IOException e) {
             player.sendSystemMessage(Component.literal(
                     "§c导出失败: §f" + e.getMessage()));
-            LegendaryMage.LOGGER.error("[数据包导出] 导出 {} 时发生错误", schoolId, e);
+            ModLogger.error("[数据包导出] 导出 {} 时发生错误", schoolId, e);
             return false;
         }
     }
@@ -136,11 +137,11 @@ public class DataPackExporter {
                 }
 
                 successCount++;
-                LegendaryMage.LOGGER.debug("[数据包导出] 已导出 {} 的配置", schoolId);
+                ModLogger.systemDebug("[数据包导出] 已导出 {} 的配置", schoolId);
 
             } catch (IOException e) {
                 failCount++;
-                LegendaryMage.LOGGER.error("[数据包导出] 导出 {} 时发生错误", schoolId, e);
+                ModLogger.error("[数据包导出] 导出 {} 时发生错误", schoolId, e);
             }
         }
 
@@ -149,7 +150,7 @@ public class DataPackExporter {
         player.sendSystemMessage(Component.literal(
                 "§7导出位置: §f" + new File(EXPORT_BASE_PATH).getAbsolutePath()));
 
-        LegendaryMage.LOGGER.info("[数据包导出] 批量导出完成: 成功 {}, 失败 {}", successCount, failCount);
+        ModLogger.system("[数据包导出] 批量导出完成: 成功 {}, 失败 {}", successCount, failCount);
 
         return successCount;
     }

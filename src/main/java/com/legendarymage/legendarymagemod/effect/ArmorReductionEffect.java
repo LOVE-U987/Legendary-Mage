@@ -1,5 +1,6 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -9,8 +10,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /**
  * 溶甲效果
- * 降低目标的护甲值，每级减少2%
- * 
+ * 降低目标的护甲值，每级减少比例从配置读取
+ *
  * @author Love_U
  * @version 1.0.4
  */
@@ -28,17 +29,12 @@ public class ArmorReductionEffect extends MobEffect {
 
     /**
      * 构造函数
+     * 注意：配置驱动的属性修饰符在 FMLCommonSetupEvent 阶段集中初始化（ModEffects.initConfigModifiers），
+     * 此时 Config 尚未就绪，不可在此处读取配置值。
      */
     public ArmorReductionEffect() {
         super(MobEffectCategory.HARMFUL, EFFECT_COLOR);
-        
-        // 添加属性修改器：降低护甲值（每级2%）
-        this.addAttributeModifier(
-                Attributes.ARMOR,
-                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "armor_reduction"),
-                -0.02,
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-        );
+        // 属性修饰符在 ModEffects.initConfigModifiers() 中延迟初始化
     }
 
     /**

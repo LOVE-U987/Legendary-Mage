@@ -1,6 +1,6 @@
 package com.legendarymage.legendarymagemod.command;
 
-import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.element.ElementType;
 import net.minecraft.resources.ResourceLocation;
 
@@ -38,7 +38,7 @@ public class RuntimeElementMapping {
         RUNTIME_MAPPINGS.computeIfAbsent(schoolId, k -> new HashMap<>())
                 .put(condition, elementType);
 
-        LegendaryMage.LOGGER.debug("[RuntimeMapping] 添加映射: {} [{}] -> {}",
+        ModLogger.systemDebug("[RuntimeMapping] 添加映射: {} [{}] -> {}",
                 schoolId, condition, elementType.getId());
     }
 
@@ -54,7 +54,7 @@ public class RuntimeElementMapping {
         if (mappings != null) {
             boolean removed = mappings.remove(condition) != null;
             if (removed) {
-                LegendaryMage.LOGGER.debug("[RuntimeMapping] 移除映射: {} [{}]", schoolId, condition);
+                ModLogger.systemDebug("[RuntimeMapping] 移除映射: {} [{}]", schoolId, condition);
             }
             return removed;
         }
@@ -78,7 +78,7 @@ public class RuntimeElementMapping {
      */
     public static void clearMappings(ResourceLocation schoolId) {
         RUNTIME_MAPPINGS.remove(schoolId);
-        LegendaryMage.LOGGER.debug("[RuntimeMapping] 清除所有映射: {}", schoolId);
+        ModLogger.systemDebug("[RuntimeMapping] 清除所有映射: {}", schoolId);
     }
 
     /**
@@ -124,7 +124,7 @@ public class RuntimeElementMapping {
      */
     public static void clearAll() {
         RUNTIME_MAPPINGS.clear();
-        LegendaryMage.LOGGER.debug("[RuntimeMapping] 清除所有运行时映射");
+        ModLogger.systemDebug("[RuntimeMapping] 清除所有运行时映射");
     }
 
     /**

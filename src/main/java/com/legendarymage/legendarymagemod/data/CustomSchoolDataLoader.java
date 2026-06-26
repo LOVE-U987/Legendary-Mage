@@ -2,6 +2,7 @@ package com.legendarymage.legendarymagemod.data;
 
 import com.google.gson.JsonElement;
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
@@ -48,7 +49,7 @@ public class CustomSchoolDataLoader extends SimpleJsonResourceReloadListener {
      */
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> data, ResourceManager resourceManager, ProfilerFiller profiler) {
-        com.legendarymage.legendarymagemod.ModLogger.spell("正在加载自定义法术流派数据包...");
+        ModLogger.spell("正在加载自定义法术流派数据包...");
         LOADED_SCHOOLS.clear();
 
         int successCount = 0;
@@ -66,18 +67,18 @@ public class CustomSchoolDataLoader extends SimpleJsonResourceReloadListener {
                     CustomSchoolData schoolData = result.result().get();
                     LOADED_SCHOOLS.put(id, schoolData);
                     successCount++;
-                    LegendaryMage.LOGGER.info("成功加载自定义法术流派: {} - {}", id, schoolData.name());
+                    ModLogger.system("成功加载自定义法术流派: {} - {}", id, schoolData.name());
                 } else if (result.error().isPresent()) {
                     failCount++;
-                    LegendaryMage.LOGGER.error("解析自定义法术流派失败: {} - {}", id, result.error().get().message());
+                    ModLogger.error("解析自定义法术流派失败: {} - {}", id, result.error().get().message());
                 }
             } catch (Exception e) {
                 failCount++;
-                com.legendarymage.legendarymagemod.ModLogger.error("加载自定义法术流派时发生错误: {}", id, e);
+                ModLogger.error("加载自定义法术流派时发生错误: {}", id, e);
             }
         }
 
-        com.legendarymage.legendarymagemod.ModLogger.spell("自定义法术流派加载完成: 成功 {} 个, 失败 {} 个", successCount, failCount);
+        ModLogger.spell("自定义法术流派加载完成: 成功 {} 个, 失败 {} 个", successCount, failCount);
 
         // 注册加载的自定义流派
         CustomSchoolRegistry.registerLoadedSchools();

@@ -1,0 +1,51 @@
+# Tasks
+- [ ] Task 1: 建立审查文件索引
+  - [ ] SubTask 1.1: 列出 `spell/`、`effect/`、`entity/`、`item/` 包下全部 Java 文件路径
+  - [ ] SubTask 1.2: 列出 `src/main/resources/` 下关键资源目录结构
+  - [ ] SubTask 1.3: 读取 `ModSpells.java`、`ModEffects.java`、`ModEntities.java`、物品注册文件与 `Config.java`
+- [ ] Task 2: 法术实现状态审查
+  - [ ] SubTask 2.1: 逐条核对 `ModSpells.java` 注册项与对应 Spell 类
+  - [ ] SubTask 2.2: 评估每个 Spell 的 `onCast` / `onRecast` / 伤害计算 / 等级缩放 / 粒子音效完整性
+  - [ ] SubTask 2.3: 识别测试/调试法术并建议是否移除
+- [ ] Task 3: 效果实现状态审查
+  - [ ] SubTask 3.1: 逐条核对 `ModEffects.java` 注册项与对应 Effect 类
+  - [ ] SubTask 3.2: 检查属性修饰符、applyEffectTick、死亡事件回调等核心逻辑
+  - [ ] SubTask 3.3: 标记空壳或占位效果
+- [ ] Task 4: 实体实现状态审查
+  - [ ] SubTask 4.1: 逐条核对 `ModEntities.java` 注册项与对应 Entity 类
+  - [ ] SubTask 4.2: 检查实体行为更新、碰撞处理、渲染器注册
+  - [ ] SubTask 4.3: 标记缺少渲染器或行为不完整的实体
+- [ ] Task 5: 物品实现状态审查
+  - [ ] SubTask 5.1: 核对物品注册项与对应 Item 类
+  - [ ] SubTask 5.2: 检查物品功能、Tooltip、模型/贴图资源
+- [ ] Task 6: 配置项对应关系审查
+  - [ ] SubTask 6.1: 列出 `Config.java` 中全部配置项
+  - [ ] SubTask 6.2: 在源码中检索每个配置项的引用位置
+  - [ ] SubTask 6.3: 标记未引用或引用不完整的悬空配置
+- [ ] Task 7: 未实现模块与 TODO/FIXME 扫描
+  - [ ] SubTask 7.1: 检索“浇水”相关功能代码与资源
+  - [ ] SubTask 7.2: 检索 `TrailTestSpell`、Trail 相关调试代码
+  - [ ] SubTask 7.3: 全项目搜索 `TODO` / `FIXME` / 空方法 / 占位实现
+- [ ] Task 8: 资源文件缺失检查
+  - [ ] SubTask 8.1: 检查 lang 文件（`zh_cn.json`、`en_us.json`）中法术/效果/物品/配置键覆盖情况
+  - [ ] SubTask 8.2: 检查声音文件注册与实际 ogg 文件
+  - [ ] SubTask 8.3: 检查模型/贴图文件（物品、方块、实体）
+  - [ ] SubTask 8.4: 检查数据包/战利品表/配方等是否存在
+- [ ] Task 9: 调试代码发布评估
+  - [ ] SubTask 9.1: 列出所有测试法术、调试渲染器、临时日志
+  - [ ] SubTask 9.2: 给出保留/移除/改为仅调试模式启用的建议
+- [ ] Task 10: 编写并输出结构化 Markdown 审查报告
+  - [ ] SubTask 10.1: 按法术/效果/实体/物品/配置/未实现模块/TODO/资源/调试代码分类汇总
+  - [ ] SubTask 10.2: 为每个问题标注高/中/低风险等级
+  - [ ] SubTask 10.3: 给出改进建议与参考文件路径
+
+# Task Dependencies
+- Task 2 依赖 Task 1
+- Task 3 依赖 Task 1
+- Task 4 依赖 Task 1
+- Task 5 依赖 Task 1
+- Task 6 依赖 Task 1
+- Task 7 依赖 Task 1
+- Task 8 依赖 Task 1
+- Task 9 依赖 Task 2-5
+- Task 10 依赖 Task 2-9

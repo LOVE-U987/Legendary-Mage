@@ -1,143 +1,25 @@
 package com.legendarymage.legendarymagemod.entity;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
-import com.legendarymage.legendarymagemod.entity.spell.ElementalArrowProjectile;
-import com.legendarymage.legendarymagemod.entity.spell.ElementalOrbProjectile;
-import com.legendarymage.legendarymagemod.entity.spell.FocusedIceConeProjectile;
-import com.legendarymage.legendarymagemod.entity.spell.GiantSnowballEntity;
-import com.legendarymage.legendarymagemod.entity.spell.IceExplosionConeProjectile;
-import com.legendarymage.legendarymagemod.entity.spell.TrailTestProjectile;
-import com.legendarymage.legendarymagemod.spell.LivingIceSculptureEntity;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * 实体注册类
- * 负责注册模组中的所有实体
+ * 保留空壳以兼容 {@link com.legendarymage.legendarymagemod.LegendaryMage} 中的调用。
+ * 所有法术相关实体已移除。
  * 
  * @author Love_U
- * @version 0.0.1
  */
 public class ModEntities {
 
     /**
-     * 实体注册器
-     */
-    public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(
-            BuiltInRegistries.ENTITY_TYPE,
-            LegendaryMage.MODID
-    );
-
-    /**
-     * 活体冰雕生物实体
-     */
-    public static final DeferredHolder<EntityType<?>, EntityType<LivingIceSculptureEntity>> ICE_SCULPTURE = ENTITIES.register(
-            "ice_sculpture",
-            () -> EntityType.Builder.<LivingIceSculptureEntity>of(LivingIceSculptureEntity::new, MobCategory.MISC)
-                    .sized(0.6f, 1.8f)  // 玩家尺寸
-                    .clientTrackingRange(10)
-                    .updateInterval(3)
-                    .build("ice_sculpture")
-    );
-
-    /**
-     * 冰爆锥投射物实体
-     */
-    public static final DeferredHolder<EntityType<?>, EntityType<IceExplosionConeProjectile>> ICE_EXPLOSION_CONE = ENTITIES.register(
-            "ice_explosion_cone",
-            () -> EntityType.Builder.<IceExplosionConeProjectile>of(IceExplosionConeProjectile::new, MobCategory.MISC)
-                    .sized(0.5f, 0.5f)  // 投射物尺寸
-                    .clientTrackingRange(10)
-                    .updateInterval(1)
-                    .build("ice_explosion_cone")
-    );
-
-    /**
-     * 聚能冰锥投射物实体
-     */
-    public static final DeferredHolder<EntityType<?>, EntityType<FocusedIceConeProjectile>> FOCUSED_ICE_CONE = ENTITIES.register(
-            "focused_ice_cone",
-            () -> EntityType.Builder.<FocusedIceConeProjectile>of(FocusedIceConeProjectile::new, MobCategory.MISC)
-                    .sized(0.4f, 0.4f)  // 投射物尺寸（更集中）
-                    .clientTrackingRange(10)
-                    .updateInterval(1)
-                    .build("focused_ice_cone")
-    );
-
-    /**
-     * 巨雪球实体
-     */
-    public static final DeferredHolder<EntityType<?>, EntityType<GiantSnowballEntity>> GIANT_SNOWBALL = ENTITIES.register(
-            "giant_snowball",
-            () -> EntityType.Builder.<GiantSnowballEntity>of(GiantSnowballEntity::new, MobCategory.MISC)
-                    .sized(1.0f, 1.0f)  // 基础尺寸，会根据缩放值调整
-                    .clientTrackingRange(10)
-                    .updateInterval(1)
-                    .build("giant_snowball")
-    );
-
-    /**
-     * 元素球投射物实体
-     * 元素弹幕法术使用的投射物
-     */
-    public static final DeferredHolder<EntityType<?>, EntityType<ElementalOrbProjectile>> ELEMENTAL_ORB = ENTITIES.register(
-            "elemental_orb",
-            () -> EntityType.Builder.<ElementalOrbProjectile>of(ElementalOrbProjectile::new, MobCategory.MISC)
-                    .sized(0.3f, 0.3f)  // 小型投射物
-                    .clientTrackingRange(10)
-                    .updateInterval(1)
-                    .build("elemental_orb")
-    );
-
-    /**
-     * 元素箭投射物实体
-     * 三向之矢法术使用的投射物
-     */
-    public static final DeferredHolder<EntityType<?>, EntityType<ElementalArrowProjectile>> ELEMENTAL_ARROW = ENTITIES.register(
-            "elemental_arrow",
-            () -> EntityType.Builder.<ElementalArrowProjectile>of(ElementalArrowProjectile::new, MobCategory.MISC)
-                    .sized(0.25f, 0.25f)  // 箭矢尺寸
-                    .clientTrackingRange(10)
-                    .updateInterval(1)
-                    .build("elemental_arrow")
-    );
-
-    /**
-     * 拖尾特效测试投射物实体
-     * 专门用于验证TrailEffect API的测试投射物
-     * 必须有独立的EntityType以确保客户端正确实例化此类
-     */
-    public static final DeferredHolder<EntityType<?>, EntityType<TrailTestProjectile>> TRAIL_TEST = ENTITIES.register(
-            "trail_test",
-            () -> EntityType.Builder.<TrailTestProjectile>of(TrailTestProjectile::new, MobCategory.MISC)
-                    .sized(0.5f, 0.5f)  // 较大尺寸（便于观察）
-                    .clientTrackingRange(64)   // 超远追踪距离（确保客户端能收到）
-                    .updateInterval(1)       // 每tick更新
-                    .build("trail_test")
-    );
-
-    /**
      * 注册实体到事件总线
-     * 
+     * 当前无实体注册，保留方法签名以兼容调用。
+     *
      * @param eventBus 事件总线
      */
     public static void register(IEventBus eventBus) {
-        ENTITIES.register(eventBus);
-    }
-
-    /**
-     * 添加瘟疫僵尸到管理器
-     * 便捷方法
-     * 
-     * @param zombie 瘟疫僵尸实例
-     * @param summoner 施法者
-     */
-    public static void addPlagueZombie(PlagueZombie zombie, net.minecraft.server.level.ServerPlayer summoner) {
-        PlagueZombieManager.addPlagueZombie(zombie, summoner);
+        // 所有法术相关实体已移除此模组
     }
 }

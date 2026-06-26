@@ -1,12 +1,18 @@
 package com.legendarymage.legendarymagemod.effect;
 
-import net.minecraft.core.registries.Registries;
+import com.legendarymage.legendarymagemod.Config;
+import com.legendarymage.legendarymagemod.LegendaryMage;
+
+import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
+
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import com.legendarymage.legendarymagemod.LegendaryMage;
 
 /**
  * 效果注册类
@@ -175,6 +181,107 @@ public class ModEffects {
             PlagueBuffEffect.EFFECT_ID,
             PlagueBuffEffect::new
     );
+
+    /**
+     * 延迟初始化配置驱动的属性修饰符
+     * 在 FMLCommonSetupEvent 阶段调用，此时 Config 已加载就绪。
+     * 构造函数阶段不可访问 Config，因此将 addAttributeModifier 统一集中在此处初始化。
+     */
+    public static void initConfigModifiers() {
+        // === 混沌 Buff ===
+        CHAOS_BUFF.get().addAttributeModifier(
+                AttributeRegistry.SPELL_POWER,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "chaos_buff_spell_power"),
+                Config.CHAOS_SPELL_POWER_BONUS_PER_LEVEL.get(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+
+        // === 暗夜无光 Buff ===
+        DARKNESS_BUFF.get().addAttributeModifier(
+                AttributeRegistry.BLOOD_MAGIC_RESIST,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "darkness_buff_blood_resist"),
+                Config.DARKNESS_BLOOD_RESIST_REDUCTION.get(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+
+        // === 溶甲效果 ===
+        ARMOR_REDUCTION.get().addAttributeModifier(
+                Attributes.ARMOR,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "armor_reduction"),
+                -Config.ARMOR_REDUCTION_PER_LEVEL.get(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+
+        // === 避雷针 Buff ===
+        LIGHTNING_ROD_BUFF.get().addAttributeModifier(
+                AttributeRegistry.ICE_MAGIC_RESIST,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "lightning_rod_ice_resist"),
+                Config.LIGHTNING_ROD_ICE_RESIST_REDUCTION.get(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+        LIGHTNING_ROD_BUFF.get().addAttributeModifier(
+                AttributeRegistry.LIGHTNING_MAGIC_RESIST,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "lightning_rod_lightning_resist"),
+                Config.LIGHTNING_ROD_LIGHTNING_RESIST_REDUCTION.get(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+
+        // === 瘟疫 Buff ===
+        PLAGUE_BUFF.get().addAttributeModifier(
+                Attributes.MAX_HEALTH,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "plague_max_health"),
+                -Config.PLAGUE_MAX_HEALTH_REDUCTION_PER_LEVEL.get(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+
+        // === 烈焰效果 ===
+        PYRO_FLAME.get().addAttributeModifier(
+                Attributes.MAX_HEALTH,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "pyro_flame_health"),
+                -Config.PYRO_FLAME_MAX_HEALTH_REDUCTION_PER_LEVEL.get(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+
+        // === 魔法散弹 Buff ===
+        MAGIC_SHOTGUN_BUFF.get().addAttributeModifier(
+                AttributeRegistry.SPELL_POWER,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "magic_shotgun_spell_power"),
+                -MagicShotgunBuffEffect.getSpellPowerReductionPerLevel(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+        MAGIC_SHOTGUN_BUFF.get().addAttributeModifier(
+                AttributeRegistry.CAST_TIME_REDUCTION,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "magic_shotgun_cast_time"),
+                -MagicShotgunBuffEffect.getCastTimeReductionPerLevel(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+        MAGIC_SHOTGUN_BUFF.get().addAttributeModifier(
+                Attributes.ATTACK_DAMAGE,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "magic_shotgun_melee_damage"),
+                MagicShotgunBuffEffect.getMeleeDamagePerLevel(),
+                AttributeModifier.Operation.ADD_VALUE
+        );
+        MAGIC_SHOTGUN_BUFF.get().addAttributeModifier(
+                AttributeRegistry.MAX_MANA,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "magic_shotgun_max_mana"),
+                MagicShotgunBuffEffect.getMaxManaReductionDisplay(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+
+        // === 终末回响 Buff ===
+        ENDER_ECHO_BUFF.get().addAttributeModifier(
+                AttributeRegistry.SPELL_POWER,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "ender_echo_spell_power"),
+                EnderEchoBuffEffect.getBaseSpellPowerBonusDisplay(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+        ENDER_ECHO_BUFF.get().addAttributeModifier(
+                AttributeRegistry.SPELL_RESIST,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "ender_echo_spell_resist"),
+                EnderEchoBuffEffect.getBaseSpellResistBonusDisplay(),
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
+    }
 
     /**
      * 注册效果到事件总线

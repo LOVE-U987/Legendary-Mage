@@ -1,5 +1,6 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import net.minecraft.resources.ResourceLocation;
@@ -29,24 +30,13 @@ public class DarknessBuffEffect extends MobEffect {
     private static final int EFFECT_COLOR = 0x8B0000;
 
     /**
-     * 血系法术抗性减少（固定-5% = -0.05）
-     */
-    public static final double BLOOD_MAGIC_RESIST_REDUCTION = -0.05;
-
-    /**
      * 构造函数
-     * 添加属性修饰符用于EMIffect显示
+     * 注意：配置驱动的属性修饰符在 FMLCommonSetupEvent 阶段集中初始化（ModEffects.initConfigModifiers），
+     * 此时 Config 尚未就绪，不可在此处读取配置值。
      */
     public DarknessBuffEffect() {
         super(MobEffectCategory.HARMFUL, EFFECT_COLOR);
-        
-        // 添加血系法术抗性修饰符（固定-5%）
-        this.addAttributeModifier(
-                AttributeRegistry.BLOOD_MAGIC_RESIST,
-                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "darkness_buff_blood_resist"),
-                BLOOD_MAGIC_RESIST_REDUCTION,
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-        );
+        // 属性修饰符在 ModEffects.initConfigModifiers() 中延迟初始化
     }
 
     @Override
@@ -70,11 +60,11 @@ public class DarknessBuffEffect extends MobEffect {
 
     /**
      * 获取血系法术抗性减少值
-     * 
-     * @return 血系法术抗性减少值（固定-5%）
+     *
+     * @return 血系法术抗性减少值
      */
     public static double getBloodMagicResistReduction() {
-        return BLOOD_MAGIC_RESIST_REDUCTION;
+        return Config.DARKNESS_BLOOD_RESIST_REDUCTION.get();
     }
 
     /**

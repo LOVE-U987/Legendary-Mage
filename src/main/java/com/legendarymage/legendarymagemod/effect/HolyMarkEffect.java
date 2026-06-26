@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.effect;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.element.ElementType;
 import io.redspace.ironsspellbooks.particle.BlastwaveParticleOptions;
 import io.redspace.ironsspellbooks.particle.ShockwaveParticleOptions;
@@ -200,7 +201,7 @@ public class HolyMarkEffect extends ElementMarkEffect {
         // 检查是否为3级标记（amplifier = 2）
         int amplifier = effectInstance.getAmplifier();
         if (amplifier < MAX_LEVEL) {
-            LegendaryMage.LOGGER.info("[神圣打击调试] 目标 {} 有光明标记但等级不足: amplifier={}",
+            ModLogger.spellDebug("[神圣打击调试] 目标 {} 有光明标记但等级不足: amplifier={}",
                 target.getName().getString(), amplifier);
             return false;
         }
@@ -213,12 +214,12 @@ public class HolyMarkEffect extends ElementMarkEffect {
             long lastHitTime = playerCooldowns.get(entityId);
             if (currentTime - lastHitTime < COOLDOWN_TICKS) {
                 // CD中，不触发
-                LegendaryMage.LOGGER.info("[神圣打击调试] 目标 {} 在CD中", target.getName().getString());
+                ModLogger.spellDebug("[神圣打击调试] 目标 {} 在CD中", target.getName().getString());
                 return false;
             }
         }
 
-        LegendaryMage.LOGGER.info("[神圣打击调试] 触发神圣打击！目标: {}", target.getName().getString());
+        ModLogger.spellDebug("[神圣打击调试] 触发神圣打击！目标: {}", target.getName().getString());
 
         // 记录触发时间
         playerCooldowns.put(entityId, currentTime);

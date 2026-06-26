@@ -1,6 +1,8 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.element.ElementType;
 import io.redspace.ironsspellbooks.particle.BlastwaveParticleOptions;
 import io.redspace.ironsspellbooks.particle.ShockwaveParticleOptions;
@@ -107,15 +109,19 @@ public class EnderMarkEffect extends ElementMarkEffect {
 
         MobEffectInstance effectInstance = target.getEffect(effectHolder);
         if (effectInstance == null) {
-            LegendaryMage.LOGGER.info("[回响打击调试] 目标 {} 的末影标记实例为 null", target.getName().getString());
+            if (Config.ECHO_STRIKE_DEBUG_OUTPUT.get()) {
+                ModLogger.spell("[回响打击调试] 目标 {} 的末影标记实例为 null", target.getName().getString());
+            }
             return false;
         }
 
         // 检查是否为 3 级标记（amplifier = 2）
         int amplifier = effectInstance.getAmplifier();
         if (amplifier < MAX_LEVEL) {
-            LegendaryMage.LOGGER.info("[回响打击调试] 目标 {} 有末影标记但等级不足：amplifier={}",
-                target.getName().getString(), amplifier);
+            if (Config.ECHO_STRIKE_DEBUG_OUTPUT.get()) {
+                ModLogger.spell("[回响打击调试] 目标 {} 有末影标记但等级不足：amplifier={}",
+                    target.getName().getString(), amplifier);
+            }
             return false;
         }
 
@@ -129,8 +135,10 @@ public class EnderMarkEffect extends ElementMarkEffect {
             return false;
         }
 
-        LegendaryMage.LOGGER.info("[回响打击调试] 触发回响打击！攻击者：{}, 目标：{}, 伤害：{}",
-            attacker.getName().getString(), target.getName().getString(), originalDamage);
+        if (Config.ECHO_STRIKE_DEBUG_OUTPUT.get()) {
+            ModLogger.spell("[回响打击调试] 触发回响打击！攻击者：{}, 目标：{}, 伤害：{}",
+                attacker.getName().getString(), target.getName().getString(), originalDamage);
+        }
 
         // 触发回响打击
         triggerEchoStrike(attacker, target, originalDamage);

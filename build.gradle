@@ -27,22 +27,58 @@ repositories {
         url = "https://neoforged.forgecdn.net/#/releases"
     }
     mavenCentral()
-    // 本地libs文件夹 - 用于存放手动下载的mod文件
-    flatDir {
-        name = "LocalLibs"
-        dir("libs")
+
+    // Iron's Spells / Iron's Lib 官方 Maven
+    maven {
+        name = "Iron's Maven - Releases"
+        url = "https://code.redspace.io/releases"
     }
-    
+
+    // GeckoLib 官方 Maven
+    maven {
+        name = "GeckoLib"
+        url = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
+    }
+
+    // Curios API 官方 Maven
+    maven {
+        name = "TheIllusiveC4"
+        url = "https://maven.theillusivec4.top/"
+    }
+
+    // Player Animator (KosmX) 官方 Maven
+    maven {
+        name = "KosmX"
+        url = "https://maven.kosmx.dev/"
+    }
+
+    // Patchouli / modmaven
+    maven {
+        name = "ModMaven"
+        url = "https://maven.modmaven.dev/"
+    }
+
     // 注意：其他仓库已在settings.gradle中全局配置
     // 这里只需要添加特殊的仓库
-    maven { 
-        url 'https://maven.aliyun.com/repository/public' 
+    maven {
+        url 'https://maven.aliyun.com/repository/public'
+    }
+    // Modrinth Maven (for playeranimator 2.0.1+)
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
     }
     // CurseMaven for Iron's Spells and other CurseForge mods
-    maven { 
+    maven {
         name = "CurseMaven"
-        url = "https://www.cursemaven.com" 
+        url = "https://www.cursemaven.com"
     }
+
+    // 本地libs文件夹 - 作为回退保留，但当前已不再使用本地jar依赖
+    // flatDir {
+    //     name = "LocalLibs"
+    //     dir("libs")
+    // }
 }
 
 base {
@@ -179,24 +215,28 @@ dependencies {
     // Example project dependency using a sister or child project:
     // implementation project(":myproject")
 
-    // Iron's Spells 'n Spellbooks - 使用本地文件
-    implementation files("libs/irons_spellbooks-1.21.1-3.15.0.jar")
-    
-    // Iron's Spells 的依赖项
+    // Iron's Spells 'n Spellbooks - Maven 坐标（code.redspace.io 下载超时，改用 CurseMaven）
+    // implementation "io.redspace:irons_spellbooks:${irons_spells_version}"
+    implementation "curse.maven:irons-spells-n-spellbooks-855414:7402503"
+    // Iron's Lib 运行时依赖（code.redspace.io 下载超时，改用 CurseMaven）
+    // localRuntime "io.redspace:irons_lib:${irons_lib_version}"
+    localRuntime "curse.maven:irons-lib-1492763:7907336"
+
     // GeckoLib (渲染库)
-    implementation files("libs/geckolib-neoforge-1.21.1-4.8.3.jar")
-    
-    // PlayerAnimator (动画库)
-    implementation files("libs/player-animation-lib-forge-2.0.4+1.21.1.jar")
+    implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:${geckolib_version}"
+
+    // PlayerAnimator (动画库) - Modrinth Maven (原 CurseMaven 6007564 是 2.0.0，Iron's Spells 3.15.0 需要 >= 2.0.1)
+    implementation "maven.modrinth:gedNE4y2:q60QWuOK"
 
     // Curios (物品栏扩展库)
-    implementation files("libs/curios-neoforge-9.5.1+1.21.1.jar")
+    implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 
     // Ender's Spells and Stuff: Requiem (安德的咒语和东西：安魂曲)
+    // 暂无可靠 Maven 坐标，继续沿用本地文件
     implementation files("libs/ess_requiem-0.0.9.jar")
 
-    // Patchouli (帕秋莉手册)
-    implementation files("libs/Patchouli-1.21.1-93-NEOFORGE.jar")
+    // Patchouli (帕秋莉手册) - CurseMaven (1.21.1-93)
+    implementation "curse.maven:patchouli-306770:7730942"
     
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html

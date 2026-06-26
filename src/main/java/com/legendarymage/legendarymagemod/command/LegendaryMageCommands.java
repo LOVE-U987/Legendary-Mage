@@ -1,8 +1,6 @@
 package com.legendarymage.legendarymagemod.command;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
-import com.legendarymage.legendarymagemod.client.IceSculptureTextureManager;
-import com.legendarymage.legendarymagemod.client.IceSculptureTextureManager.TextureMode;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -15,10 +13,8 @@ import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 
 /**
  * 传奇法师模组命令注册
- * 包含彩蛋命令等功能
  * 
  * @author Love_U
- * @version 0.0.1
  */
 @EventBusSubscriber(modid = LegendaryMage.MODID, value = Dist.CLIENT)
 public class LegendaryMageCommands {
@@ -41,26 +37,12 @@ public class LegendaryMageCommands {
 
     /**
      * 执行彩蛋命令
-     * 切换活体冰雕的纹理
      * 
      * @param context 命令上下文
      * @return 命令执行结果
      */
     private static int executeEasterEggCommand(CommandContext<CommandSourceStack> context) {
-        // 切换纹理模式
-        IceSculptureTextureManager.cycleTextureMode();
-        
-        // 获取当前模式
-        TextureMode currentMode = IceSculptureTextureManager.getCurrentMode();
-        
-        // 发送反馈消息
-        String message = switch (currentMode) {
-            case DEFAULT -> "§b[传奇法师] §r活体冰雕纹理已切换为：§f默认§r";
-            case EASTER_EGG -> "§b[传奇法师] §r活体冰雕纹理已切换为：§e彩蛋模式（随机）§r";
-        };
-        
-        context.getSource().sendSuccess(() -> Component.literal(message), false);
-        
+        context.getSource().sendSuccess(() -> Component.literal("§b[传奇法师] §r你好呀！感谢你发现了我的彩蛋～ §e❤️§r"), false);
         return 1;
     }
 }

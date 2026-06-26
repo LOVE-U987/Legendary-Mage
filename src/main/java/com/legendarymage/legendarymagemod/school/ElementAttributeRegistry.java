@@ -18,7 +18,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
  * @author Love_U
  * @version 0.0.1
  */
-@EventBusSubscriber(modid = LegendaryMage.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = LegendaryMage.MODID)
 public class ElementAttributeRegistry {
 
     /**

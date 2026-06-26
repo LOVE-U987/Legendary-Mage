@@ -1,0 +1,37 @@
+# Tasks
+- [ ] Task 1: 读取并整理所有待审查文件清单
+  - [ ] SubTask 1.1: 列出 ModLogger、trail 包、spell 管理器、entity/spell 包、ModEvents、effect 包、element 包下的全部 Java 文件路径
+  - [ ] SubTask 1.2: 按类别建立文件索引表（日志/拖尾/法术管理器/实体/事件/效果/元素）
+- [ ] Task 2: 日志滥用与调试开关分析
+  - [ ] SubTask 2.1: 检索所有 LOGGER.info / LOGGER.debug / LOGGER.warn / ModLogger.spell / ModLogger.debug 调用
+  - [ ] SubTask 2.2: 判断每次调用是否受 Config.GLOBAL_DEBUG_MODE 或分类开关控制
+  - [ ] SubTask 2.3: 标注高频调用（每 tick / 每次命中 / 每次施法）及风险等级
+- [ ] Task 3: 性能瓶颈扫描
+  - [ ] SubTask 3.1: 识别每 tick AABB 扫描（BlizzardManager、ElementalPrismManager 等）
+  - [ ] SubTask 3.2: 识别高频率对象创建（new Vec3 / new AABB / new ParticleOptions / new TrailPoint 等）
+  - [ ] SubTask 3.3: 识别嵌套循环与重复数学计算
+  - [ ] SubTask 3.4: 评估粒子生成密度（IceExplosionConeProjectile、FocusedIceConeProjectile、ElementalOrbProjectile 等）
+- [ ] Task 4: 错误处理与并发缺陷扫描
+  - [ ] SubTask 4.1: 检查 try-catch 块中吞异常或仅 e.printStackTrace() 的写法
+  - [ ] SubTask 4.2: 检查空指针风险（未判 null 的 owner、level、target、caster）
+  - [ ] SubTask 4.3: 检查集合并发修改风险（Iterator.remove、Map 遍历期间修改）
+- [ ] Task 5: 客户端/服务端分离检查
+  - [ ] SubTask 5.1: 检查粒子与音效生成是否仅在客户端或服务端调用
+  - [ ] SubTask 5.2: 检查伤害、效果添加、实体生成等是否仅在服务端执行
+  - [ ] SubTask 5.3: 标记任何跨端逻辑错误
+- [ ] Task 6: 内存泄漏风险检查
+  - [ ] SubTask 6.1: 列出所有 static Map/Set/List 集合及其清理机制
+  - [ ] SubTask 6.2: 检查监听器、事件总线、拖尾管理器等是否正确注销
+  - [ ] SubTask 6.3: 检查投射物/效果对象是否释放外部引用
+- [ ] Task 7: 编写并输出结构化 Markdown 审查报告
+  - [ ] SubTask 7.1: 按类别汇总问题（日志/性能/错误处理/跨端/内存泄漏）
+  - [ ] SubTask 7.2: 为每个问题标注高/中/低风险等级
+  - [ ] SubTask 7.3: 给出改进建议与参考文件路径
+
+# Task Dependencies
+- Task 2 依赖 Task 1
+- Task 3 依赖 Task 1
+- Task 4 依赖 Task 1
+- Task 5 依赖 Task 1
+- Task 6 依赖 Task 1
+- Task 7 依赖 Task 2-6

@@ -1,6 +1,7 @@
 package com.legendarymage.legendarymagemod.client;
 
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.command.ElementMappingHotReload;
 import com.legendarymage.legendarymagemod.data.SchoolElementMappingRegistry;
 import com.legendarymage.legendarymagemod.element.ElementType;
@@ -101,7 +102,7 @@ public class SchoolElementMarkTooltipHandler {
                     }
                 }
             } catch (Exception e) {
-                LegendaryMage.LOGGER.error("处理流派元素标记 Tooltip 时出错：{}", e.getMessage());
+                ModLogger.error("处理流派元素标记 Tooltip 时出错：{}", e.getMessage());
             }
         }
         

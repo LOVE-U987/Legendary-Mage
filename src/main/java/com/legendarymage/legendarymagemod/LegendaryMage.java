@@ -11,13 +11,13 @@ import com.legendarymage.legendarymagemod.item.ModItems;
 import com.legendarymage.legendarymagemod.school.ElementAttributeRegistry;
 import com.legendarymage.legendarymagemod.school.ElementSchoolRegistry;
 import com.legendarymage.legendarymagemod.sound.ModSounds;
-import com.legendarymage.legendarymagemod.spell.ModSpells;
 import com.mojang.logging.LogUtils;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
@@ -72,9 +72,6 @@ public class LegendaryMage {
         // 注册元素流派
         ElementSchoolRegistry.register(modEventBus);
 
-        // 注册法术
-        ModSpells.register(modEventBus);
-
         // 注册效果
         ModEffects.register(modEventBus);
 
@@ -83,6 +80,9 @@ public class LegendaryMage {
 
         // 注册模组配置
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+        // 延迟初始化配置驱动的属性修饰符（此时 Config 已加载就绪）
+        modEventBus.addListener(this::onCommonSetup);
 
         // 注册数据包重载监听器
         NeoForge.EVENT_BUS.addListener(this::onAddReloadListener);
@@ -99,6 +99,16 @@ public class LegendaryMage {
     private void onAddReloadListener(AddReloadListenerEvent event) {
         ModLogger.system("正在注册自定义法术流派数据包加载器...");
         event.addListener(new CustomSchoolDataLoader());
+    }
+
+    /**
+     * 通用设置阶段事件处理
+     * 在此阶段 Config 已加载就绪，延迟初始化配置驱动的属性修饰符。
+     *
+     * @param event 通用设置事件
+     */
+    private void onCommonSetup(final FMLCommonSetupEvent event) {
+        ModEffects.initConfigModifiers();
     }
 
     /**

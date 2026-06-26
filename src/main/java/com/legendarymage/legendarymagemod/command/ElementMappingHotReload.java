@@ -1,6 +1,6 @@
 package com.legendarymage.legendarymagemod.command;
 
-import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.data.SchoolElementMappingRegistry;
 import com.legendarymage.legendarymagemod.element.ElementType;
 import net.minecraft.resources.ResourceLocation;
@@ -45,7 +45,7 @@ public class ElementMappingHotReload {
      */
     public static int hotReload() {
         if (!hotReloadEnabled) {
-            LegendaryMage.LOGGER.warn("[热加载] 热加载功能已禁用");
+            ModLogger.warn("[热加载] 热加载功能已禁用");
             return 0;
         }
 
@@ -66,12 +66,12 @@ public class ElementMappingHotReload {
                 HOT_RELOAD_CACHE.put(schoolId, elementList);
                 count += elementList.size();
 
-                LegendaryMage.LOGGER.debug("[热加载] 加载映射: {} -> {}", schoolId,
+                ModLogger.systemDebug("[热加载] 加载映射: {} -> {}", schoolId,
                         elementList.stream().map(ElementType::getId).toList());
             }
         }
 
-        LegendaryMage.LOGGER.info("[热加载] 元素映射热加载完成: {} 个流派, {} 个映射",
+        ModLogger.system("[热加载] 元素映射热加载完成: {} 个流派, {} 个映射",
                 HOT_RELOAD_CACHE.size(), count);
 
         return count;
@@ -143,7 +143,7 @@ public class ElementMappingHotReload {
             elements.add(elementType);
         }
 
-        LegendaryMage.LOGGER.debug("[热加载] 添加映射并热重载: {} [{}] -> {}",
+        ModLogger.systemDebug("[热加载] 添加映射并热重载: {} [{}] -> {}",
                 schoolId, condition, elementType.getId());
     }
 
@@ -159,7 +159,7 @@ public class ElementMappingHotReload {
         // 从热加载缓存中移除
         HOT_RELOAD_CACHE.remove(schoolId);
 
-        LegendaryMage.LOGGER.debug("[热加载] 清除映射并热重载: {}", schoolId);
+        ModLogger.systemDebug("[热加载] 清除映射并热重载: {}", schoolId);
     }
 
     /**
@@ -178,7 +178,7 @@ public class ElementMappingHotReload {
      */
     public static void setHotReloadEnabled(boolean enabled) {
         hotReloadEnabled = enabled;
-        LegendaryMage.LOGGER.info("[热加载] 热加载功能已{}", enabled ? "启用" : "禁用");
+        ModLogger.system("[热加载] 热加载功能已{}", enabled ? "启用" : "禁用");
     }
 
     /**
@@ -196,6 +196,6 @@ public class ElementMappingHotReload {
     public static void clearAll() {
         HOT_RELOAD_CACHE.clear();
         RuntimeElementMapping.clearAll();
-        LegendaryMage.LOGGER.info("[热加载] 已清除所有热加载映射");
+        ModLogger.system("[热加载] 已清除所有热加载映射");
     }
 }

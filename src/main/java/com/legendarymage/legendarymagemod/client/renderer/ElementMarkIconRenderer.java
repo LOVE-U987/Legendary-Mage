@@ -4,7 +4,6 @@ import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import com.legendarymage.legendarymagemod.effect.ModEffects;
 import com.legendarymage.legendarymagemod.element.ElementType;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -12,7 +11,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -101,15 +100,15 @@ public class ElementMarkIconRenderer {
     private static List<ElementMarkInfo> getEntityElementMarks(LivingEntity entity) {
         List<ElementMarkInfo> marks = new ArrayList<>();
 
-        // 检查每种元素标记
-        checkAndAddMark(entity, ElementType.BLOOD, ModEffects.BLOOD_MARK.get(), marks);
-        checkAndAddMark(entity, ElementType.HOLY, ModEffects.HOLY_MARK.get(), marks);
-        checkAndAddMark(entity, ElementType.ELDRITCH, ModEffects.ELDRITCH_MARK.get(), marks);
-        checkAndAddMark(entity, ElementType.POISON, ModEffects.POISON_MARK.get(), marks);
-        checkAndAddMark(entity, ElementType.FIRE, ModEffects.FIRE_MARK.get(), marks);
-        checkAndAddMark(entity, ElementType.ICE, ModEffects.ICE_MARK.get(), marks);
-        checkAndAddMark(entity, ElementType.LIGHTNING, ModEffects.LIGHTNING_MARK.get(), marks);
-        checkAndAddMark(entity, ElementType.ENDER, ModEffects.ENDER_MARK.get(), marks);
+        // 检查每种元素标记（直接传入 DeferredHolder 作为 Holder<MobEffect>）
+        checkAndAddMark(entity, ElementType.BLOOD, ModEffects.BLOOD_MARK, marks);
+        checkAndAddMark(entity, ElementType.HOLY, ModEffects.HOLY_MARK, marks);
+        checkAndAddMark(entity, ElementType.ELDRITCH, ModEffects.ELDRITCH_MARK, marks);
+        checkAndAddMark(entity, ElementType.POISON, ModEffects.POISON_MARK, marks);
+        checkAndAddMark(entity, ElementType.FIRE, ModEffects.FIRE_MARK, marks);
+        checkAndAddMark(entity, ElementType.ICE, ModEffects.ICE_MARK, marks);
+        checkAndAddMark(entity, ElementType.LIGHTNING, ModEffects.LIGHTNING_MARK, marks);
+        checkAndAddMark(entity, ElementType.ENDER, ModEffects.ENDER_MARK, marks);
 
         return marks;
     }
@@ -119,12 +118,12 @@ public class ElementMarkIconRenderer {
      * 
      * @param entity 实体
      * @param elementType 元素类型
-     * @param effect 效果
+     * @param effectHolder 效果 Holder
      * @param marks 标记列表
      */
     private static void checkAndAddMark(LivingEntity entity, ElementType elementType, 
-                                        MobEffect effect, List<ElementMarkInfo> marks) {
-        MobEffectInstance instance = entity.getEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect));
+                                        Holder<MobEffect> effectHolder, List<ElementMarkInfo> marks) {
+        MobEffectInstance instance = entity.getEffect(effectHolder);
         if (instance != null) {
             int level = instance.getAmplifier() + 1; // 转换为1-3级
             marks.add(new ElementMarkInfo(elementType, level));
@@ -200,8 +199,8 @@ public class ElementMarkIconRenderer {
     private static void renderIcon(PoseStack poseStack, MultiBufferSource buffer, ElementMarkInfo mark) {
         ResourceLocation texture = getIconTexture(mark.elementType);
         
-        // 创建渲染类型 - 使用entityCutoutNoCull确保正确渲染
-        RenderType renderType = RenderType.entityCutoutNoCull(texture);
+        // 创建渲染类型 - 使用entityTranslucent支持透明度混合并避免Z-fighting闪烁
+        RenderType renderType = RenderType.entityTranslucent(texture);
         VertexConsumer vertexConsumer = buffer.getBuffer(renderType);
         
         // 获取矩阵
@@ -221,9 +220,6 @@ public class ElementMarkIconRenderer {
         // 三角形1: 左下 -> 右下 -> 左上
         // 三角形2: 右下 -> 右上 -> 左上
         float size = ICON_SIZE * 10; // 放大尺寸以适应缩放
-        
-        // 顶点颜色（白色+透明度）
-        int color = (alpha << 24) | 0xFFFFFF;
         
         // 三角形1: 左下 -> 右下 -> 左上
         vertexConsumer.addVertex(matrix, -size, size, 0.0f)

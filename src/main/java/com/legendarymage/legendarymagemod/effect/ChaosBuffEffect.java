@@ -1,5 +1,6 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import net.minecraft.resources.ResourceLocation;
@@ -38,29 +39,13 @@ public class ChaosBuffEffect extends MobEffect {
     private static final int EFFECT_COLOR = 0x4B0082;
 
     /**
-     * 每级法术强度加成（5% = 0.05）
-     * Minecraft会自动乘以(amplifier+1)，所以：
-     * - 1级: 0.05 * 1 = 5%
-     * - 2级: 0.05 * 2 = 10%
-     * - 3级: 0.05 * 3 = 15%
-     */
-    public static final double SPELL_POWER_BONUS_PER_LEVEL = 0.05;
-
-    /**
      * 构造函数
-     * 在注册时添加属性修饰符，利用Minecraft原生属性系统
+     * 注意：配置驱动的属性修饰符在 FMLCommonSetupEvent 阶段集中初始化（ModEffects.initConfigModifiers），
+     * 此时 Config 尚未就绪，不可在此处读取配置值。
      */
     public ChaosBuffEffect() {
         super(MobEffectCategory.BENEFICIAL, EFFECT_COLOR);
-
-        // 添加法术强度修饰符（每级+5%）
-        // Minecraft属性系统会自动根据Buff等级(amplifier)计算最终值
-        this.addAttributeModifier(
-                AttributeRegistry.SPELL_POWER,
-                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "chaos_buff_spell_power"),
-                SPELL_POWER_BONUS_PER_LEVEL, // 每级+5%（会被自动乘以amplifier+1）
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-        );
+        // 属性修饰符在 ModEffects.initConfigModifiers() 中延迟初始化
     }
 
     @Override
@@ -76,13 +61,13 @@ public class ChaosBuffEffect extends MobEffect {
 
     /**
      * 计算法术强度加成
-     * 基于Minecraft属性系统的实际公式：SPELL_POWER_BONUS_PER_LEVEL * (amplifier + 1)
+     * 基于Minecraft属性系统的实际公式：每级加成 * (amplifier + 1)
      *
      * @param amplifier Buff等级（0开始，即1级为0）
      * @return 法术强度加成值（例如0.05表示5%）
      */
     public static double calculateSpellPowerBonus(int amplifier) {
-        return SPELL_POWER_BONUS_PER_LEVEL * (amplifier + 1);
+        return Config.CHAOS_SPELL_POWER_BONUS_PER_LEVEL.get() * (amplifier + 1);
     }
 
     /**

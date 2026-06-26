@@ -2,15 +2,13 @@ package com.legendarymage.legendarymagemod.effect;
 
 import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
-import com.legendarymage.legendarymagemod.spell.PyromaniacParticles;
+import com.legendarymage.legendarymagemod.ModLogger;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -30,15 +28,18 @@ public class PyroFlameEffect extends MobEffect {
     public static final String EFFECT_ID = "pyro_flame";
 
     /**
-     * 基础每秒伤害
+     * 基础每秒伤害（从配置读取）
      */
-    private static final float BASE_DAMAGE_PER_SECOND = 1.0f;
+    private static float getDamagePerSecond() {
+        return Config.PYRO_FLAME_DAMAGE_PER_SECOND.get().floatValue();
+    }
 
     /**
-     * 伤害间隔（tick）
-     * 每1秒造成一次伤害 = 20 tick
+     * 伤害间隔（tick，从配置读取）
      */
-    private static final int DAMAGE_INTERVAL = 20;
+    private static int getDamageInterval() {
+        return Config.PYRO_FLAME_DAMAGE_INTERVAL.get();
+    }
 
     /**
      * 效果颜色（火焰橙红色）
@@ -47,17 +48,12 @@ public class PyroFlameEffect extends MobEffect {
 
     /**
      * 构造函数
+     * 注意：配置驱动的属性修饰符在 FMLCommonSetupEvent 阶段集中初始化（ModEffects.initConfigModifiers），
+     * 此时 Config 尚未就绪，不可在此处读取配置值。
      */
     public PyroFlameEffect() {
         super(MobEffectCategory.HARMFUL, EFFECT_COLOR);
-        
-        // 添加属性修改器：降低最大生命值（每级2%）
-        this.addAttributeModifier(
-                Attributes.MAX_HEALTH,
-                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "pyro_flame_health"),
-                -0.02,
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-        );
+        // 属性修饰符在 ModEffects.initConfigModifiers() 中延迟初始化
     }
 
     /**
@@ -69,22 +65,25 @@ public class PyroFlameEffect extends MobEffect {
      */
     @Override
     public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        int damageInterval = getDamageInterval();
         // 只在特定间隔造成伤害
-        if (entity.tickCount % DAMAGE_INTERVAL == 0) {
+        if (damageInterval > 0 && entity.tickCount % damageInterval == 0) {
             // 计算伤害：基础伤害 + 等级加成
-            float damage = BASE_DAMAGE_PER_SECOND * (amplifier + 1);
+            float damage = getDamagePerSecond() * (amplifier + 1);
             
             // 造成火焰伤害
             entity.hurt(entity.level().damageSources().onFire(), damage);
             
             // 播放火焰粒子效果
             if (entity.level() instanceof ServerLevel serverLevel) {
-                PyromaniacParticles.playBuffAmbientEffect(
-                        serverLevel, 
-                        entity.position(), 
-                        entity.getBbHeight(), 
-                        entity.getBbWidth(), 
-                        entity.tickCount
+                Vec3 pos = entity.position();
+                double height = entity.getBbHeight();
+                double width = entity.getBbWidth();
+                serverLevel.sendParticles(
+                        ParticleTypes.FLAME,
+                        pos.x, pos.y + height * 0.5, pos.z,
+                        3, width * 0.3, height * 0.2, width * 0.3,
+                        0.02
                 );
             }
         }
@@ -113,6 +112,10 @@ public class PyroFlameEffect extends MobEffect {
      * @param amplifier 效果等级
      */
     public static void triggerExplosion(Level level, LivingEntity entity, int amplifier) {
+        // 参数空安全防护
+        if (level == null || entity == null || entity.level().isClientSide()) {
+            return;
+        }
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
@@ -129,7 +132,18 @@ public class PyroFlameEffect extends MobEffect {
         float explosionPower = basePower + (amplifier * powerPerLevel);
         
         // 播放爆炸粒子效果
-        PyromaniacParticles.playExplosionEffect(serverLevel, pos, explosionPower, entity.getBbHeight());
+        serverLevel.sendParticles(
+                ParticleTypes.LAVA,
+                pos.x, pos.y + entity.getBbHeight() * 0.5, pos.z,
+                (int) (explosionPower * 5), 1.0, 1.0, 1.0,
+                0.1
+        );
+        serverLevel.sendParticles(
+                ParticleTypes.EXPLOSION,
+                pos.x, pos.y + entity.getBbHeight() * 0.5, pos.z,
+                1, 0.5, 0.5, 0.5,
+                0
+        );
         
         // 根据配置决定爆炸类型
         Level.ExplosionInteraction explosionInteraction;

@@ -1,5 +1,6 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
 import net.minecraft.resources.ResourceLocation;
@@ -12,32 +13,12 @@ import net.minecraft.core.Holder;
 /**
  * 避雷针 Buff 效果
  * 冰雷元素反应产生的 Buff
- * 效果：减少冰系法术抗性5%，减少雷系法术抗性10%
- * 
+ * 效果：减少冰系与雷系法术抗性，具体数值从配置读取
+ *
  * @author Love_U
  * @version 1.0.5
  */
 public class LightningRodBuffEffect extends MobEffect {
-
-    /**
-     * 冰系抗性减少百分比（固定-5%）
-     */
-    private static final double ICE_RESIST_REDUCTION = -0.05; // -5%
-
-    /**
-     * 雷系抗性减少百分比（固定-10%）
-     */
-    private static final double LIGHTNING_RESIST_REDUCTION = -0.10; // -10%
-
-    /**
-     * Buff 持续时间（秒）
-     */
-    public static final int DURATION_SECONDS = 10;
-
-    /**
-     * 最大叠加层数
-     */
-    public static final int MAX_STACKS = 5;
 
     /**
      * 效果颜色 - 蓝色
@@ -51,54 +32,58 @@ public class LightningRodBuffEffect extends MobEffect {
 
     /**
      * 构造函数
-     * 添加属性修饰符用于EMIffect等模组显示
+     * 注意：配置驱动的属性修饰符在 FMLCommonSetupEvent 阶段集中初始化（ModEffects.initConfigModifiers），
+     * 此时 Config 尚未就绪，不可在此处读取配置值。
      */
     public LightningRodBuffEffect() {
         super(MobEffectCategory.HARMFUL, EFFECT_COLOR);
-        
-        // 添加冰系抗性修饰符（-5%）
-        this.addAttributeModifier(
-                AttributeRegistry.ICE_MAGIC_RESIST,
-                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "lightning_rod_ice_resist"),
-                ICE_RESIST_REDUCTION,
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-        );
-        
-        // 添加雷系抗性修饰符（-10%）
-        this.addAttributeModifier(
-                AttributeRegistry.LIGHTNING_MAGIC_RESIST,
-                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "lightning_rod_lightning_resist"),
-                LIGHTNING_RESIST_REDUCTION,
-                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-        );
+        // 属性修饰符在 ModEffects.initConfigModifiers() 中延迟初始化
     }
 
     /**
      * 获取冰系抗性减少百分比
-     * 
-     * @return 冰系抗性减少百分比（固定-5%）
+     *
+     * @return 冰系抗性减少百分比
      */
     public static double getIceResistReduction() {
-        return ICE_RESIST_REDUCTION;
+        return Config.LIGHTNING_ROD_ICE_RESIST_REDUCTION.get();
     }
 
     /**
      * 获取雷系抗性减少百分比
-     * 
-     * @return 雷系抗性减少百分比（固定-10%）
+     *
+     * @return 雷系抗性减少百分比
      */
     public static double getLightningResistReduction() {
-        return LIGHTNING_RESIST_REDUCTION;
+        return Config.LIGHTNING_ROD_LIGHTNING_RESIST_REDUCTION.get();
     }
 
     /**
      * 获取 Buff 等级（从 1 开始）
-     * 
+     *
      * @param amplifier Buff 等级（从 0 开始）
      * @return Buff 等级（从 1 开始）
      */
     public static int getBuffLevel(int amplifier) {
         return amplifier + 1;
+    }
+
+    /**
+     * 获取避雷针 Buff 持续时间（秒）
+     *
+     * @return 持续时间（秒）
+     */
+    public static int getDurationSeconds() {
+        return Config.LIGHTNING_ROD_DURATION_SECONDS.get();
+    }
+
+    /**
+     * 获取避雷针 Buff 最大层数
+     *
+     * @return 最大层数
+     */
+    public static int getMaxStacks() {
+        return Config.LIGHTNING_ROD_MAX_STACKS.get();
     }
 
     @Override
@@ -115,10 +100,10 @@ public class LightningRodBuffEffect extends MobEffect {
 
     /**
      * 获取效果 ID
-     * 
+     *
      * @return 效果 ID
      */
     public String getEffectId() {
-        return LegendaryMage.MODID + ":lightning_rod_buff";
+        return EFFECT_ID;
     }
 }

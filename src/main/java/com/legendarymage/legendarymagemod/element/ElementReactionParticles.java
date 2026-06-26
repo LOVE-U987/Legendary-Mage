@@ -71,6 +71,21 @@ public class ElementReactionParticles {
     /** 末影外层颜色 - 黑色 */
     private static final Vector3f ENDER_OUTER = new Vector3f(0.2f, 0.1f, 0.3f);
 
+    // ==================== 性能配置 ====================
+
+    /** 单次反应粒子上限，防止粒子数量失控导致客户端卡顿 */
+    private static final int MAX_PARTICLES_PER_REACTION = 50; // [PERF]
+
+    /**
+     * 限制粒子数量不超过预算上限
+     *
+     * @param rawCount 原始粒子数
+     * @return 裁剪后的粒子数
+     */
+    private static int budgetParticles(int rawCount) { // [PERF]
+        return Math.min(rawCount, MAX_PARTICLES_PER_REACTION);
+    }
+
     // ==================== 冰火反应效果 ====================
     
     /**
@@ -110,7 +125,7 @@ public class ElementReactionParticles {
      */
     private static void playSteamBurst(ServerLevel level, Vec3 pos, double range) {
         Vector3f steamColor = new Vector3f(0.9f, 0.9f, 0.95f);
-        int steamCount = (int) (range * 5);
+        int steamCount = budgetParticles((int)(range * 5)); // [PERF]
         
         for (int i = 0; i < steamCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -169,7 +184,7 @@ public class ElementReactionParticles {
      * 播放火焰与冰霜混合效果
      */
     private static void playFireIceMix(ServerLevel level, Vec3 pos, double range) {
-        int particleCount = (int) (range * 6);
+        int particleCount = budgetParticles((int)(range * 6)); // [PERF]
         
         for (int i = 0; i < particleCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -212,7 +227,7 @@ public class ElementReactionParticles {
      * 播放冰火火花飞溅效果
      */
     private static void playIceFireSparks(ServerLevel level, Vec3 pos, double range) {
-        int sparkCount = (int) (range * 4);
+        int sparkCount = budgetParticles((int)(range * 4)); // [PERF]
         
         for (int i = 0; i < sparkCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -242,7 +257,7 @@ public class ElementReactionParticles {
      */
     private static void playSteamAmbient(ServerLevel level, Vec3 pos, double range) {
         Vector3f steamColor = new Vector3f(0.85f, 0.85f, 0.9f);
-        int ambientCount = (int) (range * 2);
+        int ambientCount = budgetParticles((int)(range * 2)); // [PERF]
         
         for (int i = 0; i < ambientCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -320,7 +335,7 @@ public class ElementReactionParticles {
      * 播放毒雾爆发效果
      */
     private static void playPoisonFogBurst(ServerLevel level, Vec3 pos, double range) {
-        int fogCount = (int) (range * 6);
+        int fogCount = budgetParticles((int)(range * 6)); // [PERF]
         
         for (int i = 0; i < fogCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -348,7 +363,7 @@ public class ElementReactionParticles {
      * 播放绿色火焰粒子效果
      */
     private static void playGreenFireParticles(ServerLevel level, Vec3 pos, double range) {
-        int fireCount = (int) (range * 8);
+        int fireCount = budgetParticles((int)(range * 8)); // [PERF]
         
         for (int i = 0; i < fireCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -375,7 +390,7 @@ public class ElementReactionParticles {
      * 播放毒液飞溅效果
      */
     private static void playPoisonSplash(ServerLevel level, Vec3 pos, double range) {
-        int splashCount = (int) (range * 5);
+        int splashCount = budgetParticles((int)(range * 5)); // [PERF]
         
         for (int i = 0; i < splashCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -401,7 +416,7 @@ public class ElementReactionParticles {
      * 播放毒气环绕效果
      */
     private static void playPoisonAmbient(ServerLevel level, Vec3 pos, double range) {
-        int ambientCount = (int) (range * 3);
+        int ambientCount = budgetParticles((int)(range * 3)); // [PERF]
         
         for (int i = 0; i < ambientCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -495,7 +510,7 @@ public class ElementReactionParticles {
      * 播放电火花爆发效果
      */
     private static void playElectricSparkBurst(ServerLevel level, Vec3 pos, double range) {
-        int sparkCount = (int) (range * 10);
+        int sparkCount = budgetParticles((int)(range * 10)); // [PERF]
         
         for (int i = 0; i < sparkCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -521,7 +536,7 @@ public class ElementReactionParticles {
      * 播放火焰与雷电混合效果
      */
     private static void playFireLightningMix(ServerLevel level, Vec3 pos, double range) {
-        int mixCount = (int) (range * 6);
+        int mixCount = budgetParticles((int)(range * 6)); // [PERF]
         
         for (int i = 0; i < mixCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -564,7 +579,7 @@ public class ElementReactionParticles {
      * 使用铁魔法的 Zap 粒子模拟闪电轨迹
      */
     private static void playLightningTrails(ServerLevel level, Vec3 pos, double range) {
-        int trailCount = (int) (range * 4);
+        int trailCount = budgetParticles((int)(range * 4)); // [PERF]
         
         for (int i = 0; i < trailCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -604,7 +619,7 @@ public class ElementReactionParticles {
      * 使用多个 Zap 粒子创建连锁反应
      */
     private static void playChainLightning(ServerLevel level, Vec3 pos, double range) {
-        int chainCount = (int) (range * 2);
+        int chainCount = budgetParticles((int)(range * 2)); // [PERF]
         
         for (int i = 0; i < chainCount; i++) {
             try {
@@ -656,7 +671,7 @@ public class ElementReactionParticles {
      * 播放电光环绕效果
      */
     private static void playElectricAmbient(ServerLevel level, Vec3 pos, double range) {
-        int ambientCount = (int) (range * 4);
+        int ambientCount = budgetParticles((int)(range * 4)); // [PERF]
         
         for (int i = 0; i < ambientCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -747,7 +762,7 @@ public class ElementReactionParticles {
      * 播放能量爆发效果
      */
     private static void playEnergyBurst(ServerLevel level, Vec3 pos, double range) {
-        int burstCount = (int) (range * 8);
+        int burstCount = budgetParticles((int)(range * 8)); // [PERF]
         
         for (int i = 0; i < burstCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -776,7 +791,7 @@ public class ElementReactionParticles {
      * 播放光暗粒子混合效果
      */
     private static void playHolyBloodMix(ServerLevel level, Vec3 pos, double range) {
-        int mixCount = (int) (range * 6);
+        int mixCount = budgetParticles((int)(range * 6)); // [PERF]
         
         for (int i = 0; i < mixCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -818,7 +833,7 @@ public class ElementReactionParticles {
      * 播放能量火花效果
      */
     private static void playEnergySparks(ServerLevel level, Vec3 pos, double range) {
-        int sparkCount = (int) (range * 5);
+        int sparkCount = budgetParticles((int)(range * 5)); // [PERF]
         
         for (int i = 0; i < sparkCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -846,7 +861,7 @@ public class ElementReactionParticles {
      * 播放光暗环绕效果
      */
     private static void playHolyBloodAmbient(ServerLevel level, Vec3 pos, double range) {
-        int ambientCount = (int) (range * 3);
+        int ambientCount = budgetParticles((int)(range * 3)); // [PERF]
         
         for (int i = 0; i < ambientCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -939,7 +954,7 @@ public class ElementReactionParticles {
      * 播放混沌能量爆发效果
      */
     private static void playChaosBurst(ServerLevel level, Vec3 pos, double range) {
-        int burstCount = (int) (range * 10);
+        int burstCount = budgetParticles((int)(range * 10)); // [PERF]
         
         for (int i = 0; i < burstCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -966,7 +981,7 @@ public class ElementReactionParticles {
      * 播放紫色血雾效果
      */
     private static void playPurpleBloodFog(ServerLevel level, Vec3 pos, double range) {
-        int fogCount = (int) (range * 7);
+        int fogCount = budgetParticles((int)(range * 7)); // [PERF]
         
         for (int i = 0; i < fogCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -994,7 +1009,7 @@ public class ElementReactionParticles {
      * 播放混沌火花效果
      */
     private static void playChaosSparks(ServerLevel level, Vec3 pos, double range) {
-        int sparkCount = (int) (range * 6);
+        int sparkCount = budgetParticles((int)(range * 6)); // [PERF]
         
         for (int i = 0; i < sparkCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1022,7 +1037,7 @@ public class ElementReactionParticles {
      * 播放混沌环绕效果
      */
     private static void playChaosAmbient(ServerLevel level, Vec3 pos, double range) {
-        int ambientCount = (int) (range * 4);
+        int ambientCount = budgetParticles((int)(range * 4)); // [PERF]
         
         for (int i = 0; i < ambientCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1290,7 +1305,7 @@ public class ElementReactionParticles {
      * 播放末影粒子爆发效果
      */
     private static void playEnderBurst(ServerLevel level, Vec3 pos, double range) {
-        int burstCount = (int) (range * 8);
+        int burstCount = budgetParticles((int)(range * 8)); // [PERF]
         
         for (int i = 0; i < burstCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1316,7 +1331,7 @@ public class ElementReactionParticles {
      * 播放虚空雾气效果
      */
     private static void playVoidFog(ServerLevel level, Vec3 pos, double range) {
-        int fogCount = (int) (range * 5);
+        int fogCount = budgetParticles((int)(range * 5)); // [PERF]
         
         for (int i = 0; i < fogCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1344,7 +1359,7 @@ public class ElementReactionParticles {
      * 播放末影火花效果
      */
     private static void playEnderSparks(ServerLevel level, Vec3 pos, double range) {
-        int sparkCount = (int) (range * 5);
+        int sparkCount = budgetParticles((int)(range * 5)); // [PERF]
         
         for (int i = 0; i < sparkCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1370,7 +1385,7 @@ public class ElementReactionParticles {
      * 播放末影环绕效果
      */
     private static void playEnderAmbient(ServerLevel level, Vec3 pos, double range) {
-        int ambientCount = (int) (range * 4);
+        int ambientCount = budgetParticles((int)(range * 4)); // [PERF]
         
         for (int i = 0; i < ambientCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1418,7 +1433,7 @@ public class ElementReactionParticles {
         );
         
         // 粒子爆发
-        int burstCount = (int) (range * 6);
+        int burstCount = budgetParticles((int)(range * 6)); // [PERF]
         for (int i = 0; i < burstCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
             double distance = level.random.nextDouble() * range;
@@ -1524,7 +1539,7 @@ public class ElementReactionParticles {
      * 播放紫色闪电链爆发
      */
     private static void playPurpleLightningBurst(ServerLevel level, Vec3 pos, double range) {
-        int boltCount = (int) (range * 3);
+        int boltCount = budgetParticles((int)(range * 3)); // [PERF]
         for (int i = 0; i < boltCount; i++) {
             try {
                 int nodes = 4 + level.random.nextInt(5);
@@ -1567,7 +1582,7 @@ public class ElementReactionParticles {
                 pos.x, pos.y + 0.5, pos.z,
                 8, 0.3, 0.2, 0.3, 0.03
         );
-        int sparkCount = (int) (range * 4);
+        int sparkCount = budgetParticles((int)(range * 4)); // [PERF]
         for (int i = 0; i < sparkCount; i++) {
             double offsetX = (level.random.nextDouble() - 0.5) * range * 2;
             double offsetY = level.random.nextDouble() * range;
@@ -1584,7 +1599,7 @@ public class ElementReactionParticles {
      * 播放紫色电火花爆发
      */
     private static void playPurpleSparkBurst(ServerLevel level, Vec3 pos, double range) {
-        int sparkCount = (int) (range * 6);
+        int sparkCount = budgetParticles((int)(range * 6)); // [PERF]
         Vector3f purpleColor = new Vector3f(0.7f, 0.3f, 0.9f);
         for (int i = 0; i < sparkCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1607,7 +1622,7 @@ public class ElementReactionParticles {
      * 播放电磁波轨迹
      */
     private static void playElectromagneticTrails(ServerLevel level, Vec3 pos, double range) {
-        int trailCount = (int) (range * 3);
+        int trailCount = budgetParticles((int)(range * 3)); // [PERF]
         for (int i = 0; i < trailCount; i++) {
             try {
                 double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1670,7 +1685,7 @@ public class ElementReactionParticles {
      * 播放蓝色闪电爆发
      */
     private static void playBlueLightningBurst(ServerLevel level, Vec3 pos, double range) {
-        int boltCount = (int) (range * 2);
+        int boltCount = budgetParticles((int)(range * 2)); // [PERF]
         for (int i = 0; i < boltCount; i++) {
             try {
                 int nodes = 3 + level.random.nextInt(4);
@@ -1699,7 +1714,7 @@ public class ElementReactionParticles {
      * 播放冰霜与雷电粒子混合
      */
     private static void playIceLightningMix(ServerLevel level, Vec3 pos, double range) {
-        int iceCount = (int) (range * 4);
+        int iceCount = budgetParticles((int)(range * 4)); // [PERF]
         for (int i = 0; i < iceCount; i++) {
             double offsetX = (level.random.nextDouble() - 0.5) * range * 2;
             double offsetY = level.random.nextDouble() * range;
@@ -1710,7 +1725,7 @@ public class ElementReactionParticles {
                     1, 0.1, 0.1, 0.1, 0.02
             );
         }
-        int sparkCount = (int) (range * 3);
+        int sparkCount = budgetParticles((int)(range * 3)); // [PERF]
         for (int i = 0; i < sparkCount; i++) {
             double offsetX = (level.random.nextDouble() - 0.5) * range * 2;
             double offsetY = level.random.nextDouble() * range;
@@ -1727,7 +1742,7 @@ public class ElementReactionParticles {
      * 播放冰晶电火花
      */
     private static void playIceCrystalSparks(ServerLevel level, Vec3 pos, double range) {
-        int crystalCount = (int) (range * 3);
+        int crystalCount = budgetParticles((int)(range * 3)); // [PERF]
         Vector3f iceColor = new Vector3f(0.6f, 0.9f, 1.0f);
         for (int i = 0; i < crystalCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1750,7 +1765,7 @@ public class ElementReactionParticles {
      * 播放冰雷轨迹
      */
     private static void playIceLightningTrails(ServerLevel level, Vec3 pos, double range) {
-        int trailCount = (int) (range * 2);
+        int trailCount = budgetParticles((int)(range * 2)); // [PERF]
         for (int i = 0; i < trailCount; i++) {
             try {
                 double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1836,7 +1851,7 @@ public class ElementReactionParticles {
      * 播放毒液飞溅
      */
     private static void playPoisonDroplets(ServerLevel level, Vec3 pos, double range) {
-        int dropletCount = (int) (range * 5);
+        int dropletCount = budgetParticles((int)(range * 5)); // [PERF]
         for (int i = 0; i < dropletCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
             double distance = level.random.nextDouble() * range;
@@ -1858,7 +1873,7 @@ public class ElementReactionParticles {
      * 播放暗毒粒子轨迹
      */
     private static void playBloodPoisonTrails(ServerLevel level, Vec3 pos, double range) {
-        int trailCount = (int) (range * 3);
+        int trailCount = budgetParticles((int)(range * 3)); // [PERF]
         Vector3f poisonColor = new Vector3f(0.2f, 0.5f, 0.2f);
         for (int i = 0; i < trailCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
@@ -1937,7 +1952,7 @@ public class ElementReactionParticles {
      * 播放墨汁飞溅
      */
     private static void playInkSplash(ServerLevel level, Vec3 pos, double range) {
-        int inkCount = (int) (range * 4);
+        int inkCount = budgetParticles((int)(range * 4)); // [PERF]
         for (int i = 0; i < inkCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
             double distance = level.random.nextDouble() * range;
@@ -1959,7 +1974,7 @@ public class ElementReactionParticles {
      * 播放毒爆轨迹
      */
     private static void playPlagueExplosionTrails(ServerLevel level, Vec3 pos, double range) {
-        int trailCount = (int) (range * 4);
+        int trailCount = budgetParticles((int)(range * 4)); // [PERF]
         Vector3f plagueColor = new Vector3f(0.3f, 0.6f, 0.2f);
         for (int i = 0; i < trailCount; i++) {
             double angle = level.random.nextDouble() * Math.PI * 2;
