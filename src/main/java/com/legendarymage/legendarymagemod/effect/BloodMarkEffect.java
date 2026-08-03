@@ -1,23 +1,23 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.LegendaryMage;
 import com.legendarymage.legendarymagemod.element.ElementType;
-import io.redspace.ironsspellbooks.effect.IMobEffectEndCallback;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
+import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 /**
- * 血系标记效果（黑暗异常）
- * 3级标记时长结束时，获得"暗夜无光"buff
- * 减少法术抗性，每级-5%，可叠加
- * 
+ * 血系标记效果（黑暗异常）【重写 v2.0】
+ *
+ * 【效果】
+ * - 每一级减 10% 血系法术抗性（属性修饰符按等级自动缩放）
+ * - 3级以上每一级加 5% 易伤（受伤倍率提升，由 ElementReactionEvents 处理）
+ *
  * @author Love_U
- * @version 1.0.4
+ * @version 2.0.0
  */
-public class BloodMarkEffect extends ElementMarkEffect implements IMobEffectEndCallback {
+public class BloodMarkEffect extends ElementMarkEffect {
 
     /**
      * 效果ID
@@ -30,21 +30,33 @@ public class BloodMarkEffect extends ElementMarkEffect implements IMobEffectEndC
     private static final int EFFECT_COLOR = 0x8B0000;
 
     /**
-     * 暗夜无光Buff基础持续时间（tick）
-     * 10秒 = 200 tick
+     * 每级血系法术抗性减少（10%）
      */
-    private static final int DARKNESS_BUFF_BASE_DURATION = 200;
+    private static final double BLOOD_RESIST_REDUCTION_PER_LEVEL = -0.10;
 
     /**
-     * 暗夜无光Buff每级额外持续时间（tick）
+     * 易伤触发等级（3级以上，即 >= 4级）
      */
-    private static final int DARKNESS_BUFF_DURATION_PER_LEVEL = 100;
+    public static final int VULNERABILITY_THRESHOLD_LEVEL = 4;
+
+    /**
+     * 3级以上每级易伤加成（5%）
+     */
+    public static final double VULNERABILITY_PER_LEVEL = 0.05;
 
     /**
      * 构造函数
+     * 注册每级 -10% 血系法术抗性的属性修饰符
      */
     public BloodMarkEffect() {
         super(ElementType.BLOOD, EFFECT_COLOR);
+        // 每级 -10% 血系法术抗性（MobEffectInstance 会按 amplifier+1 自动缩放修饰符）
+        this.addAttributeModifier(
+                AttributeRegistry.BLOOD_MAGIC_RESIST,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "blood_mark_blood_resist"),
+                BLOOD_RESIST_REDUCTION_PER_LEVEL,
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
     }
 
     @Override
@@ -53,75 +65,28 @@ public class BloodMarkEffect extends ElementMarkEffect implements IMobEffectEndC
     }
 
     /**
-     * 当效果被移除时调用
-     * 如果标记为3级（amplifier=2），则给予暗夜无光Buff
-     * 
-     * @param entity 实体
-     * @param amplifier 效果等级（0=1级，1=2级，2=3级）
+     * 计算黑暗异常的易伤倍率
+     * 3级以上每一级 +5% 易伤
+     *
+     * @param markLevel 标记等级（1-5）
+     * @return 受伤倍率（>= 1.0）
      */
-    @Override
-    public void onEffectRemoved(LivingEntity entity, int amplifier) {
-        // 检查实体是否已死亡或正在死亡
-        if (!entity.isAlive() || entity.isDeadOrDying()) {
-            return;
+    public static float calculateVulnerabilityMultiplier(int markLevel) {
+        if (markLevel < VULNERABILITY_THRESHOLD_LEVEL) {
+            return 1.0f;
         }
-        
-        // 检查是否为3级标记（amplifier = 2）
-        if (amplifier >= MAX_LEVEL) {
-            // 使用延迟任务避免ConcurrentModificationException
-            // 当牛奶移除效果时，不能在onEffectRemoved中直接访问效果列表
-            // 必须延迟到下一 tick 执行
-            final int finalAmplifier = amplifier;
-            EffectRemovalHandler.addDelayedTask(entity, finalAmplifier, (e, amp) -> {
-                if (e.isAlive() && !e.isDeadOrDying()) {
-                    applyDarknessBuff(e, amp);
-                }
-            });
-        }
+        return 1.0f + (float) VULNERABILITY_PER_LEVEL * (markLevel - 3);
     }
 
-    /**
-     * 给予暗夜无光Buff
-     * Buff等级可无限叠加，每次触发时等级+1
-     * 
-     * @param entity 目标实体
-     * @param markLevel 标记等级（0开始）
-     */
-    private void applyDarknessBuff(LivingEntity entity, int markLevel) {
-        if (!(entity.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
+    @Override
+    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        // 被动效果，无需每 tick 处理（易伤由事件处理器计算）
+        return true;
+    }
 
-        // 获取暗夜无光效果
-        MobEffect darknessEffect = ModEffects.DARKNESS_BUFF.get();
-        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(darknessEffect);
-
-        // 检查目标是否已有暗夜无光Buff
-        MobEffectInstance existingEffect = entity.getEffect(effectHolder);
-        int newBuffLevel;
-        int baseDuration;
-
-        if (existingEffect != null) {
-            // 已有Buff，等级+1（无限叠加）
-            newBuffLevel = existingEffect.getAmplifier() + 2;  // +2因为amplifier是0开始的
-            baseDuration = existingEffect.getDuration();
-        } else {
-            // 没有Buff，初始等级为1
-            newBuffLevel = 1;
-            baseDuration = DARKNESS_BUFF_BASE_DURATION;
-        }
-
-        // 计算持续时间（基础持续时间 + 每级额外时间）
-        int duration = baseDuration + (newBuffLevel - 1) * DARKNESS_BUFF_DURATION_PER_LEVEL;
-
-        // 施加暗夜无光Buff
-        entity.addEffect(new MobEffectInstance(
-                effectHolder,
-                duration,
-                newBuffLevel - 1,  // 等级（0开始）
-                false,
-                true,
-                true
-        ));
+    @Override
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
+        // 纯被动效果，属性修饰符已按等级缩放
+        return false;
     }
 }

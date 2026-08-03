@@ -63,7 +63,7 @@ public class ElementReactionCommands {
                                 .then(Commands.argument("target", EntityArgument.entity())
                                         .then(Commands.argument("element", StringArgumentType.word())
                                                 .suggests(ELEMENT_TYPE_SUGGESTIONS)
-                                                .then(Commands.argument("level", IntegerArgumentType.integer(1, 3))
+                                                .then(Commands.argument("level", IntegerArgumentType.integer(1, 5))
                                                         .executes(ElementReactionCommands::executeApplyMark)
                                                 )
                                                 .executes(ElementReactionCommands::executeApplyMarkLevel1)
@@ -139,7 +139,7 @@ public class ElementReactionCommands {
                 context.getSource().sendSuccess(() -> Component.literal(message), true);
                 return 1;
             } else {
-                context.getSource().sendFailure(Component.literal("§c施加失败，目标可能已有该元素标记"));
+                context.getSource().sendFailure(Component.literal("§c施加失败，请检查目标与参数"));
                 return 0;
             }
         } catch (Exception e) {
@@ -186,7 +186,7 @@ public class ElementReactionCommands {
                 context.getSource().sendSuccess(() -> Component.literal(message), true);
                 return 1;
             } else {
-                context.getSource().sendFailure(Component.literal("§c施加失败，目标可能已有该元素标记"));
+                context.getSource().sendFailure(Component.literal("§c施加失败，请检查目标与参数"));
                 return 0;
             }
         } catch (Exception e) {

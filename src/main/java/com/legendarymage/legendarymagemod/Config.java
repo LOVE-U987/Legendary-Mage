@@ -1,8 +1,8 @@
 package com.legendarymage.legendarymagemod;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
-
 import java.util.List;
+
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
  * 传奇法师模组配置类
@@ -82,11 +82,13 @@ public class Config {
                 .define("enabled", true);
 
         ELEMENT_MARK_ICON_HEIGHT = BUILDER
-                .comment("Height offset for element mark icons above entity heads.",
+                .comment("Distance from the top of the entity's collision box to the CENTER of the mark icons.",
+                        "The icon is about 0.36 blocks tall, so with the default 0.5 the icon's bottom sits roughly",
+                        "5 pixels (5/16 block) above the collision box.",
                         "Higher values move the icons further above the entity.",
-                        "Default: 0.5 blocks above entity height",
-                        "Range: 0.1 - 3.0")
-                .defineInRange("height_offset", 0.5, 0.1, 3.0);
+                        "Default: 0.5 blocks",
+                        "Range: 0.0 - 3.0")
+                .defineInRange("height_offset", 0.5, 0.0, 3.0);
 
         ELEMENT_MARK_ICON_SCALE = BUILDER
                 .comment("Scale of element mark icons.",

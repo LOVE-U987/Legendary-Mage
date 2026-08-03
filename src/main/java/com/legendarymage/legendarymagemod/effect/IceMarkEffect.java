@@ -1,22 +1,25 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
+import com.legendarymage.legendarymagemod.ModLogger;
+import com.legendarymage.legendarymagemod.element.ElementMarkData;
 import com.legendarymage.legendarymagemod.element.ElementType;
-import io.redspace.ironsspellbooks.effect.IMobEffectEndCallback;
 import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
-import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
- * 冰系标记效果（冰冻异常）
- * 3级标记时长结束时，给予铁魔法的冰冻效果（Chilled）
- * 
+ * 冰系标记效果（冰冻异常）【重写 v2.0】
+ *
+ * 【效果】
+ * - 3级后的攻击有 50% 概率冰冻目标 3 秒，CD 5 秒
+ *
  * @author Love_U
- * @version 1.0.0
+ * @version 2.0.0
  */
-public class IceMarkEffect extends ElementMarkEffect implements IMobEffectEndCallback {
+public class IceMarkEffect extends ElementMarkEffect {
 
     /**
      * 效果ID
@@ -29,15 +32,26 @@ public class IceMarkEffect extends ElementMarkEffect implements IMobEffectEndCal
     private static final int EFFECT_COLOR = 0x00CED1;
 
     /**
-     * 冰冻效果基础持续时间（tick）
-     * 8秒 = 160 tick
+     * 冰冻触发所需等级（3级后）
      */
-    private static final int CHILLED_BASE_DURATION = 160;
+    private static final int FREEZE_TRIGGER_LEVEL = 3;
 
     /**
-     * 冰冻效果每级额外持续时间（tick）
+     * 冰冻触发概率（50%）
      */
-    private static final int CHILLED_DURATION_PER_LEVEL = 40;
+    private static final double FREEZE_CHANCE = 0.5;
+
+    /**
+     * 冰冻持续时间（tick）
+     * 3秒 = 60 tick
+     */
+    private static final int FREEZE_DURATION = 60;
+
+    /**
+     * 冰冻CD（tick）
+     * 5秒 = 100 tick
+     */
+    private static final int FREEZE_COOLDOWN_TICKS = 100;
 
     /**
      * 构造函数
@@ -51,62 +65,89 @@ public class IceMarkEffect extends ElementMarkEffect implements IMobEffectEndCal
         return EFFECT_ID;
     }
 
-    /**
-     * 当效果被移除时调用
-     * 如果标记为3级（amplifier=2），则给予铁魔法的冰冻效果
-     * 
-     * @param entity 实体
-     * @param amplifier 效果等级（0=1级，1=2级，2=3级）
-     */
-    public void onEffectRemoved(LivingEntity entity, int amplifier) {
-        // 检查实体是否已死亡或正在死亡
-        if (!entity.isAlive() || entity.isDeadOrDying()) {
-            return;
-        }
-        
-        // 检查是否为3级标记（amplifier = 2）
-        if (amplifier >= MAX_LEVEL) {
-            // 使用延迟任务避免ConcurrentModificationException
-            // 当牛奶移除效果时，不能在onEffectRemoved中直接访问效果列表
-            // 必须延迟到下一 tick 执行
-            final int finalAmplifier = amplifier;
-            EffectRemovalHandler.addDelayedTask(entity, finalAmplifier, (e, amp) -> {
-                if (e.isAlive() && !e.isDeadOrDying()) {
-                    applyChilledEffect(e, amp);
-                }
-            });
-        }
+    @Override
+    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        // 被动效果，无需每 tick 处理（冰冻由攻击事件触发）
+        return true;
+    }
+
+    @Override
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
+        // 纯被动效果
+        return false;
     }
 
     /**
-     * 给予铁魔法的冰冻效果（Chilled）
-     * 效果等级 = 标记等级
-     * 
-     * @param entity 目标实体
-     * @param markLevel 标记等级（0开始）
+     * 尝试触发冰冻（由法术伤害事件调用）
+     *
+     * 触发条件：
+     * - 目标携带 3 级及以上的冰冻异常
+     * - 5% 概率判定成功
+     * - CD 5 秒
+     *
+     * @param target 目标（携带冰冻异常）
+     * @return 是否成功冰冻
      */
-    private void applyChilledEffect(LivingEntity entity, int markLevel) {
-        if (!(entity.level() instanceof ServerLevel serverLevel)) {
-            return;
+    public static boolean tryTriggerFreeze(LivingEntity target) {
+        // 检查目标是否已死亡或正在死亡
+        if (target == null || !target.isAlive() || target.isDeadOrDying()) {
+            return false;
         }
 
-        // 计算效果等级（1开始）
-        int effectLevel = markLevel + 1;
+        // 检查冰冻异常等级（3级后）
+        int level = ElementMarkData.getMarkLevel(target, ElementType.ICE);
+        if (level < FREEZE_TRIGGER_LEVEL) {
+            return false;
+        }
 
-        // 计算持续时间
-        int duration = CHILLED_BASE_DURATION + (effectLevel - 1) * CHILLED_DURATION_PER_LEVEL;
+        // 5% 概率判定
+        if (Math.random() >= FREEZE_CHANCE) {
+            return false;
+        }
 
-        // 获取铁魔法的Chilled效果
-        Holder<MobEffect> effectHolder = MobEffectRegistry.CHILLED;
+        // 检查CD（5秒）
+        if (!ElementMarkData.isCooldownReady(target, ElementType.ICE, FREEZE_COOLDOWN_TICKS)) {
+            return false;
+        }
 
-        // 施加冰冻效果
-        entity.addEffect(new MobEffectInstance(
-                effectHolder,
-                duration,
-                effectLevel - 1,  // 等级（0开始）
+        if (Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
+            ModLogger.element("[冰冻异常] {} 被冰冻 3 秒 (标记{}级)", target.getName().getString(), level);
+        }
+
+        // 记录触发时刻（开始CD）
+        ElementMarkData.markCooldown(target, ElementType.ICE);
+
+        // ===== 冰冻：铁魔法原生冰冻效果 =====
+        // 与铁魔法冰系法术（如 Frostwave/ConeOfCold）一致：
+        // CHILLED 效果（每级 -20% 移速）+ 抬升冰冻值至完全冻结，
+        // 完全冻结时由铁魔法的 ChilledEffect 触发冰棺，实现完整冰冻定身
+
+        // 1) 施加铁魔法冰冻效果 CHILLED（标记等级越高冻结越强）
+        int chilledAmplifier = Math.max(2, Math.min(level - 1, 4)); // 标记3-5级 → CHILLED 3-5级
+        target.addEffect(new MobEffectInstance(
+                MobEffectRegistry.CHILLED,
+                FREEZE_DURATION,
+                chilledAmplifier,
                 false,
                 true,
                 true
         ));
+
+        // 2) 抬升冰冻值至完全冻结线以上，维持约 3 秒（原版每 tick 衰减 2）
+        //    完全冻结 + CHILLED 会触发铁魔法的冰棺，实现真正意义上的冰冻
+        target.setTicksFrozen(target.getTicksFrozen() + FREEZE_DURATION * 2);
+
+        // 播放冰冻粒子效果
+        if (target.level() instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(
+                    ParticleTypes.SNOWFLAKE,
+                    target.getX(), target.getY() + target.getBbHeight() * 0.5, target.getZ(),
+                    20,
+                    target.getBbWidth() * 0.4, target.getBbHeight() * 0.3, target.getBbWidth() * 0.4,
+                    0.05
+            );
+        }
+
+        return true;
     }
 }

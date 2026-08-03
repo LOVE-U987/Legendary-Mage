@@ -1,22 +1,29 @@
 package com.legendarymage.legendarymagemod.effect;
 
+import com.legendarymage.legendarymagemod.Config;
+import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
+import com.legendarymage.legendarymagemod.element.ElementMarkData;
 import com.legendarymage.legendarymagemod.element.ElementType;
-import io.redspace.ironsspellbooks.effect.IMobEffectEndCallback;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /**
- * 火系标记效果（火焰异常）
- * 3级标记时长结束时，给予烈焰Buff，可叠加等级
- * 
+ * 火系标记效果（火焰异常）【重写 v2.0】
+ *
+ * 【效果】
+ * - 每一级减 2% 最大生命值（属性修饰符按等级自动缩放）
+ * - 每 1 秒（CD 1秒）受到一次伤害，伤害 = buff等级 × 施法者火系流派强度
+ * - 死亡后形成与 buff 等级大小相同范围的爆炸（由 ElementReactionEvents 处理）
+ *
  * @author Love_U
- * @version 1.0.0
+ * @version 2.0.0
  */
-public class FireMarkEffect extends ElementMarkEffect implements IMobEffectEndCallback {
+public class FireMarkEffect extends ElementMarkEffect {
 
     /**
      * 效果ID
@@ -29,21 +36,29 @@ public class FireMarkEffect extends ElementMarkEffect implements IMobEffectEndCa
     private static final int EFFECT_COLOR = 0xFF4500;
 
     /**
-     * 烈焰Buff基础持续时间（tick）
-     * 5秒 = 100 tick
+     * 每级最大生命值减少（2%）
      */
-    private static final int PYRO_FLAME_BASE_DURATION = 100;
+    private static final double MAX_HEALTH_REDUCTION_PER_LEVEL = -0.02;
 
     /**
-     * 烈焰Buff每级额外持续时间（tick）
+     * 火焰伤害触发间隔（tick）
+     * 1秒 = 20 tick
      */
-    private static final int PYRO_FLAME_DURATION_PER_LEVEL = 50;
+    private static final int DAMAGE_INTERVAL = 20;
 
     /**
      * 构造函数
+     * 注册每级 -2% 最大生命值的属性修饰符
      */
     public FireMarkEffect() {
         super(ElementType.FIRE, EFFECT_COLOR);
+        // 每级 -2% 最大生命值（MobEffectInstance 会按 amplifier+1 自动缩放修饰符）
+        this.addAttributeModifier(
+                Attributes.MAX_HEALTH,
+                ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "fire_mark_max_health"),
+                MAX_HEALTH_REDUCTION_PER_LEVEL,
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+        );
     }
 
     @Override
@@ -52,75 +67,54 @@ public class FireMarkEffect extends ElementMarkEffect implements IMobEffectEndCa
     }
 
     /**
-     * 当效果被移除时调用
-     * 如果标记为3级（amplifier=2），则给予烈焰Buff
-     * 
-     * @param entity 实体
-     * @param amplifier 效果等级（0=1级，1=2级，2=3级）
+     * 每 tick 检查冷却，每 1 秒造成一次公式伤害
+     * 伤害 = buff等级 × 施法者火系流派强度
+     *
+     * @param entity    实体
+     * @param amplifier 效果等级（0开始）
      */
     @Override
-    public void onEffectRemoved(LivingEntity entity, int amplifier) {
+    public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        // 只在服务器端执行
+        if (!(entity.level() instanceof ServerLevel serverLevel)) {
+            return true;
+        }
+
         // 检查实体是否已死亡或正在死亡
         if (!entity.isAlive() || entity.isDeadOrDying()) {
-            return;
+            return true;
         }
-        
-        // 检查是否为3级标记（amplifier = 2）
-        if (amplifier >= MAX_LEVEL) {
-            // 使用延迟任务避免ConcurrentModificationException
-            // 当牛奶移除效果时，不能在onEffectRemoved中直接访问效果列表
-            // 必须延迟到下一 tick 执行
-            final int finalAmplifier = amplifier;
-            EffectRemovalHandler.addDelayedTask(entity, finalAmplifier, (e, amp) -> {
-                if (e.isAlive() && !e.isDeadOrDying()) {
-                    applyPyroFlameBuff(e, amp);
+
+        // CD 1秒：每 20 tick 触发一次灼烧
+        if (ElementMarkData.isCooldownReady(entity, ElementType.FIRE, DAMAGE_INTERVAL)) {
+            // 伤害由公式计算：buff等级 × 火系流派强度
+            float damage = ElementMarkData.calculateDamage(entity, ElementType.FIRE, null);
+            if (damage > 0) {
+                entity.hurt(serverLevel.damageSources().magic(), damage);
+
+                // 播放火焰粒子效果
+                serverLevel.sendParticles(
+                        ParticleTypes.FLAME,
+                        entity.getX(), entity.getY() + entity.getBbHeight() * 0.5, entity.getZ(),
+                        3,
+                        entity.getBbWidth() * 0.3, entity.getBbHeight() * 0.2, entity.getBbWidth() * 0.3,
+                        0.02
+                );
+
+                if (Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
+                    ModLogger.element("[火焰异常] {} 受到灼烧伤害: {} (标记{}级)",
+                            entity.getName().getString(), damage, amplifier + 1);
                 }
-            });
+            }
+            ElementMarkData.markCooldown(entity, ElementType.FIRE);
         }
+
+        return true;
     }
 
-    /**
-     * 给予烈焰Buff
-     * Buff等级可无限叠加，每次触发时等级+1
-     * 
-     * @param entity 目标实体
-     * @param markLevel 标记等级（0开始）
-     */
-    private void applyPyroFlameBuff(LivingEntity entity, int markLevel) {
-        if (!(entity.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
-
-        // 获取烈焰效果
-        MobEffect pyroFlameEffect = ModEffects.PYRO_FLAME.get();
-        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(pyroFlameEffect);
-
-        // 检查目标是否已有烈焰Buff
-        MobEffectInstance existingEffect = entity.getEffect(effectHolder);
-        int newBuffLevel;
-        int baseDuration;
-
-        if (existingEffect != null) {
-            // 已有Buff，等级+1（无限叠加）
-            newBuffLevel = existingEffect.getAmplifier() + 2;  // +2因为amplifier是0开始的
-            baseDuration = existingEffect.getDuration();
-        } else {
-            // 没有Buff，初始等级为1
-            newBuffLevel = 1;
-            baseDuration = PYRO_FLAME_BASE_DURATION;
-        }
-
-        // 计算持续时间（基础持续时间 + 每级额外时间）
-        int duration = baseDuration + (newBuffLevel - 1) * PYRO_FLAME_DURATION_PER_LEVEL;
-
-        // 施加烈焰Buff
-        entity.addEffect(new MobEffectInstance(
-                effectHolder,
-                duration,
-                newBuffLevel - 1,  // 等级（0开始）
-                false,
-                true,
-                true
-        ));
+    @Override
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
+        // 每 tick 检查冷却，由 applyEffectTick 控制触发间隔
+        return true;
     }
 }

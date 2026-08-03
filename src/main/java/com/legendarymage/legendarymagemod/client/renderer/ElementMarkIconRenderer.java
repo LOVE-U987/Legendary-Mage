@@ -1,17 +1,24 @@
 package com.legendarymage.legendarymagemod.client.renderer;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.joml.Matrix4f;
+
 import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
-import com.legendarymage.legendarymagemod.effect.ModEffects;
 import com.legendarymage.legendarymagemod.element.ElementType;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -21,10 +28,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import org.joml.Matrix4f;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 元素标记图标渲染器
@@ -52,6 +55,12 @@ public class ElementMarkIconRenderer {
      */
     private static final ResourceLocation[] ELEMENT_MARK_ICONS = new ResourceLocation[8];
 
+    /**
+     * 元素标记图标渲染类型（透视 + 自发光）
+     * 每个图标纹理对应一个渲染类型
+     */
+    private static final RenderType[] ELEMENT_MARK_RENDER_TYPES = new RenderType[8];
+
     static {
         // 初始化元素标记图标纹理（复用mob_effect目录下的图标）
         ELEMENT_MARK_ICONS[0] = ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "textures/mob_effect/blood_mark.png");
@@ -62,6 +71,31 @@ public class ElementMarkIconRenderer {
         ELEMENT_MARK_ICONS[5] = ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "textures/mob_effect/ice_mark.png");
         ELEMENT_MARK_ICONS[6] = ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "textures/mob_effect/lightning_mark.png");
         ELEMENT_MARK_ICONS[7] = ResourceLocation.fromNamespaceAndPath(LegendaryMage.MODID, "textures/mob_effect/ender_mark.png");
+
+        // 为每个图标创建"透视 + 自发光"渲染类型
+        // 透视（NO_DEPTH_TEST）：图标无视深度测试，不会被实体模型/方块遮挡，始终完整显示
+        // 自发光（entityTranslucentEmissive shader）：不受光照影响，清晰明亮
+        for (int i = 0; i < ELEMENT_MARK_ICONS.length; i++) {
+            ResourceLocation texture = ELEMENT_MARK_ICONS[i];
+            RenderType.CompositeState state = RenderType.CompositeState.builder()
+                    .setShaderState(RenderType.RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setTextureState(new RenderType.TextureStateShard(texture, false, false))
+                    .setTransparencyState(RenderType.TRANSLUCENT_TRANSPARENCY)
+                    .setCullState(RenderType.NO_CULL)
+                    .setWriteMaskState(RenderType.COLOR_WRITE)
+                    .setOverlayState(RenderType.OVERLAY)
+                    .setDepthTestState(RenderType.NO_DEPTH_TEST)
+                    .createCompositeState(false);
+            ELEMENT_MARK_RENDER_TYPES[i] = RenderType.create(
+                    "legendarymage_mark_icon_" + i,
+                    DefaultVertexFormat.NEW_ENTITY,
+                    VertexFormat.Mode.QUADS,
+                    256,
+                    false,
+                    true,
+                    state
+            );
+        }
     }
 
     /**
@@ -100,15 +134,15 @@ public class ElementMarkIconRenderer {
     private static List<ElementMarkInfo> getEntityElementMarks(LivingEntity entity) {
         List<ElementMarkInfo> marks = new ArrayList<>();
 
-        // 检查每种元素标记（直接传入 DeferredHolder 作为 Holder<MobEffect>）
-        checkAndAddMark(entity, ElementType.BLOOD, ModEffects.BLOOD_MARK, marks);
-        checkAndAddMark(entity, ElementType.HOLY, ModEffects.HOLY_MARK, marks);
-        checkAndAddMark(entity, ElementType.ELDRITCH, ModEffects.ELDRITCH_MARK, marks);
-        checkAndAddMark(entity, ElementType.POISON, ModEffects.POISON_MARK, marks);
-        checkAndAddMark(entity, ElementType.FIRE, ModEffects.FIRE_MARK, marks);
-        checkAndAddMark(entity, ElementType.ICE, ModEffects.ICE_MARK, marks);
-        checkAndAddMark(entity, ElementType.LIGHTNING, ModEffects.LIGHTNING_MARK, marks);
-        checkAndAddMark(entity, ElementType.ENDER, ModEffects.ENDER_MARK, marks);
+        // 检查每种元素标记
+        checkAndAddMark(entity, ElementType.BLOOD, marks);
+        checkAndAddMark(entity, ElementType.HOLY, marks);
+        checkAndAddMark(entity, ElementType.ELDRITCH, marks);
+        checkAndAddMark(entity, ElementType.POISON, marks);
+        checkAndAddMark(entity, ElementType.FIRE, marks);
+        checkAndAddMark(entity, ElementType.ICE, marks);
+        checkAndAddMark(entity, ElementType.LIGHTNING, marks);
+        checkAndAddMark(entity, ElementType.ENDER, marks);
 
         return marks;
     }
@@ -118,18 +152,23 @@ public class ElementMarkIconRenderer {
      * 
      * @param entity 实体
      * @param elementType 元素类型
-     * @param effectHolder 效果 Holder
      * @param marks 标记列表
      */
-    private static void checkAndAddMark(LivingEntity entity, ElementType elementType, 
-                                        Holder<MobEffect> effectHolder, List<ElementMarkInfo> marks) {
-        MobEffectInstance instance = entity.getEffect(effectHolder);
+    private static void checkAndAddMark(LivingEntity entity, ElementType elementType, List<ElementMarkInfo> marks) {
+        MobEffect effect = elementType.getMarkEffect();
+        if (effect == null) {
+            return;
+        }
+        // 注意：不能直接使用 DeferredHolder 查询！
+        // 客户端从服务器同步的效果，其 key 是注册表缓存的 Holder.Reference 实例；
+        // 而 DeferredHolder 的 hashCode 基于 ResourceKey 内容，与 Reference（Object 默认 identity hash）不同，
+        // 直接查询会导致 HashMap miss，图标无法渲染。必须通过 wrapAsHolder 获取注册表持有的同一实例。
+        MobEffectInstance instance = entity.getEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect));
         if (instance != null) {
             int level = instance.getAmplifier() + 1; // 转换为1-3级
             marks.add(new ElementMarkInfo(elementType, level));
         }
     }
-
     /**
      * 渲染元素标记图标
      * 
@@ -154,17 +193,19 @@ public class ElementMarkIconRenderer {
         // 保存当前矩阵状态
         poseStack.pushPose();
 
-        // 移动到实体头顶上方（增加足够的高度避免被模型遮挡）
+        // 移动到实体头顶上方
+        // 图标中心位于碰撞箱顶部上方 heightOffset 处（默认 0.5 块），
+        // 由于图标半高约 0.18 块（0.36 * 0.5），图标底部恰好悬在碰撞箱上方约 5 像素（5/16 块）处。
         float entityHeight = entity.getBbHeight();
-        float yOffset = entityHeight + 0.8f + (float) heightOffset;
+        float yOffset = entityHeight + (float) heightOffset;
         poseStack.translate(0.0, yOffset, 0.0);
 
         // 让图标面向相机
         poseStack.mulPose(dispatcher.cameraOrientation());
 
-        // 应用缩放 - 使用负Y轴翻转，使图标正确朝向
+        // 应用缩放（正 Y：相机朝向坐标系中 +Y 为视觉上方，UV 按左上->右下映射即可正立）
         float iconScale = 0.03f * (float) scale;
-        poseStack.scale(iconScale, -iconScale, iconScale);
+        poseStack.scale(iconScale, iconScale, iconScale);
 
         // 渲染每个图标
         for (int i = 0; i < marks.size(); i++) {
@@ -190,17 +231,15 @@ public class ElementMarkIconRenderer {
 
     /**
      * 渲染单个图标
-     * 使用正确的三角形顺序渲染四边形
+     * 使用 QUADS 模式渲染四边形（4 个顶点，顺序：左上 -> 右上 -> 右下 -> 左下）
      * 
      * @param poseStack 姿势栈
      * @param buffer 缓冲源
      * @param mark 元素标记信息
      */
     private static void renderIcon(PoseStack poseStack, MultiBufferSource buffer, ElementMarkInfo mark) {
-        ResourceLocation texture = getIconTexture(mark.elementType);
-        
-        // 创建渲染类型 - 使用entityTranslucent支持透明度混合并避免Z-fighting闪烁
-        RenderType renderType = RenderType.entityTranslucent(texture);
+        // 使用"透视 + 自发光"渲染类型（索引与 ElementType 枚举顺序一致）
+        RenderType renderType = ELEMENT_MARK_RENDER_TYPES[mark.elementType.ordinal()];
         VertexConsumer vertexConsumer = buffer.getBuffer(renderType);
         
         // 获取矩阵
@@ -216,12 +255,12 @@ public class ElementMarkIconRenderer {
             alpha = 255; // 3级最亮
         }
         
-        // 渲染平面四边形 - 使用两个三角形
-        // 三角形1: 左下 -> 右下 -> 左上
-        // 三角形2: 右下 -> 右上 -> 左上
+        // 四边形（QUADS 模式，必须恰好 4 个顶点，顺序：左上 -> 右上 -> 右下 -> 左下）
+        // 注意：不能用 6 顶点（两个三角形）拼接，QUADS 模式每 4 个顶点才构成一个四边形，
+        // 6 顶点会被解释成 1.5 个 quad，导致图标对折/斜切！
         float size = ICON_SIZE * 10; // 放大尺寸以适应缩放
         
-        // 三角形1: 左下 -> 右下 -> 左上
+        // 顶点1: 左上 (-size, +size) UV(0,0)
         vertexConsumer.addVertex(matrix, -size, size, 0.0f)
                 .setColor(255, 255, 255, alpha)
                 .setUv(0.0f, 0.0f)
@@ -229,6 +268,7 @@ public class ElementMarkIconRenderer {
                 .setLight(15728880)
                 .setNormal(0.0f, 0.0f, 1.0f);
         
+        // 顶点2: 右上 (+size, +size) UV(1,0)
         vertexConsumer.addVertex(matrix, size, size, 0.0f)
                 .setColor(255, 255, 255, alpha)
                 .setUv(1.0f, 0.0f)
@@ -236,21 +276,7 @@ public class ElementMarkIconRenderer {
                 .setLight(15728880)
                 .setNormal(0.0f, 0.0f, 1.0f);
         
-        vertexConsumer.addVertex(matrix, -size, -size, 0.0f)
-                .setColor(255, 255, 255, alpha)
-                .setUv(0.0f, 1.0f)
-                .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(15728880)
-                .setNormal(0.0f, 0.0f, 1.0f);
-        
-        // 三角形2: 右下 -> 右上 -> 左上
-        vertexConsumer.addVertex(matrix, size, size, 0.0f)
-                .setColor(255, 255, 255, alpha)
-                .setUv(1.0f, 0.0f)
-                .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(15728880)
-                .setNormal(0.0f, 0.0f, 1.0f);
-        
+        // 顶点3: 右下 (+size, -size) UV(1,1)
         vertexConsumer.addVertex(matrix, size, -size, 0.0f)
                 .setColor(255, 255, 255, alpha)
                 .setUv(1.0f, 1.0f)
@@ -258,31 +284,13 @@ public class ElementMarkIconRenderer {
                 .setLight(15728880)
                 .setNormal(0.0f, 0.0f, 1.0f);
         
+        // 顶点4: 左下 (-size, -size) UV(0,1)
         vertexConsumer.addVertex(matrix, -size, -size, 0.0f)
                 .setColor(255, 255, 255, alpha)
                 .setUv(0.0f, 1.0f)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(15728880)
                 .setNormal(0.0f, 0.0f, 1.0f);
-    }
-
-    /**
-     * 获取图标纹理
-     * 
-     * @param elementType 元素类型
-     * @return 纹理资源位置
-     */
-    private static ResourceLocation getIconTexture(ElementType elementType) {
-        return switch (elementType) {
-            case BLOOD -> ELEMENT_MARK_ICONS[0];
-            case HOLY -> ELEMENT_MARK_ICONS[1];
-            case ELDRITCH -> ELEMENT_MARK_ICONS[2];
-            case POISON -> ELEMENT_MARK_ICONS[3];
-            case FIRE -> ELEMENT_MARK_ICONS[4];
-            case ICE -> ELEMENT_MARK_ICONS[5];
-            case LIGHTNING -> ELEMENT_MARK_ICONS[6];
-            case ENDER -> ELEMENT_MARK_ICONS[7];
-        };
     }
 
     /**

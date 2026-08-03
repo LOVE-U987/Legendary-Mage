@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AAA",
+    "ACA",
+    "AAA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "C": {
+      "item": "irons_spellbooks:amethyst_resonance_charm"
+    }
+  },
+  "result": {
+    "id": "legendarymage:music_disc_when_you_look_at_me",
+    "count": 1
+  }
+}

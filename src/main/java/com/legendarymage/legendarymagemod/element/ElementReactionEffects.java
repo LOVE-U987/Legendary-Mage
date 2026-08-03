@@ -263,7 +263,7 @@ public class ElementReactionEffects {
     /**
      * 冰火反应
      * 单次伤害加成
-     * 加成后的伤害 = 原伤害 * (冰系加成 + 火系加成) / 2
+     * 伤害 = 对应buff等级(元素标记等级) × (冰系强度 + 火系强度) × 2.5
      */
     private static void handleIceFire(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
                                        ElementType existingElement, ElementType newElement, int markLevel) {
@@ -271,13 +271,12 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 获取冰系和火系加成（铁魔法属性默认值为1.0，需要减去基础值）
+        // 获取冰系和火系流派强度（原始属性值，铁魔法默认值为1.0）
         double icePower = getAttributeValue(attacker, AttributeRegistry.ICE_SPELL_POWER);
         double firePower = getAttributeValue(attacker, AttributeRegistry.FIRE_SPELL_POWER);
 
-        // 计算伤害倍数（减去基础值1.0后计算加成）
-        double damageMultiplier = ((icePower - 1.0) + (firePower - 1.0)) / 2.0;
-        float bonusDamage = 5.0f * (float) Math.max(0, damageMultiplier) * markLevel;
+        // 伤害 = 对应buff等级 × 双方流派强度总和 × 2.5
+        float bonusDamage = markLevel * (float) (icePower + firePower) * 2.5f;
 
         // 造成额外伤害
         if (bonusDamage > 0) {
@@ -294,7 +293,7 @@ public class ElementReactionEffects {
     /**
      * 木火反应
      * 挂上烈焰Buff
-     * Buff等级 = 1 * (火系加成 + 毒系加成) / 2
+     * Buff等级 = 对应buff等级(元素标记等级) × (火系强度 + 毒系强度)
      */
     private static void handlePoisonFire(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
                                           ElementType existingElement, ElementType newElement, int markLevel) {
@@ -302,13 +301,12 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 获取火系和毒系加成（铁魔法属性默认值为1.0，需要减去基础值）
+        // 获取火系和毒系流派强度（原始属性值，铁魔法默认值为1.0）
         double firePower = getAttributeValue(attacker, AttributeRegistry.FIRE_SPELL_POWER);
         double poisonPower = getAttributeValue(attacker, AttributeRegistry.NATURE_SPELL_POWER);
 
-        // 计算Buff等级（基于加成值，不是原始值）
-        double powerBonus = ((firePower - 1.0) + (poisonPower - 1.0)) / 2.0;
-        int buffLevel = (int) (powerBonus * 2.0); // 每0.5加成=1级
+        // 自我加强公式：Buff等级 = 对应buff等级 × 双方流派强度总和
+        int buffLevel = (int) (markLevel * (firePower + poisonPower));
         buffLevel = Math.max(1, Math.min(buffLevel, 3)); // 限制在1-3级
 
         // 施加烈焰Buff (PyroFlameEffect)
@@ -331,7 +329,7 @@ public class ElementReactionEffects {
     /**
      * 雷火反应
      * 在实体位置落雷
-     * 伤害计算和"冰火"同理
+     * 伤害 = 对应buff等级(元素标记等级) × (雷系强度 + 火系强度) × 2.5
      */
     private static void handleLightningFire(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
                                              ElementType existingElement, ElementType newElement, int markLevel) {
@@ -339,13 +337,12 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 获取雷系和火系加成（铁魔法属性默认值为1.0，需要减去基础值）
+        // 获取雷系和火系流派强度（原始属性值，铁魔法默认值为1.0）
         double lightningPower = getAttributeValue(attacker, AttributeRegistry.LIGHTNING_SPELL_POWER);
         double firePower = getAttributeValue(attacker, AttributeRegistry.FIRE_SPELL_POWER);
 
-        // 计算伤害倍数（减去基础值1.0后计算加成）
-        double damageMultiplier = ((lightningPower - 1.0) + (firePower - 1.0)) / 2.0;
-        float lightningDamage = 8.0f * (float) Math.max(0, damageMultiplier) * markLevel;
+        // 伤害 = 对应buff等级 × 双方流派强度总和 × 2.5
+        float lightningDamage = markLevel * (float) (lightningPower + firePower) * 2.5f;
 
         // 在目标位置召唤闪电
         Vec3 pos = target.position();
@@ -374,7 +371,8 @@ public class ElementReactionEffects {
 
     /**
      * 神圣-猩红反应
-     * 单次伤害加成，伤害计算和"冰火"同理
+     * 单次伤害加成
+     * 伤害 = 对应buff等级(元素标记等级) × (神圣强度 + 猩红强度) × 2.5
      */
     private static void handleHolyBlood(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
                                          ElementType existingElement, ElementType newElement, int markLevel) {
@@ -382,13 +380,12 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 获取神圣和猩红加成（铁魔法属性默认值为1.0，需要减去基础值）
+        // 获取神圣和猩红流派强度（原始属性值，铁魔法默认值为1.0）
         double holyPower = getAttributeValue(attacker, AttributeRegistry.HOLY_SPELL_POWER);
         double bloodPower = getAttributeValue(attacker, AttributeRegistry.BLOOD_SPELL_POWER);
 
-        // 计算伤害倍数（减去基础值1.0后计算加成）
-        double damageMultiplier = ((holyPower - 1.0) + (bloodPower - 1.0)) / 2.0;
-        float bonusDamage = 6.0f * (float) Math.max(0, damageMultiplier) * markLevel;
+        // 伤害 = 对应buff等级 × 双方流派强度总和 × 2.5
+        float bonusDamage = markLevel * (float) (holyPower + bloodPower) * 2.5f;
 
         // 造成额外伤害（神圣伤害）
         if (bonusDamage > 0) {
@@ -406,7 +403,7 @@ public class ElementReactionEffects {
      * 邪术-猩红反应
      * 给与施法者Buff"混沌"
      * "混沌"Buff：法术强度+10%，每一等级+5%
-     * 等级计算：基于邪术和猩红加成的平均值
+     * Buff等级 = 对应buff等级(元素标记等级) × (邪术强度 + 猩红强度)
      */
     private static void handleEldritchBlood(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
                                              ElementType existingElement, ElementType newElement, int markLevel) {
@@ -414,13 +411,12 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 获取邪术和猩红加成（铁魔法属性默认值为1.0，需要减去基础值）
+        // 获取邪术和猩红流派强度（原始属性值，铁魔法默认值为1.0）
         double eldritchPower = getAttributeValue(attacker, AttributeRegistry.ELDRITCH_SPELL_POWER);
         double bloodPower = getAttributeValue(attacker, AttributeRegistry.BLOOD_SPELL_POWER);
 
-        // 计算Buff等级（基于加成值）
-        double powerBonus = ((eldritchPower - 1.0) + (bloodPower - 1.0)) / 2.0;
-        int buffLevel = (int) (powerBonus * 3.0); // 每0.33加成=1级
+        // 自我加强公式：Buff等级 = 对应buff等级 × 双方流派强度总和
+        int buffLevel = (int) (markLevel * (eldritchPower + bloodPower));
         buffLevel = Math.max(1, Math.min(buffLevel, 5)); // 限制在1-5级
 
         // 移除旧的混沌Buff效果（如果存在）
@@ -462,8 +458,8 @@ public class ElementReactionEffects {
      * 末影与任意反应
      * 给与施法者Buff"终末回响"
      * "终末回响"Buff：加成施法者法术抗性与法术强度
-     * +末影加成/2的法术抗性
-     * +末影加成/3的法术强度
+     * 加强值 = 对应buff等级(元素标记等级) × (末影强度 + 另一元素强度)
+     * 其中法术抗性 = 加强值 × 抗性比例，法术强度 = 加强值 × 强度比例
      *
      * 注意：此方法的属性修饰符管理采用"先移除旧值→添加效果→替换为动态值"的三步策略
      * 虽然存在极短时间窗口（1-2 tick）内属性值为构造函数的显示用固定值，
@@ -476,13 +472,15 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 获取末影加成（铁魔法属性默认值为1.0）
-        double enderPower = getAttributeValue(attacker, AttributeRegistry.ENDER_SPELL_POWER);
+        // 获取末影与另一元素的流派强度（原始属性值，铁魔法默认值为1.0）
+        ElementType otherElement = (existingElement == ElementType.ENDER) ? newElement : existingElement;
+        double enderPower = getElementPower(attacker, ElementType.ENDER);
+        double otherPower = getElementPower(attacker, otherElement);
 
-        // 计算加成值（减去基础值1.0后计算）
-        double enderBonus = enderPower - 1.0;
-        double spellPowerBonus = enderBonus * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.getSpellPowerRatio();
-        double spellResistBonus = enderBonus * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.getSpellResistRatio();
+        // 自我加强公式：加强值 = 对应buff等级 × 双方流派强度总和
+        double reinforceValue = markLevel * (enderPower + otherPower);
+        double spellPowerBonus = reinforceValue * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.getSpellPowerRatio();
+        double spellResistBonus = reinforceValue * com.legendarymage.legendarymagemod.effect.EnderEchoBuffEffect.getSpellResistRatio();
 
         // 第一步：完全移除旧的终末回响效果及其所有动态属性修饰符（如果存在）
         removeOldEnderEchoEffect(attacker);
@@ -608,6 +606,36 @@ public class ElementReactionEffects {
             return entity.getAttributeValue(attribute);
         }
         return 1.0; // 铁魔法属性默认值是1.0（100%）
+    }
+
+    /**
+     * 根据元素类型获取对应的流派法术强度属性
+     *
+     * @param elementType 元素类型
+     * @return 流派法术强度属性
+     */
+    private static Holder<Attribute> getElementPowerAttribute(ElementType elementType) {
+        return switch (elementType) {
+            case ICE -> AttributeRegistry.ICE_SPELL_POWER;
+            case FIRE -> AttributeRegistry.FIRE_SPELL_POWER;
+            case LIGHTNING -> AttributeRegistry.LIGHTNING_SPELL_POWER;
+            case HOLY -> AttributeRegistry.HOLY_SPELL_POWER;
+            case BLOOD -> AttributeRegistry.BLOOD_SPELL_POWER;
+            case ELDRITCH -> AttributeRegistry.ELDRITCH_SPELL_POWER;
+            case ENDER -> AttributeRegistry.ENDER_SPELL_POWER;
+            case POISON -> AttributeRegistry.NATURE_SPELL_POWER;
+        };
+    }
+
+    /**
+     * 获取实体指定元素的流派强度（原始属性值，铁魔法默认值为1.0）
+     *
+     * @param entity      实体
+     * @param elementType 元素类型
+     * @return 流派强度属性值，无属性时返回1.0
+     */
+    private static double getElementPower(LivingEntity entity, ElementType elementType) {
+        return getAttributeValue(entity, getElementPowerAttribute(elementType));
     }
 
     /**
@@ -879,8 +907,12 @@ public class ElementReactionEffects {
             return;
         }
 
-        // 计算伤害 = Buff 等级 × 5
-        double damage = electrocutedLevel * 5.0;
+        // 获取雷系和毒系流派强度（原始属性值，铁魔法默认值为1.0）
+        double lightningPower = getAttributeValue(attacker, AttributeRegistry.LIGHTNING_SPELL_POWER);
+        double poisonPower = getAttributeValue(attacker, AttributeRegistry.NATURE_SPELL_POWER);
+
+        // 伤害 = 对应buff等级(感电Buff等级) × 双方流派强度总和 × 2.5
+        double damage = electrocutedLevel * (lightningPower + poisonPower) * 2.5;
 
         // 获取 3 格范围内的所有生物
         double range = 3.0;
@@ -916,6 +948,7 @@ public class ElementReactionEffects {
     /**
      * 冰雷反应
      * 获得避雷针 Buff，减少雷系和冰系元素抗性，每级减少 5%
+     * Buff等级 = 对应buff等级(元素标记等级) × (冰系强度 + 雷系强度)
      * 注意：避雷针 Buff 是给予敌人的 Debuff，让敌人减少雷冰抗性
      */
     private static void handleIceLightning(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
@@ -924,10 +957,14 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 计算 Buff 等级（基于元素标记等级，受最大层数限制）
+        // 获取冰系和雷系流派强度（原始属性值，铁魔法默认值为1.0）
+        double icePower = getAttributeValue(attacker, AttributeRegistry.ICE_SPELL_POWER);
+        double lightningPower = getAttributeValue(attacker, AttributeRegistry.LIGHTNING_SPELL_POWER);
+
+        // 自我加强公式：Buff等级 = 对应buff等级 × 双方流派强度总和，受最大层数限制
         int maxStacks = LightningRodBuffEffect.getMaxStacks();
         int durationSeconds = LightningRodBuffEffect.getDurationSeconds();
-        int buffLevel = Math.min(markLevel, maxStacks);
+        int buffLevel = Math.min((int) (markLevel * (icePower + lightningPower)), maxStacks);
 
         // 施加避雷针 Buff 给目标（敌人）
         // 这样施法者才能对带有避雷针 Buff 的敌人造成更高的雷/冰伤害
@@ -950,6 +987,7 @@ public class ElementReactionEffects {
     /**
      * 暗毒反应
      * 获得瘟疫 Buff，可叠加，每级减 2% 血量上限
+     * Buff等级 = 对应buff等级(元素标记等级) × (血系强度 + 毒系强度)
      * 死亡时 25% 变为我方僵尸，75% 毒爆
      */
     private static void handleBloodPoison(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
@@ -958,10 +996,14 @@ public class ElementReactionEffects {
 
         if (attacker == null) return;
 
-        // 计算 Buff 等级（基于元素标记等级，受最大层数限制）
+        // 获取血系和毒系流派强度（原始属性值，铁魔法默认值为1.0）
+        double bloodPower = getAttributeValue(attacker, AttributeRegistry.BLOOD_SPELL_POWER);
+        double poisonPower = getAttributeValue(attacker, AttributeRegistry.NATURE_SPELL_POWER);
+
+        // 自我加强公式：Buff等级 = 对应buff等级 × 双方流派强度总和，受最大层数限制
         int maxStacks = PlagueBuffEffect.getMaxStacks();
         int durationSeconds = PlagueBuffEffect.getDurationSeconds();
-        int buffLevel = Math.min(markLevel, maxStacks);
+        int buffLevel = Math.min((int) (markLevel * (bloodPower + poisonPower)), maxStacks);
 
         // 施加瘟疫 Buff
         MobEffect plagueEffect = ModEffects.PLAGUE_BUFF.get();

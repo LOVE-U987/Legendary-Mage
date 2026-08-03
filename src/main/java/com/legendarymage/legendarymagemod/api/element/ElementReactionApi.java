@@ -39,7 +39,7 @@ public final class ElementReactionApi {
 
     /**
      * 处理元素伤害事件
-     * 当实体受到特定元素伤害时调用，用于尝试升级对应元素标记
+     * 当实体受到特定元素攻击时调用，用于尝试施加或更新对应元素标记（75%概率）
      *
      * @param serverLevel 服务器世界
      * @param target      被攻击的目标
@@ -59,7 +59,7 @@ public final class ElementReactionApi {
      * @param target      目标实体
      * @param applier     施加者
      * @param elementType 元素类型
-     * @param markLevel   标记等级（1-3）
+     * @param markLevel   标记等级（1-5）
      * @return 是否成功施加
      */
     public static boolean applyMark(ServerLevel serverLevel, LivingEntity target, LivingEntity applier,

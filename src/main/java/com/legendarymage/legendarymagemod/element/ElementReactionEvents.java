@@ -1,32 +1,41 @@
 package com.legendarymage.legendarymagemod.element;
 
+import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
+import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.command.ElementMappingHotReload;
-import com.legendarymage.legendarymagemod.data.SchoolElementMappingRegistry;
 import com.legendarymage.legendarymagemod.effect.EnderMarkEffect;
 import com.legendarymage.legendarymagemod.effect.HolyMarkEffect;
-import com.legendarymage.legendarymagemod.school.ElementSchoolRegistry;
+import com.legendarymage.legendarymagemod.effect.IceMarkEffect;
 import io.redspace.ironsspellbooks.api.events.SpellDamageEvent;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 /**
  * 元素反应事件处理器
- * 负责监听各种事件并触发元素反应系统
- * 
+ * 负责监听各种事件并驱动元素异常系统
+ *
+ * 【重写 v3.1】
+ * - 元素异常的给予判定由"对应流派"决定（不再根据伤害类型关键字匹配）
+ * - 冰冻/神圣打击/回响打击等"攻击触发"效果仅在铁魔法法术命中时判定
+ * - 黑暗异常 3 级以上每级 +5% 易伤（受伤倍率提升）
+ * - 火焰异常死亡时按 buff 等级半径爆炸
+ *
  * @author Love_U
- * @version 3.0.0
+ * @version 3.1.0
  */
 @EventBusSubscriber(modid = LegendaryMage.MODID)
 public class ElementReactionEvents {
@@ -43,15 +52,17 @@ public class ElementReactionEvents {
      * @param message 日志消息
      */
     private static void debugLog(String message) {
-        if (com.legendarymage.legendarymagemod.Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
-            com.legendarymage.legendarymagemod.ModLogger.element("[元素反应事件] {}", message);
+        if (Config.ELEMENT_REACTION_DEBUG_OUTPUT.get()) {
+            ModLogger.element("[元素反应事件] {}", message);
         }
     }
 
     /**
      * 监听法术伤害事件（铁魔法模组）
-     * 当实体受到铁魔法法术伤害时，施加对应的元素标记
-     * 
+     * 当实体受到铁魔法法术伤害时：
+     * 1. 按法术流派施加/更新对应的元素异常（75%概率）
+     * 2. 判定冰冻/神圣打击/回响打击（仅法术触发）
+     *
      * @param event 法术伤害事件
      */
     @SubscribeEvent
@@ -65,7 +76,7 @@ public class ElementReactionEvents {
         SpellDamageSource spellDamageSource = event.getSpellDamageSource();
         float damage = event.getAmount();
 
-        // 从法术伤害源获取攻击者和法术流派
+        // 从法术伤害源获取攻击者
         LivingEntity attacker = null;
         if (spellDamageSource != null && spellDamageSource.getEntity() instanceof LivingEntity livingAttacker) {
             attacker = livingAttacker;
@@ -83,11 +94,10 @@ public class ElementReactionEvents {
                 schoolType != null ? schoolType.getId().getPath() : "未知",
                 damage));
 
-        // 处理法术伤害，施加元素标记
+        // 1. 按流派施加元素异常
         if (schoolType != null) {
-            // 检查是否是元素流派的法术
             if (isElementSchool(schoolType)) {
-                // 元素流派的法术：随机赋予冰、火、雷元素标记
+                // 元素流派法术：随机赋予冰、火、雷元素标记
                 handleElementSchoolDamage(serverLevel, target, attacker, damage);
             } else {
                 // 检查是否有自定义的元素标记映射（包括热加载的运行时映射）
@@ -96,17 +106,14 @@ public class ElementReactionEvents {
                     // 使用自定义映射的元素标记（支持热加载）
                     handleCustomSchoolDamage(serverLevel, target, attacker, schoolId, damage);
                 } else {
-                    // 其他流派的法术：按正常逻辑处理
+                    // 其他流派：按对应流派判定元素异常
                     ElementReactionManager.onSpellDamage(serverLevel, target, attacker, schoolType, damage);
                 }
             }
         }
 
-        // 处理3级光明标记的神圣打击（法术触发）
-        // 当目标受到法术伤害时，如果目标有3级光明标记，触发神圣打击
-        // 处理3级末影标记的回响打击（法术触发）
-        // 当攻击者对目标造成法术伤害时，如果攻击者有3级末影标记，50%几率触发回响打击
-        triggerSpecialMarkEffects(target, attacker, damage);
+        // 2. 法术触发的特殊标记效果（冰冻/神圣打击/回响打击）
+        triggerSpecialMarkEffects(target, attacker);
     }
 
     /**
@@ -116,22 +123,20 @@ public class ElementReactionEvents {
      * @return 是否是元素流派
      */
     private static boolean isElementSchool(io.redspace.ironsspellbooks.api.spells.SchoolType schoolType) {
-        // 检查是否是元素流派
-        // 元素流派的ID是 "legendarymage:element"
         return schoolType.getId().toString().equals("legendarymage:element") ||
                schoolType.getId().getPath().equals("element");
     }
 
     /**
      * 处理元素流派的法术伤害
-     * 随机赋予冰、火、雷元素标记
+     * 随机赋予冰、火、雷元素标记（该流派的设计即为交替性元素伤害）
      *
      * @param serverLevel 服务器世界
      * @param target      目标实体
      * @param attacker    攻击者
      * @param damage      伤害值
      */
-    private static void handleElementSchoolDamage(ServerLevel serverLevel, LivingEntity target, 
+    private static void handleElementSchoolDamage(ServerLevel serverLevel, LivingEntity target,
                                                    LivingEntity attacker, float damage) {
         // 随机选择一个元素类型（火、冰、雷）
         ElementType[] elementTypes = {ElementType.FIRE, ElementType.ICE, ElementType.LIGHTNING};
@@ -143,14 +148,12 @@ public class ElementReactionEvents {
                 randomElement.getId(),
                 damage));
 
-        // 使用 ElementReactionManager 处理元素伤害
         ElementReactionManager.onElementDamage(serverLevel, target, attacker, randomElement, damage);
     }
 
     /**
      * 处理自定义流派的法术伤害
-     * 根据数据包配置的映射施加对应的元素标记
-     * 使用热加载系统获取最新的运行时配置
+     * 根据数据包配置的映射施加对应的元素标记（使用热加载系统获取最新配置）
      *
      * @param serverLevel 服务器世界
      * @param target      目标实体
@@ -163,7 +166,6 @@ public class ElementReactionEvents {
         // 使用热加载系统获取元素标记（自动合并数据包配置和运行时配置）
         List<ElementType> elementMarks = ElementMappingHotReload.getElementMarksForSchool(schoolId);
 
-        // 检查是否有任何元素标记
         if (elementMarks.isEmpty()) {
             return;
         }
@@ -178,18 +180,19 @@ public class ElementReactionEvents {
                 elementType.getId(),
                 damage));
 
-        // 使用 ElementReactionManager 处理元素伤害
         ElementReactionManager.onElementDamage(serverLevel, target, attacker, elementType, damage);
     }
 
     /**
-     * 监听实体受到伤害事件（通用，兼容其他模组）
-     * 用于检测法术伤害并施加对应的元素标记
+     * 监听实体受到伤害事件（前置阶段）
+     * 1. 黑暗异常易伤：3级以上每一级 +5% 易伤（受伤倍率提升）
+     * 2. 法术伤害的后备处理（SpellDamageEvent 未触发时的双路保障，
+     *    元素施加由 ElementReactionManager 内部同 tick 去重）
      *
      * @param event 伤害事件
      */
     @SubscribeEvent
-    public static void onLivingDamage(LivingDamageEvent.Post event) {
+    public static void onLivingDamage(LivingDamageEvent.Pre event) {
         // 只在服务器端处理
         if (!(event.getEntity().level() instanceof ServerLevel serverLevel)) {
             return;
@@ -197,23 +200,29 @@ public class ElementReactionEvents {
 
         LivingEntity target = event.getEntity();
         DamageSource damageSource = event.getSource();
-        float damage = event.getNewDamage();
 
-        // 获取攻击者
-        LivingEntity attacker = null;
-        if (damageSource.getEntity() instanceof LivingEntity livingAttacker) {
-            attacker = livingAttacker;
+        // 1. 黑暗异常易伤：3级以上每一级 +5% 易伤
+        int bloodLevel = ElementMarkData.getMarkLevel(target, ElementType.BLOOD);
+        if (bloodLevel >= com.legendarymage.legendarymagemod.effect.BloodMarkEffect.VULNERABILITY_THRESHOLD_LEVEL) {
+            float multiplier = com.legendarymage.legendarymagemod.effect.BloodMarkEffect.calculateVulnerabilityMultiplier(bloodLevel);
+            event.setNewDamage(event.getNewDamage() * multiplier);
+
+            debugLog(String.format("%s 受到黑暗异常易伤加成: x%.2f (标记%d级)",
+                    target.getName().getString(), multiplier, bloodLevel));
         }
 
-        // 检查是否是铁魔法的法术伤害
+        // 2. 法术伤害后备处理（双路保障）
         if (damageSource instanceof SpellDamageSource spellDamageSource) {
-            // 尝试从 SpellDamageSource 中提取法术流派并施加元素标记（作为双路保障）
-            // 注：SpellDamageEvent 可能因为版本兼容性问题未触发，
-            // 因此这里作为后备方案仍然尝试施加标记
+            LivingEntity attacker = null;
+            if (spellDamageSource.getEntity() instanceof LivingEntity livingAttacker) {
+                attacker = livingAttacker;
+            }
+
             io.redspace.ironsspellbooks.api.spells.SchoolType schoolType = null;
             if (spellDamageSource.spell() != null) {
                 schoolType = spellDamageSource.spell().getSchoolType();
             }
+
             if (schoolType != null) {
                 ElementType elementType = ElementType.fromSchoolType(schoolType);
                 if (elementType != null) {
@@ -222,38 +231,69 @@ public class ElementReactionEvents {
                             target.getName().getString(),
                             schoolType.getId().getPath(),
                             elementType.getId(),
-                            damage));
-                    ElementReactionManager.onElementDamage(serverLevel, target, attacker, elementType, damage);
+                            event.getNewDamage()));
+                    ElementReactionManager.onElementDamage(serverLevel, target, attacker, elementType, event.getNewDamage());
                 }
             }
-
-            // 处理神圣打击和回响打击
-            triggerSpecialMarkEffects(target, attacker, damage);
-            return;
-        }
-
-        // 处理3级光明标记的神圣打击和3级末影标记的回响打击（通用伤害触发）
-        triggerSpecialMarkEffects(target, attacker, damage);
-
-        // 尝试从伤害源获取元素类型（兼容其他模组的法术）
-        ElementType elementType = getElementTypeFromDamageSource(damageSource);
-
-        if (elementType != null) {
-            debugLog(String.format("检测到元素伤害(通用): %s -> %s, 元素: %s, 伤害: %.1f",
-                    attacker != null ? attacker.getName().getString() : "环境",
-                    target.getName().getString(),
-                    elementType.getId(),
-                    damage));
-
-            // 处理元素伤害，施加或升级标记
-            ElementReactionManager.onElementDamage(serverLevel, target, attacker, elementType, damage);
         }
     }
 
     /**
+     * 监听实体死亡事件
+     * 火焰异常：死亡后形成与 buff 等级大小相同范围的爆炸
+     *
+     * @param event 死亡事件
+     */
+    @SubscribeEvent
+    public static void onLivingDeath(LivingDeathEvent event) {
+        // 只在服务器端处理
+        if (!(event.getEntity().level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        LivingEntity entity = event.getEntity();
+
+        // 检查火焰异常等级（1-5），爆炸范围 = buff等级
+        int fireLevel = ElementMarkData.getMarkLevel(entity, ElementType.FIRE);
+        if (fireLevel <= 0) {
+            return;
+        }
+
+        float radius = fireLevel;
+        double x = entity.getX();
+        double y = entity.getY() + entity.getBbHeight() * 0.5;
+        double z = entity.getZ();
+
+        // 播放爆炸粒子效果
+        serverLevel.sendParticles(
+                ParticleTypes.LAVA,
+                x, y, z,
+                (int) (radius * 5), 1.0, 1.0, 1.0,
+                0.1
+        );
+        serverLevel.sendParticles(
+                ParticleTypes.EXPLOSION,
+                x, y, z,
+                1, 0.5, 0.5, 0.5,
+                0
+        );
+
+        // 创建爆炸（不破坏地形）
+        serverLevel.explode(
+                null,
+                x, y, z,
+                radius,
+                Level.ExplosionInteraction.NONE
+        );
+
+        debugLog(String.format("%s 因火焰异常死亡，触发等级 %d 的爆炸",
+                entity.getName().getString(), fireLevel));
+    }
+
+    /**
      * 监听世界tick事件
-     * 更新所有元素标记的计时器
-     * 
+     * 更新元素反应管理器
+     *
      * @param event 世界tick事件
      */
     @SubscribeEvent
@@ -263,102 +303,24 @@ public class ElementReactionEvents {
             return;
         }
 
-        // 更新元素反应管理器
         ElementReactionManager.tick(serverLevel);
     }
 
     /**
-     * 触发特殊标记效果（神圣打击和回响打击）
-     * 统一处理3级光明标记的神圣打击和3级末影标记的回响打击
-     * 此方法被多个事件处理器调用，避免代码重复
+     * 触发特殊标记效果（仅铁魔法法术触发）
+     * 统一处理冰冻、神圣打击和回响打击
      *
-     * @param target 受到伤害的目标实体（用于检查神圣标记）
-     * @param attacker 造成伤害的攻击者（用于检查末影标记，可为null）
-     * @param damage 伤害值（用于回响打击计算）
+     * @param target   受到法术伤害的目标实体
+     * @param attacker 造成伤害的攻击者（可为null）
      */
-    private static void triggerSpecialMarkEffects(LivingEntity target, LivingEntity attacker, float damage) {
-        // 处理3级光明标记的神圣打击
-        // 当目标受到伤害时，如果目标有3级光明标记，触发神圣打击
-        HolyMarkEffect.tryTriggerHolyStrike(target);
+    private static void triggerSpecialMarkEffects(LivingEntity target, LivingEntity attacker) {
+        // 冰冻异常：3级后的攻击 5% 概率冰冻3秒，CD 5秒
+        IceMarkEffect.tryTriggerFreeze(target);
 
-        // 处理3级末影标记的回响打击
-        // 当攻击者对目标造成伤害时，如果攻击者有3级末影标记，50%几率触发回响打击
-        if (attacker != null) {
-            EnderMarkEffect.tryTriggerEchoStrike(attacker, target, damage);
-        }
-    }
+        // 光明异常：3级以上的攻击可触发神圣打击，CD 2秒（伤害由公式计算）
+        HolyMarkEffect.tryTriggerHolyStrike(target, attacker);
 
-    /**
-     * 从伤害源获取元素类型
-     * 根据伤害类型判断对应的元素
-     * 支持多种常见的伤害类型命名，兼容其他模组
-     *
-     * @param damageSource 伤害源
-     * @return 对应的元素类型，如果不是元素伤害则返回null
-     */
-    private static ElementType getElementTypeFromDamageSource(DamageSource damageSource) {
-        if (damageSource == null) {
-            return null;
-        }
-
-        String damageType = damageSource.type().msgId().toLowerCase();
-
-        // 检查各种元素伤害类型 - 火系
-        // 注意：排除 "onFire"，这是原版火焰伤害（如烈焰Buff造成的伤害），不应该刷新火焰标记
-        if (damageType.contains("fire") || damageType.contains("flame") || damageType.contains("lava")
-                || damageType.contains("burn") || damageType.contains("heat") || damageType.contains("inferno")) {
-            // 排除原版火焰伤害 "onFire"，避免烈焰Buff的伤害刷新火焰标记
-            if (!damageType.equals("onfire")) {
-                return ElementType.FIRE;
-            }
-        }
-        
-        // 冰系
-        if (damageType.contains("ice") || damageType.contains("frost") || damageType.contains("freeze") 
-                || damageType.contains("cold") || damageType.contains("snow") || damageType.contains("chill")) {
-            // 排除原版冰冻伤害，避免原版冰冻效果刷新冰冻异常标记
-            if (!damageType.equals("freeze") && !damageType.equals("frozen")) {
-                return ElementType.ICE;
-            }
-        }
-        
-        // 雷系
-        if (damageType.contains("lightning") || damageType.contains("thunder") || damageType.contains("electric") 
-                || damageType.contains("shock") || damageType.contains("volt") || damageType.contains("storm")) {
-            return ElementType.LIGHTNING;
-        }
-        
-        // 毒系/自然系
-        if (damageType.contains("poison") || damageType.contains("toxic") || damageType.contains("nature") 
-                || damageType.contains("venom") || damageType.contains("acid") || damageType.contains("corrosive")) {
-            return ElementType.POISON;
-        }
-        
-        // 神圣系
-        if (damageType.contains("holy") || damageType.contains("divine") || damageType.contains("light") 
-                || damageType.contains("radiant") || damageType.contains("blessed") || damageType.contains("sacred")) {
-            return ElementType.HOLY;
-        }
-        
-        // 血系/黑暗系
-        if (damageType.contains("blood") || damageType.contains("dark") || damageType.contains("wither") 
-                || damageType.contains("shadow") || damageType.contains("necrotic") || damageType.contains("unholy")) {
-            return ElementType.BLOOD;
-        }
-        
-        // 末影系/虚空系
-        if (damageType.contains("ender") || damageType.contains("void") || damageType.contains("teleport") 
-                || damageType.contains("rift") || damageType.contains("dimensional")) {
-            return ElementType.ENDER;
-        }
-        
-        // 邪术系/诅咒系
-        // 注意：不包含 "magic"，因为普通魔法伤害不应被识别为邪术
-        if (damageType.contains("eldritch") || damageType.contains("curse")
-                || damageType.contains("arcane") || damageType.contains("spell") || damageType.contains("mystic")) {
-            return ElementType.ELDRITCH;
-        }
-
-        return null;
+        // 末影异常：3级以上的攻击可触发回响打击，CD 1秒（伤害由公式计算）
+        EnderMarkEffect.tryTriggerEchoStrike(attacker, target);
     }
 }
