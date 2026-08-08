@@ -51,9 +51,6 @@ Adds new spells, items, and features to enhance your magical journey.
 
 Requires:
 - Iron's Spells 'n Spellbooks 1.21.1-3.0.0+
-- GeckoLib 4.6+
-- Curios API
-- Player Animator
 '''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
@@ -104,29 +101,8 @@ Requires:
     side="BOTH"
     reason="This mod is an addon for Iron's Spells 'n Spellbooks"
 
-# GeckoLib dependency (required by Iron's Spells)
-[[dependencies.${mod_id}]]
-    modId="geckolib"
-    type="required"
-    versionRange="[4.8.3,4.9)"
-    ordering="AFTER"
-    side="BOTH"
-
-# Curios API dependency
-[[dependencies.${mod_id}]]
-    modId="curios"
-    type="required"
-    versionRange="[9.5.1,9.6)"
-    ordering="AFTER"
-    side="BOTH"
-
-# Player Animator dependency
-[[dependencies.${mod_id}]]
-    modId="playeranimator"
-    type="required"
-    versionRange="[2.0.0,2.1)"
-    ordering="AFTER"
-    side="CLIENT"
+# 注意: GeckoLib / Curios / Player Animator 均为 Iron's Spells 的传递依赖,
+# 本项目源码不直接引用其 API, 因此不再声明为强制前置, 由铁魔法自动带出。
 
 # Patchouli dependency (optional guidebook support)
 [[dependencies.${mod_id}]]

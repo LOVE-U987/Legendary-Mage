@@ -215,21 +215,21 @@ dependencies {
     // Example project dependency using a sister or child project:
     // implementation project(":myproject")
 
-    // Iron's Spells 'n Spellbooks - Maven 坐标（code.redspace.io 下载超时，改用 CurseMaven）
-    // implementation "io.redspace:irons_spellbooks:${irons_spells_version}"
+    // Iron's Spells 'n Spellbooks (CurseMaven; code.redspace.io 下载超时故未用官方 Maven)
     implementation "curse.maven:irons-spells-n-spellbooks-855414:7402503"
-    // Iron's Lib 运行时依赖（code.redspace.io 下载超时，改用 CurseMaven）
-    // localRuntime "io.redspace:irons_lib:${irons_lib_version}"
+    // Iron's Lib 运行时依赖 (CurseMaven)
     localRuntime "curse.maven:irons-lib-1492763:7907336"
 
-    // GeckoLib (渲染库)
-    implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:${geckolib_version}"
+    // GeckoLib (渲染库) - 仅编译期兼容 Iron's Spells API 暴露的类型 + 本地开发运行,
+    // 不再作为项目前置 (compileOnly 不发布依赖, localRuntime 仅本地 dev classpath)
+    compileOnly "software.bernie.geckolib:geckolib-neoforge-1.21.1:${geckolib_version}"
+    localRuntime "software.bernie.geckolib:geckolib-neoforge-1.21.1:${geckolib_version}"
 
-    // PlayerAnimator (动画库) - Modrinth Maven (原 CurseMaven 6007564 是 2.0.0，Iron's Spells 3.15.0 需要 >= 2.0.1)
-    implementation "maven.modrinth:gedNE4y2:q60QWuOK"
+    // PlayerAnimator (动画库) - Iron's Spells 的传递依赖, 仅本地 dev 运行需要, 非项目前置
+    localRuntime "maven.modrinth:gedNE4y2:q60QWuOK"
 
-    // Curios (物品栏扩展库)
-    implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+    // Curios (物品栏扩展库) - Iron's Spells 的传递依赖, 仅本地 dev 运行需要, 非项目前置
+    localRuntime "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 
     // Ender's Spells and Stuff: Requiem (安德的咒语和东西：安魂曲)
     // 暂无可靠 Maven 坐标，继续沿用本地文件
