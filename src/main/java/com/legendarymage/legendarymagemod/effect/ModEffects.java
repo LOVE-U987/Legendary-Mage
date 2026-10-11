@@ -40,6 +40,34 @@ public class ModEffects {
             PyroFlameEffect::new
     );
 
+    public static final DeferredHolder<MobEffect, IceBloodDebuffEffect> ICE_BLOOD_DEBUFF = EFFECTS.register(
+            IceBloodDebuffEffect.EFFECT_ID,
+            IceBloodDebuffEffect::new
+    );
+
+    public static final DeferredHolder<MobEffect, HellfireBrandEffect> HELLFIRE_BRAND = EFFECTS.register(
+            HellfireBrandEffect.EFFECT_ID,
+            HellfireBrandEffect::new
+    );
+
+    /**
+     * 天罚充能 Buff
+     * 雷系与神圣系元素反应给予施法者的增益，下一次法术伤害 ×2
+     */
+    public static final DeferredHolder<MobEffect, ChargedBuffEffect> CHARGED_BUFF = EFFECTS.register(
+            ChargedBuffEffect.EFFECT_ID,
+            ChargedBuffEffect::new
+    );
+
+    /**
+     * 血雷 Buff
+     * 雷系与血系元素反应给予目标的 Debuff，近战攻击携带者的敌人受雷击反伤
+     */
+    public static final DeferredHolder<MobEffect, BloodThornsEffect> BLOOD_THORNS = EFFECTS.register(
+            BloodThornsEffect.EFFECT_ID,
+            BloodThornsEffect::new
+    );
+
     // ==================== 元素标记效果 ====================
 
     /**

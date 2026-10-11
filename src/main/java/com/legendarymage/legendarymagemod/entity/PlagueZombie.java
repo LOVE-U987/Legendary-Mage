@@ -208,6 +208,11 @@ public class PlagueZombie {
                 continue;
             }
 
+            // 【伤害剔除】排除创造/旁观模式玩家
+            if (com.legendarymage.legendarymagemod.effect.ElementDamageGuard.shouldSkipDamage(entity)) {
+                continue;
+            }
+
             // 造成伤害
             entity.hurt(serverLevel.damageSources().magic(), damage);
 

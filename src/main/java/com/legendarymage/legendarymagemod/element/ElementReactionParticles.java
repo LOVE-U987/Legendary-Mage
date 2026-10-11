@@ -65,6 +65,11 @@ public class ElementReactionParticles {
     private static final Vector3f ELDRITCH_CORE = new Vector3f(0.6f, 0.2f, 0.8f);
     /** 邪术外层颜色 - 深紫色 */
     private static final Vector3f ELDRITCH_OUTER = new Vector3f(0.4f, 0.1f, 0.6f);
+
+    /** 湮灭核心颜色 - 纯黑 */
+    private static final Vector3f ANNIHILATION_BLACK = new Vector3f(0.08f, 0.08f, 0.12f);
+    /** 湮灭外层颜色 - 亮白 */
+    private static final Vector3f ANNIHILATION_WHITE = new Vector3f(0.95f, 0.95f, 1.0f);
     
     /** 末影核心颜色 - 深紫色 */
     private static final Vector3f ENDER_CORE = new Vector3f(0.6f, 0.3f, 0.8f);
@@ -2091,6 +2096,556 @@ public class ElementReactionParticles {
                 new FogParticleOptions(bloodColor, 1.0f),
                 pos.x, pos.y + 0.3, pos.z,
                 6, 0.3, 0.2, 0.3, 0.03
+        );
+    }
+
+    // ==================== 批次一新增反应特效 ====================
+
+    /**
+     * 播放沸血反应效果（火+血）
+     * 红橙双色爆发：血色冲击波 + 火焰火花飞溅 + 血雾
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playBoilingBloodReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.0f, 1.2f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 1. 血色冲击波（内层）
+        level.sendParticles(
+                new ShockwaveParticleOptions(BLOOD_OUTER, (float) range * 0.6f, true),
+                pos.x, pos.y + 0.1, pos.z,
+                2, 0.3, 0, 0.3, 0.1
+        );
+
+        // 2. 橙色冲击波（外层）
+        level.sendParticles(
+                new ShockwaveParticleOptions(FIRE_OUTER, (float) range * 0.5f, false),
+                pos.x, pos.y + 0.2, pos.z,
+                2, 0.2, 0, 0.2, 0.1
+        );
+
+        // 3. 火焰火花飞溅
+        int sparkCount = budgetParticles(16); // [PERF]
+        for (int i = 0; i < sparkCount; i++) {
+            double angle = (i / (double) sparkCount) * Math.PI * 2;
+            double radius = 0.5;
+            double offsetX = Math.cos(angle) * radius;
+            double offsetZ = Math.sin(angle) * radius;
+
+            level.sendParticles(
+                    ParticleRegistry.FIRE_PARTICLE.get(),
+                    pos.x + offsetX, pos.y + 0.5, pos.z + offsetZ,
+                    1,
+                    offsetX * 0.3, 0.25, offsetZ * 0.3,
+                    0.03
+            );
+        }
+
+        // 4. 血雾环绕
+        for (int i = 0; i < budgetParticles(8); i++) { // [PERF]
+            double angle = level.random.nextDouble() * Math.PI * 2;
+            double distance = level.random.nextDouble() * range;
+            level.sendParticles(
+                    new FogParticleOptions(BLOOD_CORE, 1.2f),
+                    pos.x + Math.cos(angle) * distance,
+                    pos.y + 0.2 + level.random.nextDouble() * 1.2,
+                    pos.z + Math.sin(angle) * distance,
+                    1, 0.1, 0.2, 0.1, 0.02
+            );
+        }
+    }
+
+    /**
+     * 播放光暗湮灭反应效果（神圣+邪术）
+     * 黑白双色湮灭冲击波 + 吸入式漩涡粒子
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playAnnihilationReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.2f, 0.6f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 1. 黑色湮灭冲击波（内层）
+        level.sendParticles(
+                new ShockwaveParticleOptions(ANNIHILATION_BLACK, (float) range * 0.6f, true),
+                pos.x, pos.y + 0.1, pos.z,
+                2, 0.3, 0, 0.3, 0.1
+        );
+
+        // 2. 亮白冲击波（外层）
+        level.sendParticles(
+                new BlastwaveParticleOptions(ANNIHILATION_WHITE, (float) range * 0.8f),
+                pos.x, pos.y + 0.2, pos.z,
+                1, 0, 0, 0, 0
+        );
+
+        // 3. 吸入式白光粒子（向中心汇聚）
+        int suckCount = budgetParticles(20); // [PERF]
+        for (int i = 0; i < suckCount; i++) {
+            double angle = level.random.nextDouble() * Math.PI * 2;
+            double distance = range * (1.0 + level.random.nextDouble());
+            double x = pos.x + Math.cos(angle) * distance;
+            double z = pos.z + Math.sin(angle) * distance;
+
+            level.sendParticles(
+                    ParticleTypes.END_ROD,
+                    x, pos.y + 0.5 + level.random.nextDouble() * 1.0, z,
+                    1,
+                    -Math.cos(angle) * 0.4, 0, -Math.sin(angle) * 0.4,
+                    0.05
+            );
+        }
+
+        // 4. 黑色湮灭烟雾
+        level.sendParticles(
+                ParticleTypes.LARGE_SMOKE,
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(10), 0.4, 0.4, 0.4, 0.02 // [PERF]
+        );
+    }
+
+    /**
+     * 播放邪雷挪移反应效果（雷+邪术）
+     * 紫色引力冲击波 + 末影不稳定粒子爆发
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playWarpReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, SoundRegistry.CHAIN_LIGHTNING_CHAIN.get(), SoundSource.HOSTILE, 1.0f, 0.8f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 1. 紫色引力冲击波
+        level.sendParticles(
+                new ShockwaveParticleOptions(ELDRITCH_CORE, (float) range * 0.6f, true),
+                pos.x, pos.y + 0.1, pos.z,
+                2, 0.3, 0, 0.3, 0.1
+        );
+
+        // 2. 末影不稳定粒子爆发
+        level.sendParticles(
+                ParticleRegistry.UNSTABLE_ENDER_PARTICLE.get(),
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(20), 0.5, 0.5, 0.5, 0.15 // [PERF]
+        );
+
+        // 3. 紫色环绕电光
+        for (int i = 0; i < budgetParticles(6); i++) { // [PERF]
+            double angle = level.random.nextDouble() * Math.PI * 2;
+            double distance = level.random.nextDouble() * range * 0.5;
+            level.sendParticles(
+                    ParticleTypes.END_ROD,
+                    pos.x + Math.cos(angle) * distance,
+                    pos.y + 0.3 + level.random.nextDouble() * 1.0,
+                    pos.z + Math.sin(angle) * distance,
+                    1, 0, 0.05, 0, 0.02
+            );
+        }
+    }
+
+    /**
+     * 播放天罚充能效果（雷+神圣，施法者增益）
+     * 金紫双色充能光环 + 上升电光
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playSmiteChargeReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, SoundRegistry.HOLY_CAST.get(), SoundSource.PLAYERS, 1.0f, 1.1f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 1. 金色充能冲击波
+        level.sendParticles(
+                new ShockwaveParticleOptions(HOLY_CORE, 1.5f, true),
+                pos.x, pos.y + 0.1, pos.z,
+                1, 0, 0, 0, 0
+        );
+
+        // 2. 金紫电光粒子（环绕上升）
+        int chargeCount = budgetParticles(14); // [PERF]
+        for (int i = 0; i < chargeCount; i++) {
+            double angle = (i / (double) chargeCount) * Math.PI * 2;
+            double radius = 0.8;
+            level.sendParticles(
+                    ParticleTypes.END_ROD,
+                    pos.x + Math.cos(angle) * radius,
+                    pos.y + 0.2 + level.random.nextDouble() * 0.6,
+                    pos.z + Math.sin(angle) * radius,
+                    1, 0, 0.15, 0, 0.03
+            );
+        }
+
+        // 3. 紫色电光点缀
+        level.sendParticles(
+                new ZapParticleOption(pos.add(0, 1.0, 0)),
+                pos.x, pos.y + 0.5, pos.z,
+                1, 0, 0, 0, 0
+        );
+
+        // 4. 神圣粒子爆发
+        level.sendParticles(
+                ParticleTypes.WITCH,
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(6), 0.3, 0.4, 0.3, 0.02 // [PERF]
+        );
+    }
+
+    // ==================== 批次二新增反应特效 ====================
+
+    /**
+     * 播放圣火反应效果（火+神圣）
+     * 金橙净化爆发：金色冲击波 + 火焰火花 + 圣光粒子
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playHolyFireReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, SoundRegistry.HOLY_CAST.get(), SoundSource.PLAYERS, 1.0f, 1.2f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 1. 金色冲击波（内层）
+        level.sendParticles(
+                new ShockwaveParticleOptions(HOLY_CORE, (float) range * 0.6f, true),
+                pos.x, pos.y + 0.1, pos.z,
+                2, 0.3, 0, 0.3, 0.1
+        );
+
+        // 2. 橙色冲击波（外层）
+        level.sendParticles(
+                new ShockwaveParticleOptions(FIRE_OUTER, (float) range * 0.5f, false),
+                pos.x, pos.y + 0.2, pos.z,
+                2, 0.2, 0, 0.2, 0.1
+        );
+
+        // 3. 火焰火花飞溅
+        int sparkCount = budgetParticles(14); // [PERF]
+        for (int i = 0; i < sparkCount; i++) {
+            double angle = (i / (double) sparkCount) * Math.PI * 2;
+            double radius = 0.6;
+            double offsetX = Math.cos(angle) * radius;
+            double offsetZ = Math.sin(angle) * radius;
+
+            level.sendParticles(
+                    ParticleRegistry.FIRE_PARTICLE.get(),
+                    pos.x + offsetX, pos.y + 0.5, pos.z + offsetZ,
+                    1,
+                    offsetX * 0.3, 0.25, offsetZ * 0.3,
+                    0.03
+            );
+        }
+
+        // 4. 圣光粒子上升
+        level.sendParticles(
+                ParticleTypes.END_ROD,
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(8), 0.3, 0.5, 0.3, 0.03 // [PERF]
+        );
+    }
+
+    /**
+     * 播放血雷反应效果（雷+血）
+     * 暗红电光环绕：血色雾 + 紫色电光
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playBloodThornsReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, SoundRegistry.CHAIN_LIGHTNING_CHAIN.get(), SoundSource.HOSTILE, 0.8f, 0.9f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 1. 血色雾环绕
+        int mistCount = budgetParticles(10); // [PERF]
+        for (int i = 0; i < mistCount; i++) {
+            double angle = (i / (double) mistCount) * Math.PI * 2;
+            double radius = 0.8;
+            level.sendParticles(
+                    new FogParticleOptions(BLOOD_CORE, 1.0f),
+                    pos.x + Math.cos(angle) * radius,
+                    pos.y + 0.3 + level.random.nextDouble() * 0.8,
+                    pos.z + Math.sin(angle) * radius,
+                    1, 0.1, 0.1, 0.1, 0.02
+            );
+        }
+
+        // 2. 紫色电光点缀
+        level.sendParticles(
+                new ZapParticleOption(pos.add(0, 1.0, 0)),
+                pos.x, pos.y + 0.5, pos.z,
+                1, 0, 0, 0, 0
+        );
+    }
+
+    /**
+     * 播放霜毒反应效果（冰+毒）
+     * 青绿霜雾爆发
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playFrostFogReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, net.minecraft.sounds.SoundEvents.WITCH_DRINK, SoundSource.HOSTILE, 1.0f, 0.8f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 1. 青绿霜雾爆发
+        Vector3f frostColor = new Vector3f(0.4f, 0.9f, 0.7f);
+        int fogCount = budgetParticles(16); // [PERF]
+        for (int i = 0; i < fogCount; i++) {
+            double angle = level.random.nextDouble() * Math.PI * 2;
+            double distance = level.random.nextDouble() * range;
+            level.sendParticles(
+                    new FogParticleOptions(frostColor, 1.2f),
+                    pos.x + Math.cos(angle) * distance,
+                    pos.y + 0.2 + level.random.nextDouble() * 1.2,
+                    pos.z + Math.sin(angle) * distance,
+                    1, 0.1, 0.2, 0.1, 0.02
+            );
+        }
+
+        // 2. 毒素粒子点缀
+        level.sendParticles(
+                ParticleTypes.ITEM_SLIME,
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(6), 0.3, 0.3, 0.3, 0.02 // [PERF]
+        );
+    }
+
+    /**
+     * 播放邪瘟反应效果（邪术+毒）
+     * 深绿毒云爆发
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playPlagueCloudReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, net.minecraft.sounds.SoundEvents.WITCH_DRINK, SoundSource.HOSTILE, 1.0f, 0.6f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 1. 深绿毒雾爆发
+        Vector3f plagueColor = new Vector3f(0.3f, 0.6f, 0.4f);
+        int fogCount = budgetParticles(16); // [PERF]
+        for (int i = 0; i < fogCount; i++) {
+            double angle = level.random.nextDouble() * Math.PI * 2;
+            double distance = level.random.nextDouble() * range;
+            level.sendParticles(
+                    new FogParticleOptions(plagueColor, 1.2f),
+                    pos.x + Math.cos(angle) * distance,
+                    pos.y + 0.2 + level.random.nextDouble() * 1.2,
+                    pos.z + Math.sin(angle) * distance,
+                    1, 0.1, 0.2, 0.1, 0.02
+            );
+        }
+
+        // 2. 邪术粒子点缀（紫色）
+        level.sendParticles(
+                new SparkParticleOptions(ELDRITCH_CORE),
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(6), 0.05, 0.3, 0.05, 0.03 // [PERF]
+        );
+    }
+
+    // ==================== 批次三新增反应特效 ====================
+
+    /**
+     * 播放冰封血脉反应效果（冰+血）
+     * 冰蓝霜雾 + 血色粒子
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playIceBloodReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, net.minecraft.sounds.SoundEvents.WITCH_DRINK, SoundSource.HOSTILE, 1.0f, 0.7f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 冰蓝霜雾环绕
+        for (int i = 0; i < budgetParticles(10); i++) { // [PERF]
+            double angle = level.random.nextDouble() * Math.PI * 2;
+            double distance = level.random.nextDouble() * range;
+            level.sendParticles(
+                    new FogParticleOptions(ICE_CORE, 1.2f),
+                    pos.x + Math.cos(angle) * distance,
+                    pos.y + 0.2 + level.random.nextDouble() * 1.2,
+                    pos.z + Math.sin(angle) * distance,
+                    1, 0.1, 0.15, 0.1, 0.02
+            );
+        }
+
+        // 血色粒子点缀
+        level.sendParticles(
+                new SparkParticleOptions(BLOOD_CORE),
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(6), 0.05, 0.3, 0.05, 0.03 // [PERF]
+        );
+    }
+
+    /**
+     * 播放虚空寒霜反应效果（冰+邪术）
+     * 紫色末影冲击波 + 不稳定粒子爆发
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playVoidFrostReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, SoundRegistry.CHAIN_LIGHTNING_CHAIN.get(), SoundSource.HOSTILE, 0.8f, 0.7f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 紫色冲击波
+        level.sendParticles(
+                new ShockwaveParticleOptions(ELDRITCH_CORE, (float) range * 0.5f, true),
+                pos.x, pos.y + 0.1, pos.z,
+                1, 0, 0, 0, 0
+        );
+
+        // 末影不稳定粒子爆发
+        level.sendParticles(
+                ParticleRegistry.UNSTABLE_ENDER_PARTICLE.get(),
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(12), 0.5, 0.5, 0.5, 0.1 // [PERF]
+        );
+    }
+
+    /**
+     * 播放圣冰结晶反应效果（冰+神圣）
+     * 冰蓝霜雾 + 金色圣光 + 雪花
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playHolyIceReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, SoundRegistry.HOLY_CAST.get(), SoundSource.PLAYERS, 1.0f, 1.3f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 冰蓝霜雾环绕
+        for (int i = 0; i < budgetParticles(10); i++) { // [PERF]
+            double angle = level.random.nextDouble() * Math.PI * 2;
+            double distance = level.random.nextDouble() * range;
+            level.sendParticles(
+                    new FogParticleOptions(ICE_CRYSTAL, 1.2f),
+                    pos.x + Math.cos(angle) * distance,
+                    pos.y + 0.2 + level.random.nextDouble() * 1.2,
+                    pos.z + Math.sin(angle) * distance,
+                    1, 0.1, 0.15, 0.1, 0.02
+            );
+        }
+
+        // 金色圣光上升
+        level.sendParticles(
+                ParticleTypes.END_ROD,
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(8), 0.3, 0.5, 0.3, 0.03 // [PERF]
+        );
+    }
+
+    /**
+     * 播放狱火烙印反应效果（火+邪术）
+     * 火焰粒子 + 紫色邪术印记
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playHellfireBrandReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, net.minecraft.sounds.SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 1.0f, 0.8f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 火焰粒子爆发
+        level.sendParticles(
+                ParticleRegistry.FIRE_PARTICLE.get(),
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(10), 0.4, 0.4, 0.4, 0.05 // [PERF]
+        );
+
+        // 紫色邪术印记
+        level.sendParticles(
+                new SparkParticleOptions(ELDRITCH_CORE),
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(6), 0.05, 0.3, 0.05, 0.03 // [PERF]
+        );
+    }
+
+    /**
+     * 播放圣露回源反应效果（神圣+毒）
+     * 金色净化光柱 + 治疗光点
+     *
+     * @param level 服务器世界
+     * @param pos   中心位置
+     * @param range 范围
+     */
+    public static void playHolyDewReaction(ServerLevel level, Vec3 pos, double range) {
+        try {
+            level.playSound(null, pos.x, pos.y, pos.z, SoundRegistry.HOLY_CAST.get(), SoundSource.PLAYERS, 0.8f, 1.4f + level.random.nextFloat() * 0.2f);
+        } catch (Exception e) {
+            // 声音播放失败不影响粒子效果
+        }
+
+        // 金色净化冲击波
+        level.sendParticles(
+                new ShockwaveParticleOptions(HOLY_CORE, 1.2f, true),
+                pos.x, pos.y + 0.1, pos.z,
+                1, 0, 0, 0, 0
+        );
+
+        // 治疗光点上升
+        level.sendParticles(
+                ParticleTypes.END_ROD,
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(8), 0.3, 0.4, 0.3, 0.03 // [PERF]
+        );
+
+        // 圣光粒子点缀
+        level.sendParticles(
+                ParticleTypes.WITCH,
+                pos.x, pos.y + 0.5, pos.z,
+                budgetParticles(5), 0.3, 0.4, 0.3, 0.02 // [PERF]
         );
     }
 }

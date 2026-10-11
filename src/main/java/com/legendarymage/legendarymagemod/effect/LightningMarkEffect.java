@@ -168,6 +168,7 @@ public class LightningMarkEffect extends ElementMarkEffect implements IMobEffect
                         pos.x + CHAIN_RANGE, pos.y + CHAIN_RANGE, pos.z + CHAIN_RANGE
                 ),
                 e -> e.isAlive() && !e.isDeadOrDying()
+                        && !ElementDamageGuard.shouldSkipDamage(e)
                         && !ElementMarkData.isExcludedFromAttack(e, excludeRef)
         );
 
@@ -219,6 +220,7 @@ public class LightningMarkEffect extends ElementMarkEffect implements IMobEffect
                         pos.x + CONDUCT_RANGE, pos.y + CONDUCT_RANGE, pos.z + CONDUCT_RANGE
                 ),
                 e -> e.isAlive() && !e.isDeadOrDying() && e != origin
+                        && !ElementDamageGuard.shouldSkipDamage(e)
                         && !ElementMarkData.isExcludedFromAttack(e, excludeRef)
         );
 

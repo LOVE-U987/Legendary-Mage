@@ -124,6 +124,11 @@ public class HolyMarkEffect extends ElementMarkEffect {
             return;
         }
 
+        // 【伤害剔除】创造/旁观模式玩家不承受元素伤害
+        if (ElementDamageGuard.shouldSkipDamage(target)) {
+            return;
+        }
+
         // 公式伤害：buff等级 × 神圣系流派强度（多人合并）
         float damage = ElementMarkData.calculateDamage(target, ElementType.HOLY, attacker);
         if (damage <= 0) {

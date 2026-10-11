@@ -85,6 +85,11 @@ public class FireMarkEffect extends ElementMarkEffect {
             return true;
         }
 
+        // 【伤害剔除】创造/旁观模式玩家不承受元素伤害
+        if (ElementDamageGuard.shouldSkipDamage(entity)) {
+            return true;
+        }
+
         // CD 1秒：每 20 tick 触发一次灼烧
         if (ElementMarkData.isCooldownReady(entity, ElementType.FIRE, DAMAGE_INTERVAL)) {
             // 伤害由公式计算：buff等级 × 火系流派强度

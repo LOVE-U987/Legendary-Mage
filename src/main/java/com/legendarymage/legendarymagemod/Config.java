@@ -65,6 +65,59 @@ public class Config {
     public static final ModConfigSpec.BooleanValue PYRO_FLAME_EXPLOSION_CAUSE_FIRE;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> PYRO_FLAME_ENTITY_BLACKLIST;
 
+    // 沸血引爆反应(火+血,斩杀)
+    public static final ModConfigSpec.DoubleValue BOILING_BLOOD_BASE_DAMAGE;
+    public static final ModConfigSpec.DoubleValue BOILING_BLOOD_LOST_HEALTH_RATIO;
+
+    // 光暗湮灭反应(神圣+邪术,净化爆发)
+    public static final ModConfigSpec.DoubleValue ANNIHILATION_BASE_DAMAGE;
+    public static final ModConfigSpec.DoubleValue ANNIHILATION_PER_EFFECT_DAMAGE;
+
+    // 邪雷挪移反应(雷+邪术,电磁引力拉拽)
+    public static final ModConfigSpec.DoubleValue WARP_PULL_DISTANCE;
+    public static final ModConfigSpec.DoubleValue WARP_BOSS_HEALTH_THRESHOLD;
+
+    // 天罚充能 Buff(雷+神圣,施法者一次性质变)
+    public static final ModConfigSpec.DoubleValue CHARGED_DAMAGE_MULTIPLIER;
+    public static final ModConfigSpec.IntValue CHARGED_DURATION_SECONDS;
+
+    // 圣火净化反应(火+神圣,净化+亡灵特攻)
+    public static final ModConfigSpec.DoubleValue HOLY_FIRE_BASE_DAMAGE;
+    public static final ModConfigSpec.DoubleValue HOLY_FIRE_UNDEAD_MULTIPLIER;
+
+    // 血雷反击反应(雷+血,近战反伤)
+    public static final ModConfigSpec.DoubleValue BLOOD_THORNS_BASE_DAMAGE;
+    public static final ModConfigSpec.IntValue BLOOD_THORNS_DURATION_SECONDS;
+
+    // 霜毒凝雾反应(冰+毒,区域叠层)
+    public static final ModConfigSpec.DoubleValue FROST_FOG_RADIUS;
+    public static final ModConfigSpec.IntValue FROST_FOG_DURATION_SECONDS;
+    public static final ModConfigSpec.IntValue FROST_FOG_POISON_LEVEL;
+
+    // 邪瘟毒云反应(邪术+毒,区域传染)
+    public static final ModConfigSpec.DoubleValue PLAGUE_CLOUD_RADIUS;
+    public static final ModConfigSpec.IntValue PLAGUE_CLOUD_DURATION_SECONDS;
+
+    // 冰封血脉反应(冰+血,治疗抑制)
+    public static final ModConfigSpec.DoubleValue ICE_BLOOD_HEAL_REDUCTION_RATIO;
+    public static final ModConfigSpec.IntValue ICE_BLOOD_DURATION_SECONDS;
+
+    // 虚空寒霜反应(冰+邪术,恐惧击退)
+    public static final ModConfigSpec.DoubleValue VOID_FROST_KNOCKBACK_DISTANCE;
+    public static final ModConfigSpec.IntValue VOID_FROST_DURATION_SECONDS;
+
+    // 圣冰结晶反应(冰+神圣,区域减速)
+    public static final ModConfigSpec.DoubleValue HOLY_ICE_SLOW_RADIUS;
+    public static final ModConfigSpec.IntValue HOLY_ICE_DURATION_SECONDS;
+    public static final ModConfigSpec.IntValue HOLY_ICE_SLOW_AMPLIFIER;
+
+    // 狱火烙印反应(火+邪术,吸血)
+    public static final ModConfigSpec.DoubleValue HELLFIRE_LIFESTEAL_RATIO;
+    public static final ModConfigSpec.IntValue HELLFIRE_DURATION_SECONDS;
+
+    // 圣露回源反应(神圣+毒,回复法术魔力)
+    public static final ModConfigSpec.DoubleValue HOLY_DEW_MANA_AMOUNT;
+
     // ==================== 调试配置 ====================
     public static final ModConfigSpec.BooleanValue GLOBAL_DEBUG_MODE;
     public static final ModConfigSpec.BooleanValue TRAIL_SYSTEM_DEBUG_OUTPUT;
@@ -323,6 +376,247 @@ public class Config {
                         "Default: empty list (no blacklist)")
                 .defineListAllowEmpty("entityBlacklist", List.of(),
                         () -> "", obj -> obj instanceof String);
+
+        BUILDER.pop();
+
+        // 沸血引爆反应配置
+        BUILDER.push("boilingBlood");
+
+        BOILING_BLOOD_BASE_DAMAGE = BUILDER
+                .comment("Base burst damage of the boiling blood reaction (fire + blood).",
+                        "Total damage = (base + missing health * lostHealthRatio) * (firePower + bloodPower) * 2.5",
+                        "Default: 1.0",
+                        "Range: 0.0 - 20.0")
+                .defineInRange("baseDamage", 1.0, 0.0, 20.0);
+
+        BOILING_BLOOD_LOST_HEALTH_RATIO = BUILDER
+                .comment("Ratio of the target's missing health converted into burst damage.",
+                        "Higher values make low-health targets take massively more damage (execution).",
+                        "Default: 0.3",
+                        "Range: 0.0 - 2.0")
+                .defineInRange("lostHealthRatio", 0.3, 0.0, 2.0);
+
+        BUILDER.pop();
+
+        // 光暗湮灭反应配置
+        BUILDER.push("annihilation");
+
+        ANNIHILATION_BASE_DAMAGE = BUILDER
+                .comment("Base annihilation damage of the annihilation reaction (holy + eldritch).",
+                        "Total damage = (base + removedEffects * perEffectDamage) * (holyPower + eldritchPower) * 2.5",
+                        "Default: 2.0",
+                        "Range: 0.0 - 20.0")
+                .defineInRange("baseDamage", 2.0, 0.0, 20.0);
+
+        ANNIHILATION_PER_EFFECT_DAMAGE = BUILDER
+                .comment("Bonus annihilation damage per removed effect instance.",
+                        "Default: 1.5",
+                        "Range: 0.0 - 20.0")
+                .defineInRange("perEffectDamage", 1.5, 0.0, 20.0);
+
+        BUILDER.pop();
+
+        // 邪雷挪移反应配置
+        BUILDER.push("enderWarp");
+
+        WARP_PULL_DISTANCE = BUILDER
+                .comment("Distance the target is pulled towards the caster by the ender warp reaction (lightning + eldritch).",
+                        "The pull is a velocity displacement, not an enderman-style teleport.",
+                        "Default: 5.0 blocks",
+                        "Range: 1.0 - 16.0")
+                .defineInRange("pullDistance", 5.0, 1.0, 16.0);
+
+        WARP_BOSS_HEALTH_THRESHOLD = BUILDER
+                .comment("Entities whose max health is greater than or equal to this value are immune to the ender warp pull.",
+                        "Protects boss fights from being disrupted.",
+                        "Default: 100.0",
+                        "Range: 1.0 - 1000.0")
+                .defineInRange("bossHealthThreshold", 100.0, 1.0, 1000.0);
+
+        BUILDER.pop();
+
+        // 天罚充能 Buff 配置
+        BUILDER.push("chargedBuff");
+
+        CHARGED_DAMAGE_MULTIPLIER = BUILDER
+                .comment("Damage multiplier applied to the caster's next spell while the charged buff is active.",
+                        "The buff is consumed after one spell hit.",
+                        "Default: 2.0",
+                        "Range: 1.0 - 10.0")
+                .defineInRange("damageMultiplier", 2.0, 1.0, 10.0);
+
+        CHARGED_DURATION_SECONDS = BUILDER
+                .comment("Duration of the charged buff in seconds.",
+                        "Default: 15 seconds",
+                        "Range: 1 - 60")
+                .defineInRange("durationSeconds", 15, 1, 60);
+
+        BUILDER.pop();
+
+        // 圣火净化反应配置
+        BUILDER.push("holyFire");
+
+        HOLY_FIRE_BASE_DAMAGE = BUILDER
+                .comment("Base damage of the holy fire purification reaction (fire + holy).",
+                        "Total damage = base * (firePower + holyPower) * 2.5, undead targets take this multiplied by undeadMultiplier.",
+                        "Also purifies (removes) all beneficial effects from the target.",
+                        "Default: 3.0",
+                        "Range: 0.0 - 20.0")
+                .defineInRange("baseDamage", 3.0, 0.0, 20.0);
+
+        HOLY_FIRE_UNDEAD_MULTIPLIER = BUILDER
+                .comment("Damage multiplier against undead/undying creatures for the holy fire reaction.",
+                        "Default: 2.0",
+                        "Range: 1.0 - 10.0")
+                .defineInRange("undeadMultiplier", 2.0, 1.0, 10.0);
+
+        BUILDER.pop();
+
+        // 血雷反击反应配置
+        BUILDER.push("bloodThorns");
+
+        BLOOD_THORNS_BASE_DAMAGE = BUILDER
+                .comment("Base thorns damage dealt back to melee attackers hitting a target with the blood thorns buff (lightning + blood).",
+                        "Thorns damage = base * (lightningPower + bloodPower).",
+                        "Default: 3.0",
+                        "Range: 0.0 - 20.0")
+                .defineInRange("baseDamage", 3.0, 0.0, 20.0);
+
+        BLOOD_THORNS_DURATION_SECONDS = BUILDER
+                .comment("Duration of the blood thorns buff in seconds.",
+                        "Default: 8 seconds",
+                        "Range: 1 - 60")
+                .defineInRange("durationSeconds", 8, 1, 60);
+
+        BUILDER.pop();
+
+        // 霜毒凝雾反应配置
+        BUILDER.push("frostFog");
+
+        FROST_FOG_RADIUS = BUILDER
+                .comment("Radius of the frost poison fog cloud spawned by the frost fog reaction (ice + poison).",
+                        "Default: 3.0 blocks",
+                        "Range: 1.0 - 8.0")
+                .defineInRange("radius", 3.0, 1.0, 8.0);
+
+        FROST_FOG_DURATION_SECONDS = BUILDER
+                .comment("Duration of the frost poison fog cloud in seconds.",
+                        "Default: 5 seconds",
+                        "Range: 1 - 30")
+                .defineInRange("durationSeconds", 5, 1, 30);
+
+        FROST_FOG_POISON_LEVEL = BUILDER
+                .comment("Poison effect level applied per second to entities inside the frost fog.",
+                        "Default: 1",
+                        "Range: 1 - 5")
+                .defineInRange("poisonLevel", 1, 1, 5);
+
+        BUILDER.pop();
+
+        // 邪瘟毒云反应配置
+        BUILDER.push("plagueCloud");
+
+        PLAGUE_CLOUD_RADIUS = BUILDER
+                .comment("Radius of the eldritch plague cloud spawned by the plague cloud reaction (eldritch + poison).",
+                        "Default: 3.0 blocks",
+                        "Range: 1.0 - 8.0")
+                .defineInRange("radius", 3.0, 1.0, 8.0);
+
+        PLAGUE_CLOUD_DURATION_SECONDS = BUILDER
+                .comment("Duration of the eldritch plague cloud in seconds.",
+                        "Default: 5 seconds",
+                        "Range: 1 - 30")
+                .defineInRange("durationSeconds", 5, 1, 30);
+
+        BUILDER.pop();
+
+        // 冰封血脉反应配置
+        BUILDER.push("iceBlood");
+
+        ICE_BLOOD_HEAL_REDUCTION_RATIO = BUILDER
+                .comment("Heal reduction ratio for the ice blood reaction (ice + blood).",
+                        "Applied as a multiplier to incoming heals on the target.",
+                        "Default: 0.5 (50% heal reduction)",
+                        "Range: 0.0 - 1.0")
+                .defineInRange("healReductionRatio", 0.5, 0.0, 1.0);
+
+        ICE_BLOOD_DURATION_SECONDS = BUILDER
+                .comment("Duration of the ice blood debuff in seconds.",
+                        "Default: 8 seconds",
+                        "Range: 1 - 30")
+                .defineInRange("durationSeconds", 8, 1, 30);
+
+        BUILDER.pop();
+
+        // 虚空寒霜反应配置
+        BUILDER.push("voidFrost");
+
+        VOID_FROST_KNOCKBACK_DISTANCE = BUILDER
+                .comment("Knockback distance for the void frost reaction (ice + eldritch).",
+                        "Target is pushed away from the caster by this distance.",
+                        "Default: 3.0 blocks",
+                        "Range: 1.0 - 10.0")
+                .defineInRange("knockbackDistance", 3.0, 1.0, 10.0);
+
+        VOID_FROST_DURATION_SECONDS = BUILDER
+                .comment("Base duration of the fear effect in seconds.",
+                        "Duration scales with mark level (level * duration).",
+                        "Default: 3 seconds",
+                        "Range: 1 - 10")
+                .defineInRange("durationSeconds", 3, 1, 10);
+
+        BUILDER.pop();
+
+        // 圣冰结晶反应配置
+        BUILDER.push("holyIce");
+
+        HOLY_ICE_SLOW_RADIUS = BUILDER
+                .comment("Radius of the holy ice slow cloud in blocks.",
+                        "Default: 3.0",
+                        "Range: 1.0 - 8.0")
+                .defineInRange("slowRadius", 3.0, 1.0, 8.0);
+
+        HOLY_ICE_DURATION_SECONDS = BUILDER
+                .comment("Duration of the holy ice slow cloud in seconds.",
+                        "Default: 5",
+                        "Range: 1 - 30")
+                .defineInRange("durationSeconds", 5, 1, 30);
+
+        HOLY_ICE_SLOW_AMPLIFIER = BUILDER
+                .comment("Slow effect amplifier applied to entities inside the cloud.",
+                        "Default: 1",
+                        "Range: 0 - 5")
+                .defineInRange("slowAmplifier", 1, 0, 5);
+
+        BUILDER.pop();
+
+        // 狱火烙印反应配置
+        BUILDER.push("hellfireBrand");
+
+        HELLFIRE_LIFESTEAL_RATIO = BUILDER
+                .comment("Lifesteal ratio for the hellfire brand reaction (fire + eldritch).",
+                        "Caster heals for damage_dealt * this_ratio when hitting a branded target.",
+                        "Default: 0.1 (10%)",
+                        "Range: 0.0 - 1.0")
+                .defineInRange("lifestealRatio", 0.1, 0.0, 1.0);
+
+        HELLFIRE_DURATION_SECONDS = BUILDER
+                .comment("Duration of the hellfire brand debuff in seconds.",
+                        "Default: 8 seconds",
+                        "Range: 1 - 30")
+                .defineInRange("durationSeconds", 8, 1, 30);
+
+        BUILDER.pop();
+
+        // 圣露回源反应配置
+        BUILDER.push("holyDew");
+
+        HOLY_DEW_MANA_AMOUNT = BUILDER
+                .comment("Mana amount restored by the holy dew reaction (holy + poison).",
+                        "Caster recovers this amount of mana. Triggered when holy hits a target with a poison mark.",
+                        "Default: 10.0",
+                        "Range: 0.0 - 100.0")
+                .defineInRange("manaAmount", 10.0, 0.0, 100.0);
 
         BUILDER.pop();
 

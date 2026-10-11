@@ -65,6 +65,11 @@ public class PyroFlameEffect extends MobEffect {
      */
     @Override
     public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+        // 【伤害剔除】创造/旁观模式玩家不承受元素伤害
+        if (ElementDamageGuard.shouldSkipDamage(entity)) {
+            return true;
+        }
+
         int damageInterval = getDamageInterval();
         // 只在特定间隔造成伤害
         if (damageInterval > 0 && entity.tickCount % damageInterval == 0) {

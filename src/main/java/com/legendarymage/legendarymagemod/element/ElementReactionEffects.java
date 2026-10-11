@@ -5,11 +5,14 @@ import java.util.List;
 import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import com.legendarymage.legendarymagemod.ModLogger;
+import com.legendarymage.legendarymagemod.effect.ElementDamageGuard;
+import com.legendarymage.legendarymagemod.effect.ElementMarkEffect;
 import com.legendarymage.legendarymagemod.effect.LightningRodBuffEffect;
 import com.legendarymage.legendarymagemod.effect.ModEffects;
 import com.legendarymage.legendarymagemod.effect.PlagueBuffEffect;
 
 import io.redspace.ironsspellbooks.api.registry.AttributeRegistry;
+import io.redspace.ironsspellbooks.particle.FogParticleOptions;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -17,6 +20,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -24,6 +29,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 /**
  * 元素反应效果类
@@ -160,6 +166,105 @@ public class ElementReactionEffects {
                     removeElementMark(target, newElement);
                     break;
 
+                case BOILING_BLOOD:
+                    // 沸血：按已损失生命比例斩杀爆发
+                    handleBoilingBlood(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（火和血）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case ANNIHILATION:
+                    // 光暗湮灭：清除全部效果并按数量爆发
+                    handleAnnihilation(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（神圣和邪术）——湮灭内部已清除全部效果
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case WARP:
+                    // 邪雷挪移：电磁引力拉向施法者
+                    handleWarp(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（雷和邪术）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case SMITE_CHARGE:
+                    // 天罚充能：给与施法者充能 Buff
+                    handleSmiteCharge(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（雷和神圣）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case HOLY_FIRE:
+                    // 圣火：清除增益并对亡灵特攻
+                    handleHolyFire(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（火和神圣）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case BLOOD_THORNS:
+                    // 血雷：给与目标近战反伤的荆棘 Buff
+                    handleBloodThorns(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（雷和血）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case FROST_FOG:
+                    // 霜毒：生成持续叠加中毒的雾区
+                    handleFrostFog(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（冰和毒）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case PLAGUE_CLOUD:
+                    // 邪瘟：生成持续施加邪术标记的毒云
+                    handlePlagueCloud(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    // 反应后移除被反应的元素标记（邪术和毒）
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case ICE_BLOOD:
+                    // 冰封：给与目标治疗抑制 Debuff
+                    handleIceBlood(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case VOID_FROST:
+                    // 虚空：恐惧击退目标
+                    handleVoidFrost(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case HOLY_ICE:
+                    // 圣冰：生成持续减速的区域
+                    handleHolyIce(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case HELLFIRE_BRAND:
+                    // 狱火：给与目标吸血烙印 Debuff
+                    handleHellfireBrand(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
+                case HOLY_DEW:
+                    // 圣露：回复施法者 mana
+                    handleHolyDew(serverLevel, target, attacker, existingElement, newElement, existingLevel);
+                    removeElementMark(target, existingElement);
+                    removeElementMark(target, newElement);
+                    break;
+
                 case UNKNOWN:
                 default:
                     // 未知反应，播放默认效果
@@ -255,6 +360,84 @@ public class ElementReactionEffects {
             return ReactionType.BLOOD_POISON;
         }
 
+        // 检查沸血反应（火系 - 血系）
+        if ((element1 == ElementType.FIRE && element2 == ElementType.BLOOD) ||
+            (element1 == ElementType.BLOOD && element2 == ElementType.FIRE)) {
+            return ReactionType.BOILING_BLOOD;
+        }
+
+        // 检查湮灭反应（神圣 - 邪术）
+        if ((element1 == ElementType.HOLY && element2 == ElementType.ELDRITCH) ||
+            (element1 == ElementType.ELDRITCH && element2 == ElementType.HOLY)) {
+            return ReactionType.ANNIHILATION;
+        }
+
+        // 检查挪移反应（雷系 - 邪术）
+        if ((element1 == ElementType.LIGHTNING && element2 == ElementType.ELDRITCH) ||
+            (element1 == ElementType.ELDRITCH && element2 == ElementType.LIGHTNING)) {
+            return ReactionType.WARP;
+        }
+
+        // 检查充能反应（雷系 - 神圣）
+        if ((element1 == ElementType.LIGHTNING && element2 == ElementType.HOLY) ||
+            (element1 == ElementType.HOLY && element2 == ElementType.LIGHTNING)) {
+            return ReactionType.SMITE_CHARGE;
+        }
+
+        // 检查圣火反应（火系 - 神圣）
+        if ((element1 == ElementType.FIRE && element2 == ElementType.HOLY) ||
+            (element1 == ElementType.HOLY && element2 == ElementType.FIRE)) {
+            return ReactionType.HOLY_FIRE;
+        }
+
+        // 检查血雷反应（雷系 - 血系）
+        if ((element1 == ElementType.LIGHTNING && element2 == ElementType.BLOOD) ||
+            (element1 == ElementType.BLOOD && element2 == ElementType.LIGHTNING)) {
+            return ReactionType.BLOOD_THORNS;
+        }
+
+        // 检查霜毒反应（冰系 - 毒系）
+        if ((element1 == ElementType.ICE && element2 == ElementType.POISON) ||
+            (element1 == ElementType.POISON && element2 == ElementType.ICE)) {
+            return ReactionType.FROST_FOG;
+        }
+
+        // 检查邪瘟反应（邪术 - 毒系）
+        if ((element1 == ElementType.ELDRITCH && element2 == ElementType.POISON) ||
+            (element1 == ElementType.POISON && element2 == ElementType.ELDRITCH)) {
+            return ReactionType.PLAGUE_CLOUD;
+        }
+
+        // 检查冰封反应（冰系 - 血系）
+        if ((element1 == ElementType.ICE && element2 == ElementType.BLOOD) ||
+            (element1 == ElementType.BLOOD && element2 == ElementType.ICE)) {
+            return ReactionType.ICE_BLOOD;
+        }
+
+        // 检查虚空反应（冰系 - 邪术）
+        if ((element1 == ElementType.ICE && element2 == ElementType.ELDRITCH) ||
+            (element1 == ElementType.ELDRITCH && element2 == ElementType.ICE)) {
+            return ReactionType.VOID_FROST;
+        }
+
+        // 检查圣冰反应（冰系 - 神圣）
+        if ((element1 == ElementType.ICE && element2 == ElementType.HOLY) ||
+            (element1 == ElementType.HOLY && element2 == ElementType.ICE)) {
+            return ReactionType.HOLY_ICE;
+        }
+
+        // 检查狱火反应（火系 - 邪术）
+        if ((element1 == ElementType.FIRE && element2 == ElementType.ELDRITCH) ||
+            (element1 == ElementType.ELDRITCH && element2 == ElementType.FIRE)) {
+            return ReactionType.HELLFIRE_BRAND;
+        }
+
+        // 检查圣露反应（神圣 - 毒系）
+        if ((element1 == ElementType.HOLY && element2 == ElementType.POISON) ||
+            (element1 == ElementType.POISON && element2 == ElementType.HOLY)) {
+            return ReactionType.HOLY_DEW;
+        }
+
         return ReactionType.UNKNOWN;
     }
 
@@ -278,8 +461,8 @@ public class ElementReactionEffects {
         // 伤害 = 对应buff等级 × 双方流派强度总和 × 2.5
         float bonusDamage = markLevel * (float) (icePower + firePower) * 2.5f;
 
-        // 造成额外伤害
-        if (bonusDamage > 0) {
+        // 造成额外伤害（【伤害剔除】创造/旁观模式玩家不承受元素反应伤害，特效保留）
+        if (bonusDamage > 0 && !ElementDamageGuard.shouldSkipDamage(target)) {
             target.hurt(serverLevel.damageSources().magic(), bonusDamage);
         }
 
@@ -310,9 +493,10 @@ public class ElementReactionEffects {
         buffLevel = Math.max(1, Math.min(buffLevel, 3)); // 限制在1-3级
 
         // 施加烈焰Buff (PyroFlameEffect)
+        // 【伤害剔除】addEffectSafe 对创造/旁观玩家剔除 MAX_HEALTH 修饰符 clamp 造成的扣血
         MobEffect pyroFlameEffect = ModEffects.PYRO_FLAME.get();
         Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(pyroFlameEffect);
-        target.addEffect(new MobEffectInstance(
+        ElementDamageGuard.addEffectSafe(target, new MobEffectInstance(
                 effectHolder,
                 100 * buffLevel, // 持续时间
                 buffLevel - 1,   // 等级（0开始）
@@ -357,8 +541,8 @@ public class ElementReactionEffects {
         }
         serverLevel.addFreshEntity(lightning);
 
-        // 造成雷属性伤害
-        if (lightningDamage > 0) {
+        // 造成雷属性伤害（【伤害剔除】创造/旁观模式玩家不承受元素反应伤害，闪电特效保留）
+        if (lightningDamage > 0 && !ElementDamageGuard.shouldSkipDamage(target)) {
             target.hurt(serverLevel.damageSources().lightningBolt(), lightningDamage);
         }
 
@@ -387,8 +571,8 @@ public class ElementReactionEffects {
         // 伤害 = 对应buff等级 × 双方流派强度总和 × 2.5
         float bonusDamage = markLevel * (float) (holyPower + bloodPower) * 2.5f;
 
-        // 造成额外伤害（神圣伤害）
-        if (bonusDamage > 0) {
+        // 造成额外伤害（【伤害剔除】创造/旁观模式玩家不承受元素反应伤害，特效保留）
+        if (bonusDamage > 0 && !ElementDamageGuard.shouldSkipDamage(target)) {
             target.hurt(serverLevel.damageSources().magic(), bonusDamage);
         }
 
@@ -872,6 +1056,19 @@ public class ElementReactionEffects {
         LIGHTNING_POISON,   // 雷毒：消耗感电 Buff 释放电磁波范围伤害
         ICE_LIGHTNING,      // 冰雷：获得避雷针 Buff
         BLOOD_POISON,       // 暗毒：获得瘟疫 Buff
+        BOILING_BLOOD,      // 沸血：按已损失生命比例斩杀爆发（火+血）
+        ANNIHILATION,       // 湮灭：清除全部效果并按数量爆发（神圣+邪术）
+        WARP,               // 挪移：电磁引力拉向施法者（雷+邪术）
+        SMITE_CHARGE,       // 充能：给与施法者下一次法术伤害翻倍的充能（雷+神圣）
+        HOLY_FIRE,          // 圣火：清除增益并对亡灵特攻（火+神圣）
+        BLOOD_THORNS,       // 血雷：给与目标近战反伤的荆棘 Buff（雷+血）
+        FROST_FOG,          // 霜毒：生成持续叠加中毒的雾区（冰+毒）
+        PLAGUE_CLOUD,       // 邪瘟：生成持续施加邪术标记的毒云（邪术+毒）
+        ICE_BLOOD,          // 冰封：治疗抑制 Debuff（冰+血）
+        VOID_FROST,         // 虚空：击退恐惧（冰+邪术）
+        HOLY_ICE,           // 圣冰：区域减速（冰+神圣）
+        HELLFIRE_BRAND,     // 狱火：吸血烙印 Debuff（火+邪术）
+        HOLY_DEW,           // 圣露：回复施法者 mana（神圣+毒）
         UNKNOWN             // 未知
     }
 
@@ -927,6 +1124,11 @@ public class ElementReactionEffects {
         for (LivingEntity entity : entities) {
             // 排除施法者及其队友
             if (entity == attacker || isAlly(attacker, entity)) {
+                continue;
+            }
+
+            // 【伤害剔除】排除创造/旁观模式玩家
+            if (ElementDamageGuard.shouldSkipDamage(entity)) {
                 continue;
             }
 
@@ -1014,7 +1216,8 @@ public class ElementReactionEffects {
                 buffLevel - 1,   // 等级（0 开始）
                 false, true, true
         );
-        target.addEffect(instance);
+        // 【伤害剔除】addEffectSafe 对创造/旁观玩家剔除 MAX_HEALTH 修饰符 clamp 造成的扣血
+        ElementDamageGuard.addEffectSafe(target, instance);
 
         // 在目标 NBT 中记录施法者 UUID（用于死亡时追踪）
         if (attacker instanceof net.minecraft.server.level.ServerPlayer) {
@@ -1026,6 +1229,500 @@ public class ElementReactionEffects {
 
         // 播放特效
         playBloodPoisonParticles(serverLevel, target);
+    }
+
+    /**
+     * 沸血反应
+     * 按目标已损失生命比例造成斩杀爆发伤害
+     * 伤害 = [基础伤害 + 已损失生命 × 转化比] × (火系强度 + 血系强度) × 2.5
+     *
+     * @param serverLevel 服务器世界
+     * @param target 目标实体
+     * @param attacker 攻击者（施法者）
+     * @param existingElement 已有元素
+     * @param newElement 新施加元素
+     * @param markLevel 元素标记等级
+     */
+    private static void handleBoilingBlood(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                            ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行沸血反应效果");
+
+        if (attacker == null) return;
+
+        // 获取火系和血系流派强度（原始属性值，铁魔法默认值为1.0）
+        double firePower = getAttributeValue(attacker, AttributeRegistry.FIRE_SPELL_POWER);
+        double bloodPower = getAttributeValue(attacker, AttributeRegistry.BLOOD_SPELL_POWER);
+
+        // 斩杀伤害：基础伤害 + 已损失生命 × 转化比
+        float baseDamage = Config.BOILING_BLOOD_BASE_DAMAGE.get().floatValue();
+        double lostHealthRatio = Config.BOILING_BLOOD_LOST_HEALTH_RATIO.get();
+        float missingHealth = target.getMaxHealth() - target.getHealth();
+        float damage = (baseDamage + (float) (missingHealth * lostHealthRatio)) * (float) (firePower + bloodPower) * 2.5f;
+
+        // 造成斩杀伤害（【伤害剔除】创造/旁观模式玩家不承受元素反应伤害，特效保留）
+        if (damage > 0 && !ElementDamageGuard.shouldSkipDamage(target)) {
+            target.hurt(serverLevel.damageSources().magic(), damage);
+        }
+
+        debugLog(String.format("沸血反应造成斩杀伤害: %.1f (基础: %.1f, 已损失生命: %.1f)",
+                damage, baseDamage, missingHealth));
+
+        // 播放特效
+        playBoilingBloodParticles(serverLevel, target);
+    }
+
+    /**
+     * 光暗湮灭反应
+     * 清除目标身上全部效果（含元素标记与增益），并按移除数量造成湮灭爆发伤害
+     * 伤害 = [基础伤害 + 移除数量 × 单个效果伤害] × (神圣强度 + 邪术强度) × 2.5
+     *
+     * @param serverLevel 服务器世界
+     * @param target 目标实体
+     * @param attacker 攻击者（施法者）
+     * @param existingElement 已有元素
+     * @param newElement 新施加元素
+     * @param markLevel 元素标记等级
+     */
+    private static void handleAnnihilation(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                            ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行光暗湮灭反应效果");
+
+        if (attacker == null) return;
+
+        // 获取神圣和邪术流派强度（原始属性值，铁魔法默认值为1.0）
+        double holyPower = getAttributeValue(attacker, AttributeRegistry.HOLY_SPELL_POWER);
+        double eldritchPower = getAttributeValue(attacker, AttributeRegistry.ELDRITCH_SPELL_POWER);
+
+        // 1. 统计并清除目标身上的全部效果（含元素标记与增益）
+        int removedCount = removeAllEffects(target);
+
+        // 2. 湮灭伤害：基础伤害 + 移除数量 × 单个效果伤害
+        float baseDamage = Config.ANNIHILATION_BASE_DAMAGE.get().floatValue();
+        float perEffectDamage = Config.ANNIHILATION_PER_EFFECT_DAMAGE.get().floatValue();
+        float damage = (baseDamage + removedCount * perEffectDamage) * (float) (holyPower + eldritchPower) * 2.5f;
+
+        // 造成湮灭伤害（【伤害剔除】创造/旁观模式玩家不承受元素反应伤害，特效保留）
+        if (damage > 0 && !ElementDamageGuard.shouldSkipDamage(target)) {
+            target.hurt(serverLevel.damageSources().magic(), damage);
+        }
+
+        debugLog(String.format("光暗湮灭清除 %d 个效果并造成湮灭伤害: %.1f",
+                removedCount, damage));
+
+        // 播放特效
+        playAnnihilationParticles(serverLevel, target);
+    }
+
+    /**
+     * 移除实体身上的全部效果
+     * 含所有元素标记与增益/有害效果
+     *
+     * @param target 目标实体
+     * @return 移除的效果数量
+     */
+    private static int removeAllEffects(LivingEntity target) {
+        // 复制集合遍历移除，避免 ConcurrentModificationException
+        java.util.List<MobEffectInstance> effects = new java.util.ArrayList<>(target.getActiveEffects());
+        for (MobEffectInstance effect : effects) {
+            target.removeEffect(effect.getEffect());
+        }
+        return effects.size();
+    }
+
+    /**
+     * 邪雷挪移反应
+     * 目标被电磁引力拉向施法者（速度向量位移，非末影人式随机传送）
+     * BOSS/大型敌人（血量阈值判定）免疫拉拽，保护 BOSS 战节奏
+     * 无伤害，纯位移控制
+     *
+     * @param serverLevel 服务器世界
+     * @param target 目标实体
+     * @param attacker 攻击者（施法者）
+     * @param existingElement 已有元素
+     * @param newElement 新施加元素
+     * @param markLevel 元素标记等级
+     */
+    private static void handleWarp(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                    ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行邪雷挪移反应效果");
+
+        if (attacker == null) return;
+
+        // 播放特效
+        playWarpParticles(serverLevel, target);
+
+        // 【伤害剔除】创造/旁观模式玩家不承受元素控制效果（与冰冻剔除一致）
+        if (ElementDamageGuard.shouldSkipDamage(target)) {
+            return;
+        }
+
+        // BOSS 保护：血量阈值以上的实体免疫拉拽（保护 BOSS 战节奏）
+        float bossThreshold = Config.WARP_BOSS_HEALTH_THRESHOLD.get().floatValue();
+        if (target.getMaxHealth() >= bossThreshold) {
+            debugLog(String.format("目标 %s 最大生命值 %.1f 达到 BOSS 阈值 %.1f，免疫挪移",
+                    target.getName().getString(), target.getMaxHealth(), bossThreshold));
+            return;
+        }
+
+        // 拉拽方向：目标 → 施法者
+        Vec3 pullDirection = attacker.position().subtract(target.position());
+        if (pullDirection.lengthSqr() < 0.01) {
+            // 重合位置，无需拉拽
+            return;
+        }
+        pullDirection = pullDirection.normalize();
+
+        // 速度向量位移（非末影人式传送），y 分量限幅避免飞得过高
+        double pullDistance = Config.WARP_PULL_DISTANCE.get();
+        Vec3 pullVelocity = pullDirection.scale(pullDistance * 0.3);
+        target.setDeltaMovement(pullVelocity.x, Math.min(pullVelocity.y, 0.4), pullVelocity.z);
+        target.hurtMarked = true; // 同步速度到客户端
+
+        debugLog(String.format("邪雷挪移将 %s 拉向施法者 (距离: %.1f)",
+                target.getName().getString(), pullDistance));
+    }
+
+    /**
+     * 天罚充能反应
+     * 给与施法者"充能"Buff：下一次法术伤害 ×2（触发后消耗）
+     * 受益者是施法者；伤害翻倍与消耗由 ElementReactionEvents 的法术伤害监听处理
+     *
+     * @param serverLevel 服务器世界
+     * @param target 目标实体
+     * @param attacker 攻击者（施法者）
+     * @param existingElement 已有元素
+     * @param newElement 新施加元素
+     * @param markLevel 元素标记等级
+     */
+    private static void handleSmiteCharge(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                           ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行天罚充能反应效果");
+
+        if (attacker == null) return;
+
+        // 获取充能效果
+        MobEffect chargedEffect = ModEffects.CHARGED_BUFF.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(chargedEffect);
+
+        // 施加充能 Buff（固定等级，时长从配置读取；同效果存在时原版自动刷新时长）
+        int durationSeconds = Config.CHARGED_DURATION_SECONDS.get();
+        // 【增益类】对创造玩家无副作用，走 addEffectSafe 统一施加
+        ElementDamageGuard.addEffectSafe(attacker, new MobEffectInstance(
+                effectHolder,
+                durationSeconds * 20,
+                0,
+                false, true, true
+        ));
+
+        debugLog(String.format("天罚充能给予施法者 %s 充能 Buff (%d秒)",
+                attacker.getName().getString(), durationSeconds));
+
+        // 播放特效
+        playSmiteChargeParticles(serverLevel, attacker);
+    }
+
+    /**
+     * 圣火反应
+     * 清除目标身上的增益 Buff（净化），并对亡灵/不死生物额外重击
+     * 伤害 = 基础 × (火系强度 + 神圣强度) × 2.5，亡灵目标再 × 亡灵特攻倍率
+     *
+     * @param serverLevel 服务器世界
+     * @param target 目标实体
+     * @param attacker 攻击者（施法者）
+     * @param existingElement 已有元素
+     * @param newElement 新施加元素
+     * @param markLevel 元素标记等级
+     */
+    private static void handleHolyFire(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                        ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行圣火反应效果");
+
+        if (attacker == null) return;
+
+        // 获取火系和神圣流派强度（原始属性值，铁魔法默认值为1.0）
+        double firePower = getAttributeValue(attacker, AttributeRegistry.FIRE_SPELL_POWER);
+        double holyPower = getAttributeValue(attacker, AttributeRegistry.HOLY_SPELL_POWER);
+
+        // 1. 净化：清除目标身上的增益 Buff（不含有害效果与元素标记，与湮灭的"清全部"区分）
+        int purifiedCount = removeBeneficialEffects(target);
+        if (purifiedCount > 0) {
+            debugLog(String.format("圣火反应净化目标 %d 个增益效果", purifiedCount));
+        }
+
+        // 2. 特攻：对亡灵/不死生物额外重击
+        float baseDamage = Config.HOLY_FIRE_BASE_DAMAGE.get().floatValue();
+        float damage = baseDamage * (float) (firePower + holyPower) * 2.5f;
+        boolean isUndead = target.getType().is(net.minecraft.tags.EntityTypeTags.UNDEAD);
+        if (isUndead) {
+            damage *= Config.HOLY_FIRE_UNDEAD_MULTIPLIER.get().floatValue();
+        }
+
+        // 造成伤害（【伤害剔除】创造/旁观模式玩家不承受元素反应伤害，特效保留）
+        if (damage > 0 && !ElementDamageGuard.shouldSkipDamage(target)) {
+            target.hurt(serverLevel.damageSources().magic(), damage);
+        }
+
+        debugLog(String.format("圣火反应造成伤害: %.1f (亡灵特攻: %s)",
+                damage, isUndead ? "是" : "否"));
+
+        // 播放特效
+        playHolyFireParticles(serverLevel, target);
+    }
+
+    /**
+     * 血雷反应
+     * 给与施法者"血雷"Buff：持续期间近战攻击携带者的敌人自身受雷击反伤（类似原版荆棘）
+     * 反伤伤害依据血雷等级乘法计算，Buff 等级可叠加（每次触发等级+1，无限叠加）
+     * 反伤与递归防护逻辑由 ElementReactionEvents 的伤害监听处理
+     *
+     * @param serverLevel 服务器世界
+     * @param target 目标实体
+     * @param attacker 攻击者（施法者）
+     * @param existingElement 已有元素
+     * @param newElement 新施加元素
+     * @param markLevel 元素标记等级
+     */
+    private static void handleBloodThorns(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                           ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行血雷反应效果");
+
+        if (attacker == null) return;
+
+        // 获取血雷效果
+        MobEffect bloodThornsEffect = ModEffects.BLOOD_THORNS.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(bloodThornsEffect);
+
+        // 检查施法者是否已有血雷 Buff（等级可叠加，无限叠加）
+        MobEffectInstance existingEffect = attacker.getEffect(effectHolder);
+        int newBuffLevel;
+        if (existingEffect != null) {
+            // 已有血雷，等级+1
+            newBuffLevel = existingEffect.getAmplifier() + 2;
+        } else {
+            // 没有血雷，初始等级 1
+            newBuffLevel = 1;
+        }
+
+        // 施加血雷 Buff 给施法者（等级可叠加，时长刷新为固定值）
+        int durationSeconds = Config.BLOOD_THORNS_DURATION_SECONDS.get();
+        ElementDamageGuard.addEffectSafe(attacker, new MobEffectInstance(
+                effectHolder,
+                durationSeconds * 20,
+                newBuffLevel - 1,
+                false, true, true
+        ));
+
+        debugLog(String.format("血雷反应给予施法者 %s 血雷 Buff (%d级, %d秒)",
+                attacker.getName().getString(), newBuffLevel, durationSeconds));
+
+        // 播放特效
+        playBloodThornsParticles(serverLevel, attacker);
+    }
+
+    /**
+     * 霜毒反应
+     * 在目标位置生成霜毒雾区（原版药水云，自定义青绿雾）
+     * 圈内实体每秒被叠加原版中毒
+     *
+     * @param serverLevel 服务器世界
+     * @param target 目标实体
+     * @param attacker 攻击者（施法者）
+     * @param existingElement 已有元素
+     * @param newElement 新施加元素
+     * @param markLevel 元素标记等级
+     */
+    private static void handleFrostFog(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                        ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行霜毒反应效果");
+
+        if (attacker == null) return;
+
+        // 生成霜毒雾区（自制区域管理，排除施法者）
+        float radius = Config.FROST_FOG_RADIUS.get().floatValue();
+        int durationSeconds = Config.FROST_FOG_DURATION_SECONDS.get();
+        int poisonLevel = Config.FROST_FOG_POISON_LEVEL.get();
+
+        ElementZoneManager.spawnZone(serverLevel, target.position(), attacker,
+                ElementZoneManager.ZoneType.FROST_FOG, radius, durationSeconds);
+
+        debugLog(String.format("霜毒反应生成雾区: 半径 %.1f, 持续 %d秒, 中毒 %d级",
+                radius, durationSeconds, poisonLevel));
+
+        // 播放生成特效
+        playFrostFogParticles(serverLevel, target);
+    }
+
+    /**
+     * 邪瘟反应
+     * 在目标位置生成邪瘟毒云（原版药水云，深绿雾）
+     * 圈内实体持续被施加邪术标记（1 级即可参与反应，制造连锁反应机会）
+     *
+     * @param serverLevel 服务器世界
+     * @param target 目标实体
+     * @param attacker 攻击者（施法者）
+     * @param existingElement 已有元素
+     * @param newElement 新施加元素
+     * @param markLevel 元素标记等级
+     */
+    private static void handlePlagueCloud(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                           ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行邪瘟反应效果");
+
+        if (attacker == null) return;
+
+        // 生成邪瘟毒云（自制区域管理，排除施法者）
+        float radius = Config.PLAGUE_CLOUD_RADIUS.get().floatValue();
+        int durationSeconds = Config.PLAGUE_CLOUD_DURATION_SECONDS.get();
+
+        ElementZoneManager.spawnZone(serverLevel, target.position(), attacker,
+                ElementZoneManager.ZoneType.PLAGUE_CLOUD, radius, durationSeconds);
+
+        debugLog(String.format("邪瘟反应生成毒云: 半径 %.1f, 持续 %d秒, 持续施加邪术标记",
+                radius, durationSeconds));
+
+        // 播放生成特效
+        playPlagueCloudParticles(serverLevel, target);
+    }
+
+    /**
+     * 冰封血脉反应
+     * 给与目标治疗抑制 Debuff：持续期间目标受到的治疗减半（比例从 Config 读取）
+     * 治疗减半逻辑由 ElementReactionEvents 的 LivingHealEvent 监听处理
+     */
+    private static void handleIceBlood(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                        ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行冰封血脉反应效果");
+        if (attacker == null) return;
+
+        MobEffect iceBloodEffect = ModEffects.ICE_BLOOD_DEBUFF.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(iceBloodEffect);
+        int duration = Config.ICE_BLOOD_DURATION_SECONDS.get() * 20;
+        ElementDamageGuard.addEffectSafe(target, new MobEffectInstance(effectHolder, duration, 0, false, true, true));
+
+        debugLog(String.format("冰封血脉给予目标 %s 治疗抑制 (%d秒)",
+                target.getName().getString(), Config.ICE_BLOOD_DURATION_SECONDS.get()));
+        playIceBloodParticles(serverLevel, target);
+    }
+
+    /**
+     * 虚空寒霜反应
+     * 恐惧击退目标：将目标朝远离施法者的方向弹开（击退距离 Config 驱动）
+     */
+    private static void handleVoidFrost(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                         ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行虚空寒霜反应效果");
+        if (attacker == null) return;
+
+        if (ElementDamageGuard.shouldSkipDamage(target)) return;
+
+        // 击退方向：目标 → 远离施法者
+        Vec3 knockDir = target.position().subtract(attacker.position());
+        if (knockDir.lengthSqr() < 0.01) {
+            // 位置重合时不击退（normalize 零向量会返回 ZERO，避免速度被清零的副作用）
+            debugLog(String.format("虚空寒霜: %s 与施法者位置重合，跳过击退",
+                    target.getName().getString()));
+        } else {
+            Vec3 normalized = knockDir.normalize();
+            double knockDist = Config.VOID_FROST_KNOCKBACK_DISTANCE.get() * 0.3;
+            target.setDeltaMovement(normalized.scale(knockDist));
+            target.hurtMarked = true;
+        }
+
+        // 短暂恐慌效果（标记等级 × 基础时长）
+        net.minecraft.world.effect.MobEffectInstance panic = new net.minecraft.world.effect.MobEffectInstance(
+                net.minecraft.world.effect.MobEffects.WEAKNESS,
+                (markLevel >= 1 ? markLevel : 1) * Config.VOID_FROST_DURATION_SECONDS.get() * 20,
+                0, false, true, true);
+        target.addEffect(panic);
+
+        debugLog(String.format("虚空寒霜击退 %s (距离: %.1f)",
+                target.getName().getString(), Config.VOID_FROST_KNOCKBACK_DISTANCE.get()));
+        playVoidFrostParticles(serverLevel, target);
+    }
+
+    /**
+     * 圣冰结晶反应
+     * 在目标位置生成圣冰结晶区域（自制区域管理，排除施法者），圈内实体持续减速
+     */
+    private static void handleHolyIce(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                       ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行圣冰结晶反应效果");
+        if (attacker == null) return;
+
+        float radius = Config.HOLY_ICE_SLOW_RADIUS.get().floatValue();
+        int duration = Config.HOLY_ICE_DURATION_SECONDS.get();
+
+        ElementZoneManager.spawnZone(serverLevel, target.position(), attacker,
+                ElementZoneManager.ZoneType.HOLY_ICE, radius, duration);
+
+        debugLog(String.format("圣冰结晶生成减速区域: 半径 %.1f, 持续 %d秒", radius, duration));
+        playHolyIceParticles(serverLevel, target);
+    }
+
+    /**
+     * 狱火烙印反应
+     * 给与目标狱火烙印 Debuff（记录施法者 UUID）：期间对目标的伤害按比例吸血给施法者
+     * 吸血逻辑由 ElementReactionEvents 的 LivingDamageEvent.Post 监听处理
+     */
+    private static void handleHellfireBrand(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                             ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行狱火烙印反应效果");
+        if (attacker == null) return;
+
+        MobEffect hellfireEffect = ModEffects.HELLFIRE_BRAND.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(hellfireEffect);
+        int duration = Config.HELLFIRE_DURATION_SECONDS.get() * 20;
+
+        ElementDamageGuard.addEffectSafe(target, new MobEffectInstance(effectHolder, duration, 0, false, true, true));
+
+        // 记录施法者 UUID（吸血时用）
+        target.getPersistentData().putUUID("legendarymage:hellfire_caster", attacker.getUUID());
+
+        debugLog(String.format("狱火烙印给予目标 %s 烙印 (%d秒)，施法者 %s",
+                target.getName().getString(), Config.HELLFIRE_DURATION_SECONDS.get(), attacker.getName().getString()));
+        playHellfireBrandParticles(serverLevel, target);
+    }
+
+    /**
+     * 圣露回源反应
+     * 毒被圣光净化→ 施法者回复法术魔力
+     * 使用铁魔法的 MagicManager.getPlayerMagicData + addMana API
+     */
+    private static void handleHolyDew(ServerLevel serverLevel, LivingEntity target, LivingEntity attacker,
+                                       ElementType existingElement, ElementType newElement, int markLevel) {
+        debugLog("执行圣露回源反应效果");
+        if (attacker == null) return;
+
+        if (attacker instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            io.redspace.ironsspellbooks.api.magic.MagicData holyDewData = ((net.neoforged.neoforge.attachment.IAttachmentHolder) serverPlayer).getData(io.redspace.ironsspellbooks.registries.DataAttachmentRegistry.MAGIC_DATA);
+            if (holyDewData != null) {
+                holyDewData.addMana(Config.HOLY_DEW_MANA_AMOUNT.get().floatValue());
+            }
+
+            debugLog(String.format("圣露回源恢复施法者 %s 魔力: %.1f",
+                    serverPlayer.getName().getString(), Config.HOLY_DEW_MANA_AMOUNT.get()));
+        }
+
+        playHolyDewParticles(serverLevel, target);
+    }
+
+    /**
+     * 移除实体身上的全部增益效果
+     *
+     * @param target 目标实体
+     * @return 移除的增益数量
+     */
+    private static int removeBeneficialEffects(LivingEntity target) {
+        // 复制集合遍历移除，避免 ConcurrentModificationException
+        java.util.List<MobEffectInstance> effects = new java.util.ArrayList<>(target.getActiveEffects());
+        int removed = 0;
+        for (MobEffectInstance effect : effects) {
+            if (effect.getEffect().value().getCategory() == net.minecraft.world.effect.MobEffectCategory.BENEFICIAL) {
+                target.removeEffect(effect.getEffect());
+                removed++;
+            }
+        }
+        return removed;
     }
 
     // ==================== 辅助方法 ====================
@@ -1104,5 +1801,143 @@ public class ElementReactionEffects {
         double range = entity.getBbWidth() * 2;
         // 使用铁魔法风格的特效
         ElementReactionParticles.playBloodPoisonReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放沸血反应粒子效果
+     * 红橙双色爆发
+     */
+    private static void playBoilingBloodParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playBoilingBloodReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放光暗湮灭反应粒子效果
+     * 黑白双色湮灭冲击波
+     */
+    private static void playAnnihilationParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playAnnihilationReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放邪雷挪移反应粒子效果
+     * 紫色引力冲击波
+     */
+    private static void playWarpParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playWarpReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放天罚充能粒子效果
+     * 金紫双色充能光环
+     */
+    private static void playSmiteChargeParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playSmiteChargeReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放圣火反应粒子效果
+     * 金橙净化爆发
+     */
+    private static void playHolyFireParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playHolyFireReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放血雷反应粒子效果
+     * 暗红电光环绕
+     */
+    private static void playBloodThornsParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playBloodThornsReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放霜毒反应粒子效果
+     * 青绿雾爆发
+     */
+    private static void playFrostFogParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playFrostFogReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放邪瘟反应粒子效果
+     * 深绿毒云爆发
+     */
+    private static void playPlagueCloudParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        // 使用铁魔法风格的特效
+        ElementReactionParticles.playPlagueCloudReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放冰封血脉反应粒子效果
+     * 冰蓝霜雾 + 血色粒子
+     */
+    private static void playIceBloodParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        ElementReactionParticles.playIceBloodReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放虚空寒霜反应粒子效果
+     * 紫色末影冲击波
+     */
+    private static void playVoidFrostParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        ElementReactionParticles.playVoidFrostReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放圣冰结晶反应粒子效果
+     * 冰蓝霜雾 + 金色圣光
+     */
+    private static void playHolyIceParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        ElementReactionParticles.playHolyIceReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放狱火烙印反应粒子效果
+     * 火焰粒子 + 紫色邪术印记
+     */
+    private static void playHellfireBrandParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        ElementReactionParticles.playHellfireBrandReaction(serverLevel, pos, range);
+    }
+
+    /**
+     * 播放圣露回源反应粒子效果
+     * 金色净化光柱
+     */
+    private static void playHolyDewParticles(ServerLevel serverLevel, LivingEntity entity) {
+        Vec3 pos = entity.position();
+        double range = entity.getBbWidth() * 2;
+        ElementReactionParticles.playHolyDewReaction(serverLevel, pos, range);
     }
 }

@@ -84,6 +84,11 @@ public class PoisonMarkEffect extends ElementMarkEffect {
             return true;
         }
 
+        // 【伤害剔除】创造/旁观模式玩家不承受元素伤害
+        if (ElementDamageGuard.shouldSkipDamage(entity)) {
+            return true;
+        }
+
         // 每秒触发一次毒素伤害
         if (ElementMarkData.isCooldownReady(entity, ElementType.POISON, DAMAGE_INTERVAL)) {
             // 伤害由公式计算：buff等级 × 毒系流派强度

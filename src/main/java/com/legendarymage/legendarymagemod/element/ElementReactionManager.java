@@ -2,6 +2,7 @@ package com.legendarymage.legendarymagemod.element;
 
 import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.ModLogger;
+import com.legendarymage.legendarymagemod.effect.ElementDamageGuard;
 import com.legendarymage.legendarymagemod.effect.ElementMarkEffect;
 import io.redspace.ironsspellbooks.api.spells.SchoolType;
 import net.minecraft.core.Holder;
@@ -172,8 +173,9 @@ public class ElementReactionManager {
 
         if (existing != null) {
             // 已有同类型标记：等级+1（上限5级），时长刷新为5秒
+            // 【伤害剔除】addEffectSafe 对创造/旁观玩家剔除 MAX_HEALTH 修饰符 clamp 造成的扣血
             int newAmplifier = Math.min(existing.getAmplifier() + 1, ElementMarkEffect.MAX_LEVEL);
-            target.addEffect(new MobEffectInstance(
+            ElementDamageGuard.addEffectSafe(target, new MobEffectInstance(
                     markHolder,
                     ElementMarkEffect.BASE_DURATION,
                     newAmplifier,
@@ -210,7 +212,8 @@ public class ElementReactionManager {
             }
 
             // 施加新的标记（1级，amplifier = 0）
-            target.addEffect(new MobEffectInstance(
+            // 【伤害剔除】addEffectSafe 对创造/旁观玩家剔除 MAX_HEALTH 修饰符 clamp 造成的扣血
+            ElementDamageGuard.addEffectSafe(target, new MobEffectInstance(
                     markHolder,
                     ElementMarkEffect.BASE_DURATION,
                     0,
@@ -319,9 +322,10 @@ public class ElementReactionManager {
         }
 
         // 施加标记（直接覆盖为指定等级）
+        // 【伤害剔除】addEffectSafe 对创造/旁观玩家剔除 MAX_HEALTH 修饰符 clamp 造成的扣血
         Holder<MobEffect> markEffect = getEffectHolder(elementType);
         int amplifier = Math.max(0, Math.min(markLevel - 1, ElementMarkEffect.MAX_LEVEL));
-        target.addEffect(new MobEffectInstance(
+        ElementDamageGuard.addEffectSafe(target, new MobEffectInstance(
                 markEffect,
                 ElementMarkEffect.BASE_DURATION,
                 amplifier,

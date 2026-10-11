@@ -4,21 +4,33 @@ import com.legendarymage.legendarymagemod.Config;
 import com.legendarymage.legendarymagemod.LegendaryMage;
 import com.legendarymage.legendarymagemod.ModLogger;
 import com.legendarymage.legendarymagemod.command.ElementMappingHotReload;
+import com.legendarymage.legendarymagemod.effect.ElementDamageGuard;
+import com.legendarymage.legendarymagemod.effect.ModEffects;
 import com.legendarymage.legendarymagemod.effect.EnderMarkEffect;
 import com.legendarymage.legendarymagemod.effect.HolyMarkEffect;
 import com.legendarymage.legendarymagemod.effect.IceMarkEffect;
 import io.redspace.ironsspellbooks.api.events.SpellDamageEvent;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
+import io.redspace.ironsspellbooks.particle.ZapParticleOption;
+import io.redspace.ironsspellbooks.registries.SoundRegistry;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 import java.util.List;
@@ -82,6 +94,15 @@ public class ElementReactionEvents {
             attacker = livingAttacker;
         }
 
+        // 0. 天罚充能：施法者的下一次法术伤害 ×2（触发后消耗）
+        float chargedMultiplier = consumeChargedCharge(attacker);
+        if (chargedMultiplier > 1.0f) {
+            event.setAmount(event.getAmount() * chargedMultiplier);
+            damage = event.getAmount();
+            debugLog(String.format("天罚充能触发: %s 的法术伤害 ×%.1f",
+                    attacker.getName().getString(), chargedMultiplier));
+        }
+
         // 获取法术流派
         io.redspace.ironsspellbooks.api.spells.SchoolType schoolType = null;
         if (spellDamageSource != null && spellDamageSource.spell() != null) {
@@ -114,6 +135,30 @@ public class ElementReactionEvents {
 
         // 2. 法术触发的特殊标记效果（冰冻/神圣打击/回响打击）
         triggerSpecialMarkEffects(target, attacker);
+    }
+
+    /**
+     * 消耗施法者的充能 Buff（若有）
+     * 施法者的下一次法术伤害翻倍，触发后移除充能
+     *
+     * @param attacker 施法者（可为null）
+     * @return 伤害倍率（无充能时返回 1.0）
+     */
+    private static float consumeChargedCharge(LivingEntity attacker) {
+        if (attacker == null) {
+            return 1.0f;
+        }
+
+        MobEffect chargedEffect = ModEffects.CHARGED_BUFF.get();
+        Holder<MobEffect> effectHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(chargedEffect);
+        MobEffectInstance instance = attacker.getEffect(effectHolder);
+        if (instance == null) {
+            return 1.0f;
+        }
+
+        // 消耗充能：移除 Buff
+        attacker.removeEffect(effectHolder);
+        return Config.CHARGED_DAMAGE_MULTIPLIER.get().floatValue();
     }
 
     /**
@@ -236,6 +281,74 @@ public class ElementReactionEvents {
                 }
             }
         }
+
+        // 3. 血雷反击：近战攻击携带血雷 Buff 的目标时，攻击者自身受雷击反伤
+        handleBloodThornsReaction(serverLevel, target, damageSource);
+    }
+
+    /**
+     * 血雷反击处理
+     * 近战攻击携带血雷 Buff 的目标时，攻击者自身受雷击反伤
+     * 近战判定：directEntity == 攻击者（投射物的 directEntity 是箭矢等，不触发）
+     * 反伤带 1 秒冷却，防止互持血雷的两个实体无限递归反伤
+     *
+     * @param serverLevel  服务器世界
+     * @param target       被攻击的目标（血雷携带者）
+     * @param damageSource 伤害来源
+     */
+    private static void handleBloodThornsReaction(ServerLevel serverLevel, LivingEntity target, DamageSource damageSource) {
+        // getEntity() 返回 Entity，用 instanceof 转换为 LivingEntity
+        LivingEntity attacker = damageSource.getEntity() instanceof LivingEntity livingAttacker ? livingAttacker : null;
+        // 排除无攻击者、自伤
+        if (attacker == null || attacker == target) {
+            return;
+        }
+
+        // 近战判定：直接实体 == 攻击者本体（投射物的 directEntity 是箭矢等投射物实体）
+        if (damageSource.getDirectEntity() != attacker) {
+            return;
+        }
+
+        // 检查目标是否携带血雷 Buff
+        MobEffect bloodThorns = ModEffects.BLOOD_THORNS.get();
+        Holder<MobEffect> thornsHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(bloodThorns);
+        MobEffectInstance thornsInstance = target.getEffect(thornsHolder);
+        if (thornsInstance == null) {
+            return;
+        }
+
+        // 反伤冷却（1 秒），防止互持血雷的两个实体无限递归反伤
+        CompoundTag data = target.getPersistentData();
+        long now = serverLevel.getGameTime();
+        long last = data.getLong("legendarymage:blood_thorns_cooldown");
+        if (now - last < 20) {
+            return;
+        }
+        data.putLong("legendarymage:blood_thorns_cooldown", now);
+
+        // 反伤强度：基础 × (携带者雷强 + 携带者血强) × 血雷等级（乘法计算，等级可叠加）
+        int bloodThornsLevel = thornsInstance.getAmplifier() + 1;
+        double lightningPower = ElementMarkData.getSchoolPower(target, ElementType.LIGHTNING);
+        double bloodPower = ElementMarkData.getSchoolPower(target, ElementType.BLOOD);
+        float baseDamage = Config.BLOOD_THORNS_BASE_DAMAGE.get().floatValue();
+        float thornsDamage = baseDamage * (float) (lightningPower + bloodPower) * bloodThornsLevel;
+
+        // 反伤（【伤害剔除】创造/旁观模式玩家不可伤害，剔除反伤）
+        if (thornsDamage > 0 && !ElementDamageGuard.shouldSkipDamage(attacker)) {
+            attacker.hurt(serverLevel.damageSources().magic(), thornsDamage);
+
+            // 播放反击闪电特效（目标 → 攻击者方向）
+            serverLevel.sendParticles(
+                    new ZapParticleOption(attacker.position().add(0, attacker.getBbHeight() * 0.5, 0)),
+                    target.getX(), target.getY() + target.getBbHeight() * 0.5, target.getZ(),
+                    1, 0, 0, 0, 0
+            );
+            serverLevel.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+                    SoundRegistry.CHAIN_LIGHTNING_CHAIN.get(), SoundSource.HOSTILE, 0.8f, 1.0f);
+
+            debugLog(String.format("血雷反击: %s 受到雷击反伤: %.1f",
+                    attacker.getName().getString(), thornsDamage));
+        }
     }
 
     /**
@@ -291,6 +404,81 @@ public class ElementReactionEvents {
     }
 
     /**
+     * 冰封血脉：治疗抑制监听
+     * 目标拥有冰封血脉 Debuff 时，受到的治疗按 Config 比例减半
+     */
+    @SubscribeEvent
+    public static void onLivingHeal(LivingHealEvent event) {
+        if (!(event.getEntity().level() instanceof ServerLevel)) return;
+
+        LivingEntity target = event.getEntity();
+        if (!target.hasEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(ModEffects.ICE_BLOOD_DEBUFF.get()))) return;
+
+        double reduction = Config.ICE_BLOOD_HEAL_REDUCTION_RATIO.get();
+        // 先记录原治疗量再施加衰减（避免用结果反推原值时的除零风险）
+        float originalAmount = event.getAmount();
+        event.setAmount(originalAmount * (float) reduction);
+        debugLog(String.format("冰封血脉抑制治疗效果: %.1f → %.1f",
+                originalAmount, event.getAmount()));
+    }
+
+    /**
+     * 狱火烙印：吸血监听
+     * 目标拥有狱火烙印时，施法者对目标的伤害按比例吸血回复
+     * 记录在目标 NBT 的施法者 UUID（legendarymage:hellfire_caster）
+     */
+    @SubscribeEvent
+    public static void onLivingDamagePost(LivingDamageEvent.Post event) {
+        if (!(event.getEntity().level() instanceof ServerLevel serverLevel)) return;
+
+        LivingEntity target = event.getEntity();
+        Holder<MobEffect> brandHolder = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(ModEffects.HELLFIRE_BRAND.get());
+        if (!target.hasEffect(brandHolder)) return;
+
+        // 从 NBT 获取施法者 UUID
+        CompoundTag data = target.getPersistentData();
+        if (!data.hasUUID("legendarymage:hellfire_caster")) return;
+        java.util.UUID casterUUID = data.getUUID("legendarymage:hellfire_caster");
+
+        // 吸血来源校验：仅施法者阵营（本人/召唤物/队友）造成的伤害才吸血
+        // 防止第三方（其他玩家/怪物/环境伤害）打烙印目标时施法者白赚回血
+        LivingEntity damageEntity = event.getSource().getEntity() instanceof LivingEntity living ? living : null;
+        if (damageEntity == null) {
+            return;
+        }
+
+        if (serverLevel.getEntity(casterUUID) instanceof LivingEntity caster) {
+            // 非施法者阵营的伤害不吸血
+            if (!ElementMarkData.isExcludedFromAttack(damageEntity, caster)) {
+                return;
+            }
+
+            // 对烙印目标造成伤害时按比例回血给施法者
+            double ratio = Config.HELLFIRE_LIFESTEAL_RATIO.get();
+            float healAmount = event.getNewDamage() * (float) ratio;
+            if (healAmount > 0) {
+                caster.heal(healAmount);
+
+                debugLog(String.format("狱火烙印吸血: %s 回复 %.1f (伤害: %.1f × %.2f)",
+                        caster.getName().getString(), healAmount, event.getNewDamage(), ratio));
+            }
+        }
+    }
+
+    /**
+     * 监听世界卸载事件
+     * 清理该维度的元素区域数据，防止区域内存泄漏
+     *
+     * @param event 世界卸载事件
+     */
+    @SubscribeEvent
+    public static void onLevelUnload(LevelEvent.Unload event) {
+        if (event.getLevel() instanceof ServerLevel serverLevel) {
+            ElementZoneManager.clearZones(serverLevel.dimension());
+        }
+    }
+
+    /**
      * 监听世界tick事件
      * 更新元素反应管理器
      *
@@ -304,6 +492,9 @@ public class ElementReactionEvents {
         }
 
         ElementReactionManager.tick(serverLevel);
+
+        // 更新元素区域（每秒对圈内实体施加效果，排除施法者）
+        ElementZoneManager.tick(serverLevel);
     }
 
     /**

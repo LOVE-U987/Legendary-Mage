@@ -94,6 +94,11 @@ public class IceMarkEffect extends ElementMarkEffect {
             return false;
         }
 
+        // 【伤害剔除】创造/旁观模式玩家不触发冰冻
+        if (ElementDamageGuard.shouldSkipDamage(target)) {
+            return false;
+        }
+
         // 检查冰冻异常等级（3级后）
         int level = ElementMarkData.getMarkLevel(target, ElementType.ICE);
         if (level < FREEZE_TRIGGER_LEVEL) {
